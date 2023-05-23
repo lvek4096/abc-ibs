@@ -126,6 +126,9 @@ def bus():	#manage bus bookings
 		delone_win.resizable(False,False)
 		delone_win.title('Delete bus booking')
 
+		cur.execute('select bkgid,pay_id from payment_details')
+		e=dict(cur.fetchall())
+		
 		def delete_busbkg():
 			if not bkgid.get()=='' and not bkgid.get().isspace():
 				if bkgid.get() in bus_bkgid_list:
@@ -135,8 +138,10 @@ def bus():	#manage bus bookings
 						sql='delete from bus_bkgs where bkgid =%s'
 						val=(bkgid.get(),)
 						cur.execute(sql,val)
+						sql2='delete from payment_details where bkgid=%s'
+						cur.execute(sql2,val)
 						con.commit()
-						messagebox.showinfo('','Booking '+bkgid.get()+' deleted.',parent=delone_win)
+						messagebox.showinfo('','Booking '+bkgid.get()+' deleted;\nTransaction '+e[bkgid.get()]+' cancelled',parent=delone_win)
 						delone_win.destroy()
 					else:
 						messagebox.showinfo('','Booking '+bkgid.get()+' not deleted.\nThe database has not been modified.',parent=delone_win)
@@ -150,7 +155,7 @@ def bus():	#manage bus bookings
 		img.grid(column=0,row=0,padx=10,pady=10)
 		img.image=img14
 
-		tk.Label(delone_win,text='Delete a bus booking',font=h1fnt).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
+		tk.Label(delone_win,text='Delete bus booking',font=h1fnt).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
 
 		cur.execute('select bkgid from bus_bkgs')
 		d=cur.fetchall()
@@ -158,7 +163,8 @@ def bus():	#manage bus bookings
 		for i in d:
 			bus_bkgid_list.append(str(i[0]))
 
-		tk.Label(delone_win,text='Select the booking to be deleted.',font=fntit).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
+		tk.Label(delone_win,text='Select the booking to be deleted.',font=fntit).grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
+		tk.Label(delone_win,text='NOTE: The corresponding transaction will\nalso be deleted.',font=('Consolas',12,'bold italic'),justify=tk.LEFT).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
 
 		n=tk.StringVar()
 		bkgid=ttk.Combobox(delone_win,textvariable=n,font=fnt,width=19)
@@ -349,6 +355,10 @@ def taxi():	#Manage taxi bookings
 		delone_win=tk.Toplevel()
 		delone_win.resizable(False,False)
 		delone_win.title('Delete taxi booking')
+
+		cur.execute('select bkgid,pay_id from payment_details')
+		e=dict(cur.fetchall())
+
 		def delete_taxi_bkg():
 			if not bkgid.get()=='' and not bkgid.get().isspace():
 				if bkgid.get() in taxi_bkgid_list:
@@ -358,8 +368,10 @@ def taxi():	#Manage taxi bookings
 						sql='delete from taxi_bkgs where bkgid =%s'
 						val=(bkgid.get(),)
 						cur.execute(sql,val)
+						sql2='delete from payment_details where bkgid=%s'
+						cur.execute(sql2,val)
 						con.commit()
-						messagebox.showinfo('','Booking '+bkgid.get()+' deleted.',parent=delone_win)
+						messagebox.showinfo('','Booking '+bkgid.get()+' deleted;\nTransaction '+e[bkgid.get()]+' cancelled',parent=delone_win)
 						delone_win.destroy()
 					else:
 						messagebox.showinfo('','Booking '+bkgid.get()+' not deleted.\nThe database has not been modified.',parent=delone_win)
@@ -381,7 +393,8 @@ def taxi():	#Manage taxi bookings
 		for i in d:
 			taxi_bkgid_list.append(str(i[0]))
 
-		tk.Label(delone_win,text='Select the booking to be deleted.',font=fntit).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
+		tk.Label(delone_win,text='Select the booking to be deleted.',font=fntit).grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
+		tk.Label(delone_win,text='NOTE: The corresponding transaction will\nalso be deleted.',font=('Consolas',12,'bold italic'),justify=tk.LEFT).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
 
 		n=tk.StringVar()
 		bkgid=ttk.Combobox(delone_win,textvariable=n,font=fnt,width=19)
@@ -476,8 +489,8 @@ def payments():	#Manage payment details
 	fntit=('Consolas',12,'italic')
 	h1fnt=('Segoe UI',24)
 
-	managetaxibkgs=tk.Toplevel()
-	managetaxibkgs.title('Transaction Manager')
+	managepayments=tk.Toplevel()
+	managepayments.title('Transaction Manager')
 
 	def viewall():  #View all transactions
 		viewall_win=tk.Toplevel()
@@ -578,17 +591,28 @@ def payments():	#Manage payment details
 		delone_win=tk.Toplevel()
 		delone_win.resizable(False,False)
 		delone_win.title('Cancel transaction')
+		
+		cur.execute('select pay_id,bkgid from payment_details')
+		e=dict(cur.fetchall())
+		
 		def delete_transaction():
 			if not payid.get()=='' and not payid.get().isspace():
 				if payid.get() in payment_id_list:
-					messagebox.showwarning('','This operation will cancel\nthe transaction selected permanently.\nContinue?',parent=delone_win)
+					messagebox.showwarning('','This operation will cancel the transaction selected.\nContinue?',parent=delone_win)
 					confirm=messagebox.askyesno('','Do you wish to cancel the transaction '+payid.get()+'?',parent=delone_win)
 					if confirm == True:
-						sql='delete from payment_details where pay_id =%s'
+						sql='delete from payment_details where pay_id=%s'
 						val=(payid.get(),)
 						cur.execute(sql,val)
+						if e[payid.get()][0]=='B':
+							sql2='delete from bus_bkgs where bkgid=%s'
+						elif e[payid.get()][0]=='T':
+							sql2='delete from taxi_bkgs where bkgid=%s'
+						val2=(e[payid.get()],)
+						cur.execute(sql2,val2)
+						
 						con.commit()
-						messagebox.showinfo('','Transaction '+payid.get()+' cancelled.',parent=delone_win)
+						messagebox.showinfo('','Transaction '+payid.get()+' cancelled;\nBooking '+e[payid.get()]+' cancelled.',parent=delone_win)
 						delone_win.destroy()
 					else:
 						messagebox.showinfo('','Transaction '+payid.get()+' not cancelled.\nThe database has not been modified.',parent=delone_win)
@@ -610,7 +634,8 @@ def payments():	#Manage payment details
 		for i in d:
 			payment_id_list.append(str(i[0]))
 
-		tk.Label(delone_win,text='Select the transaction to be cancelled.',font=fntit).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
+		tk.Label(delone_win,text='Select the transaction to be cancelled.',font=fntit,justify=tk.LEFT).grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
+		tk.Label(delone_win,text='NOTE: The corresponding booking will\nalso be deleted.',font=('Consolas',12,'bold italic'),justify=tk.LEFT).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
 
 		n=tk.StringVar()
 		payid=ttk.Combobox(delone_win,textvariable=n,font=fnt,width=19)
@@ -621,11 +646,11 @@ def payments():	#Manage payment details
 		delbtn.grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
 		delone_win.bind('<Return>',lambda event:delete_transaction())
 
-	tk.Grid.columnconfigure(managetaxibkgs,0,weight=1)
+	tk.Grid.columnconfigure(managepayments,0,weight=1)
 
 	#FRAME 1
-	tk.Grid.rowconfigure(managetaxibkgs,0,weight=1)
-	f1=tk.Frame(managetaxibkgs)
+	tk.Grid.rowconfigure(managepayments,0,weight=1)
+	f1=tk.Frame(managepayments)
 	f1.grid(row=0,column=0,sticky=tk.NSEW)
 
 	#frame 1 grid
@@ -642,8 +667,8 @@ def payments():	#Manage payment details
 	tk.Label(f1,text=('Connected to database: '+con.database),font=('Segoe UI',12),justify=tk.LEFT,fg='green').grid(column=1,row=1,sticky=tk.W,padx=10,pady=10)
 	ttk.Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 	#FRAME 2
-	tk.Grid.rowconfigure(managetaxibkgs,1,weight=1)
-	f2=tk.Frame(managetaxibkgs)
+	tk.Grid.rowconfigure(managepayments,1,weight=1)
+	f2=tk.Frame(managepayments)
 	f2.grid(row=1,column=0,padx=10,pady=10,sticky=tk.NSEW)
 
 	#frame 2 grid
@@ -678,4 +703,4 @@ def payments():	#Manage payment details
 
 	tk.Grid.rowconfigure(f2,16,weight=1)
 	
-	managetaxibkgs.mainloop()
+	managepayments.mainloop()
