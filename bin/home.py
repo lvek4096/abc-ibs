@@ -5,7 +5,7 @@ import os
 import mysql.connector as ms
 from tkinter import scrolledtext
 from tkinter import messagebox
-build='105'		#Program build
+build='125 (Beta III)'		#Program build
 
 disclaimer='''WARNING
 This is pre-release software.
@@ -43,7 +43,6 @@ https://fontawesome.com/icons'''
 #mysql connection
 con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
 cur=con.cursor()
-#print('Connected to database.')
 
 if con.is_connected()==True:
 	dbstatus='Connected to database.'
@@ -54,7 +53,7 @@ else:
 fnt=('IBM Plex Mono',12)
 fntit=('IBM Plex Mono',12,'italic')
 h1fnt=('IBM Plex Sans',24)
-#arfnt=('IBM Plex Sans Arabic',12)
+
 
 #functions
 def book_taxi():	#Opens taxi booking window.
@@ -66,6 +65,7 @@ def book_bus():		#Opens bus booking window
 	os.system('python3 bus.py')
 
 def about():	#System information
+	'''
 	def ee():
 		q_win=tk.Toplevel()
 		q_win.resizable(False,False)
@@ -85,7 +85,7 @@ def about():	#System information
 		tk.Button(q_win,text='Python code',command=anspy,font=fnt).pack()
 
 		tk.Button(q_win,text='C code',command=ansc,font=fnt).pack()
-	
+	'''
 	about=tk.Toplevel()
 	abttitle='About this program on '+pf.system()
 	about.resizable(False, False)
@@ -165,10 +165,12 @@ def about():	#System information
 	cls.grid(column=1,row=25,padx=10,pady=10)
 	cls.image=img1
 
+	'''
 	img2=tk.PhotoImage(file='monoico/icon-80.png')
 	q=tk.Button(about,font=fnt,text='EE',image=img2,command=ee)
 	q.grid(column=1,row=26,padx=10,pady=10)
 	q.image=img2
+	'''
 
 def logout():	#Logs out and returns to the start page.
 	main_menu.destroy()
@@ -176,46 +178,63 @@ def logout():	#Logs out and returns to the start page.
 
 main_menu=tk.Tk()
 main_menu.title('Main Menu')
-main_menu.resizable(False, False)
+#main_menu.resizable(False, False)
 
-tk.Label(main_menu,text=('Welcome'),font=h1fnt).grid(column=1,row=0,padx=10,sticky=tk.W)
+tk.Grid.columnconfigure(main_menu,0,weight=1)
 
-tk.Label(main_menu,text=('You can:'),font=fntit).grid(column=1,row=2,padx=10,sticky=tk.W)
-		
+#FRAME 1
+tk.Grid.rowconfigure(main_menu,0,weight=1)
+f1=tk.Frame(main_menu)
+f1.grid(row=0,column=0,sticky=tk.NSEW)
+
+#frame 1 grid
+tk.Grid.columnconfigure(f1,0,weight=1)
+
+tk.Grid.rowconfigure(f1,0,weight=1)
+tk.Label(f1,text='Welcome',font=h1fnt).grid(column=0,row=0)
+
+#FRAME 2
+tk.Grid.rowconfigure(main_menu,1,weight=1)
+f2=tk.Frame(main_menu)
+f2.grid(row=1,column=0,padx=10,pady=10,sticky=tk.NSEW)
+
+#frame 2 grid
+tk.Grid.columnconfigure(f2,0,weight=1)
+tk.Grid.columnconfigure(f2,1,weight=1)
+tk.Grid.columnconfigure(f2,2,weight=1)
+tk.Grid.columnconfigure(f2,3,weight=1)
+
+tk.Grid.rowconfigure(f2,2,weight=1)
+tk.Label(f2,text=('You can:'),font=fntit).grid(column=1,row=2,padx=10,sticky=tk.W)
+
+#tk.Grid.rowconfigure(f2,5,weight=1)
 img6=tk.PhotoImage(file='monoico/icon-827.png')
-bkgbtn=tk.Button(main_menu,text='Book taxi',image=img6,font=fnt,command=book_taxi)
-bkgbtn.grid(column=0,row=5,padx=10,pady=10)
-tk.Label(main_menu,text='Book a taxi.',font=fnt,bg='yellow').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
-		
+bkgbtn=tk.Button(f2,text='Book taxi',image=img6,font=fnt,command=book_taxi)
+bkgbtn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
+tk.Label(f2,text='Book a taxi.',font=fnt,bg='yellow').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
+	
 img4=tk.PhotoImage(file='monoico/icon-828.png')
-passbtn=tk.Button(main_menu,text='Book Bus',image=img4,command=book_bus)
-passbtn.grid(column=2,row=5,padx=10,pady=10)
-tk.Label(main_menu,text='Book a bus.',font=fnt,fg='blue').grid(column=3,row=5,padx=5,pady=10,sticky=tk.W)
+passbtn=tk.Button(f2,text='Book Bus',image=img4,command=book_bus)
+passbtn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
+tk.Label(f2,text='Book a bus.',font=fnt,fg='blue').grid(column=3,row=5,padx=5,pady=10,sticky=tk.W)
 
-tk.Label(main_menu,text=('or:'),font=fntit).grid(column=1,row=9,padx=10,sticky=tk.W)
-
-def manage_user():
-	main_menu.destroy()
-	os.system('python3 manageusers.py')
-
-img10=tk.PhotoImage(file='monoico/icon-514.png')
-passbtn=tk.Button(main_menu,text='Profile',image=img10,command=manage_user)
-passbtn.grid(column=0,row=10,padx=10,pady=10)
-tk.Label(main_menu,text='Manage user profile.',font=fnt).grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
+tk.Grid.rowconfigure(f2,9,weight=1)
+tk.Label(f2,text=('or:'),font=fntit).grid(column=1,row=9,padx=10,sticky=tk.W)
 
 img7=tk.PhotoImage(file='monoico/icon-670.png')
-logoutbtn=tk.Button(main_menu,text='Logout',font=fnt,image=img7,command=logout)
-logoutbtn.grid(column=0,row=11,padx=10,pady=10)
-tk.Label(main_menu,text='Logout',font=fnt).grid(column=1,row=11,padx=10,pady=10,sticky=tk.W)
+logoutbtn=tk.Button(f2,text='Logout',font=fnt,image=img7,command=logout)
+logoutbtn.grid(column=0,row=11,padx=10,pady=10,sticky=tk.E)
+tk.Label(f2,text='Logout',font=fnt).grid(column=1,row=11,padx=10,pady=10,sticky=tk.W)
 
 img8=tk.PhotoImage(file='monoico/icon-66.png')
-exitbtn=tk.Button(main_menu,text='Logout and exit',font=fnt,image=img8,command=main_menu.destroy)
-exitbtn.grid(column=2,row=11,padx=10,pady=10)
-tk.Label(main_menu,text='Logout and exit',font=fnt,fg='red').grid(column=3,row=11,padx=10,pady=10,sticky=tk.W)
+exitbtn=tk.Button(f2,text='Logout and exit',font=fnt,image=img8,command=main_menu.destroy)
+exitbtn.grid(column=2,row=11,padx=10,pady=10,sticky=tk.E)
+tk.Label(f2,text='Logout and exit',font=fnt,fg='red').grid(column=3,row=11,padx=10,pady=10,sticky=tk.W)
 
-tk.Label(main_menu,text=('Know more about\nthis program.'),font=fntit,fg='green',justify=tk.LEFT).grid(column=3,row=12,padx=10,pady=10)
+tk.Grid.rowconfigure(f2,12,weight=1)
+#tk.Label(f2,text=('Know more about\nthis program.'),font=fntit,fg='green',justify=tk.LEFT).grid(column=3,row=12,padx=10,pady=10,sticky=tk.W)
 img0=tk.PhotoImage(file='monoico/icon-78.png')
-infobtn=tk.Button(main_menu,font=fnt,text='About this program...',image=img0,command=about)
-infobtn.grid(column=2,row=12,padx=10,pady=10)
-tk.Label(main_menu,text=('Build '+build+' on\n'+pf.system()+' '+pf.release()),font=fntit,justify=tk.RIGHT).grid(column=1,row=12,padx=10,pady=10)
-main_menu.mainloop()
+infobtn=tk.Button(f2,font=fnt,text='About this program...',image=img0,command=about)
+infobtn.grid(column=2,row=12,padx=10,pady=10,sticky=tk.E)
+tk.Label(f2,text=('Build '+build+' on\n'+pf.system()+' '+pf.release()),font=fntit,justify=tk.LEFT,fg='green').grid(column=3,row=12,padx=10,pady=10,sticky=tk.W)
+f2.mainloop()

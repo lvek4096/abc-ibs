@@ -10,14 +10,15 @@ cur=con.cursor()
 #init GUI
 logwin=tk.Tk()
 logwin.title('Manage your profile...')
+#logwin.resizable(False,False)
 fnt=('IBM Plex Mono',12)
 fntit=('IBM Plex Mono',12,'italic')
 h1fnt=('IBM Plex Sans',24)
-logwin.resizable(False, False)
 
 def main_login():
 	logwin.destroy()
 	os.system('python3 userlogin.py')
+
 
 def onlogin():
 	def manage():
@@ -89,7 +90,7 @@ def onlogin():
 			passwin.title('Change Password')
 			passwin.resizable(False,False)
 
-			tk.Label(passwin,text='Changing password for '+uname_inp,font=('IBM Plex Sans',18)).grid(column=1,row=0,padx=10,pady=10)
+			tk.Label(passwin,text='Changing password for '+fnamelist[uname_inp],font=('IBM Plex Sans',18)).grid(column=1,row=0,padx=10,pady=10)
 
 			tk.Label(passwin,text='Current Password',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
 			old_pass=tk.Entry(passwin,show='*',font=fnt);old_pass.grid(column=1,row=5,sticky=tk.EW,padx=10,pady=10)
@@ -114,45 +115,84 @@ def onlogin():
 		def logout():
 			manage_userswin.destroy()
 			os.system('python3 start.py')
+		
+		def chinfo():
+			pass
+
 		cur.execute('select uname,uuid from users')
 		uuidlist=dict(cur.fetchall())
-
+		cur.execute('select uname,fname from users')
+		fnamelist=dict(cur.fetchall())
+		
 		logwin.destroy()
+
 		manage_userswin=tk.Tk()
-		manage_userswin.title('Manage User')
-		manage_userswin.resizable(False, False)
-		tk.Label(manage_userswin,text=('Welcome, '+uname_inp),font=h1fnt).grid(column=1,row=0,padx=10,sticky=tk.W)
-		tk.Label(manage_userswin,text=('ID: '+uuidlist[uname_inp]),font=('IBM Plex Sans',12)).grid(column=1,row=1,padx=10,sticky=tk.W)
+		manage_userswin.title('Manage your profile')
+		
+		tk.Grid.columnconfigure(manage_userswin,0,weight=1)
+		
+		#FRAME 1
+		tk.Grid.rowconfigure(manage_userswin,0,weight=1)
+		f1=tk.Frame(manage_userswin)
+		f1.grid(row=0,column=0,sticky=tk.NSEW)
 
-		tk.Label(manage_userswin,text=('You can:'),font=fntit).grid(column=1,row=2,padx=10,pady=10,sticky=tk.W)
+		#frame 1 grid
+		tk.Grid.columnconfigure(f1,0,weight=1)
 		
+		tk.Grid.rowconfigure(f1,0,weight=1)
+		tk.Label(f1,text=('Welcome, '+fnamelist[uname_inp]),font=h1fnt).grid(column=0,row=0,padx=10,sticky=tk.EW)
+		tk.Label(f1,text=('ID: '+uuidlist[uname_inp]),font=('IBM Plex Sans',12)).grid(column=0,row=1,padx=10,sticky=tk.EW)
+
+		#FRAME 2
+		tk.Grid.rowconfigure(manage_userswin,1,weight=1)
+		f2=tk.Frame(manage_userswin)
+		f2.grid(row=1,column=0,padx=10,pady=10,sticky=tk.NSEW)
+
+		#frame 2 grid
+		tk.Grid.columnconfigure(f2,0,weight=1)
+		tk.Grid.columnconfigure(f2,1,weight=1)
+		tk.Grid.columnconfigure(f2,2,weight=1)
+		tk.Grid.columnconfigure(f2,3,weight=1)
+
+		tk.Grid.rowconfigure(f2,2,weight=1)
+		tk.Label(f2,text=('You can:'),font=fntit).grid(column=1,row=2,padx=10,pady=10,sticky=tk.W)
 		
+		#tk.Grid.rowconfigure(f2,5,weight=1)
 		img4=tk.PhotoImage(file='monoico/icon-79.png')
-		passbtn=tk.Button(manage_userswin,text='Change Password',image=img4,command=passwd)
-		passbtn.grid(column=0,row=5,padx=10,pady=10)
-		tk.Label(manage_userswin,text='Change your password.',font=fnt).grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
+		passbtn=tk.Button(f2,text='Change Password',image=img4,command=passwd)
+		passbtn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
+		tk.Label(f2,text='Change your password.',font=fnt).grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 
+		img9=tk.PhotoImage(file='monoico/icon-86.png')
+		delusrbtn=tk.Button(f2,text='Manage Personal Info',image=img9,command=chinfo)
+		delusrbtn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
+		tk.Label(f2,text='Change personal information.',font=fnt,justify=tk.LEFT).grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
+
+		#tk.Grid.rowconfigure(f2,6,weight=1)
 		img3=tk.PhotoImage(file='monoico/icon-722.png')
-		delusrbtn=tk.Button(manage_userswin,text='Remove User',image=img3,command=delete)
-		delusrbtn.grid(column=2,row=5,padx=10,pady=10)
-		tk.Label(manage_userswin,text='Delete your profile.',font=fnt,fg='red').grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
+		delusrbtn=tk.Button(f2,text='Remove User',image=img3,command=delete)
+		delusrbtn.grid(column=0,row=6,padx=10,pady=10,sticky=tk.E)
+		tk.Label(f2,text='Delete your profile.',font=fnt,fg='red').grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
 		
-		tk.Label(manage_userswin,text=('or:'),font=fntit).grid(column=1,row=9,padx=10,sticky=tk.W)
+		tk.Grid.rowconfigure(f2,9,weight=1)
+		tk.Label(f2,text=('or:'),font=fntit).grid(column=1,row=9,padx=10,sticky=tk.W)
 
+		#tk.Grid.rowconfigure(f2,10,weight=1)
 		img6=tk.PhotoImage(file='monoico/icon-693.png')
-		bkgbtn=tk.Button(manage_userswin,text='Make a booking',image=img6,font=fnt,command=booking)
-		bkgbtn.grid(column=0,row=10,padx=10,pady=10)
-		tk.Label(manage_userswin,text='Make a booking.',font=fnt,fg='green').grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
+		bkgbtn=tk.Button(f2,text='Make a booking',image=img6,font=fnt,command=booking)
+		bkgbtn.grid(column=0,row=10,padx=10,pady=10,sticky=tk.E)
+		tk.Label(f2,text='Make a booking.',font=fnt,fg='green').grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
 
+		tk.Grid.rowconfigure(f2,11,weight=1)
 		img7=tk.PhotoImage(file='monoico/icon-670.png')
-		logoutbtn=tk.Button(manage_userswin,text='Logout',font=fnt,image=img7,command=logout)
-		logoutbtn.grid(column=0,row=11,padx=10,pady=10)
-		tk.Label(manage_userswin,text='Logout',font=fnt).grid(column=1,row=11,padx=10,pady=10,sticky=tk.W)
+		logoutbtn=tk.Button(f2,text='Logout',font=fnt,image=img7,command=logout)
+		logoutbtn.grid(column=0,row=11,padx=10,pady=10,sticky=tk.E)
+		tk.Label(f2,text='Logout',font=fnt).grid(column=1,row=11,padx=10,pady=10,sticky=tk.W)
 
 		img8=tk.PhotoImage(file='monoico/icon-66.png')
-		exitbtn=tk.Button(manage_userswin,text='Logout and exit',font=fnt,image=img8,command=manage_userswin.destroy)
-		exitbtn.grid(column=2,row=11,padx=10,pady=10)
-		tk.Label(manage_userswin,text='Logout and exit',font=fnt,fg='red').grid(column=3,row=11,padx=10,pady=10,sticky=tk.W)
+		exitbtn=tk.Button(f2,text='Logout and exit',font=fnt,image=img8,command=manage_userswin.destroy)
+		exitbtn.grid(column=2,row=11,padx=10,pady=10,sticky=tk.E)
+		tk.Label(f2,text='Logout and exit',font=fnt,fg='red').grid(column=3,row=11,padx=10,pady=10,sticky=tk.W)
 		
 		manage_userswin.mainloop()
 
@@ -161,29 +201,56 @@ def onlogin():
 	cur.execute('select uname,passwd from users')
 	op=dict(cur.fetchall())
 
+	cur.execute('select uname,fname from users')
+	fnamelist=dict(cur.fetchall())
+
 	if uname_inp not in op.keys():
-		messagebox.showerror('Error','Username '+uname_inp+' does not exist.')
+		messagebox.showerror('Error','Username \''+uname_inp+'\' does not exist.')
 	else:
 		if not passwd_inp == op[uname_inp]:
-			messagebox.showerror('Error','Invalid password entered for '+uname_inp+'.')
+			messagebox.showerror('Error','Invalid password entered for '+fnamelist[uname_inp]+'.')
 		else:
 			manage()
 
-tk.Label(logwin,text='Login',font=h1fnt).grid(column=1,row=0)
+tk.Grid.columnconfigure(logwin,0,weight=1)
 
-tk.Label(logwin,text='Username',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
-login_uname=tk.Entry(logwin,font=fnt)
-login_uname.grid(column=1,row=3,sticky=tk.EW,padx=10,pady=10)
+#FRAME 3
+tk.Grid.rowconfigure(logwin,0,weight=1)
+f3=tk.Frame(logwin)
+f3.grid(row=0,column=0,sticky=tk.NSEW)
 
-tk.Label(logwin,text='Password',font=fnt).grid(column=0,row=4,sticky=tk.E,padx=10,pady=10)
-login_passwd=tk.Entry(logwin,show='*',font=fnt)
-login_passwd.grid(column=1,row=4,sticky=tk.EW,padx=10,pady=10)
+#frame 3 grid
+tk.Grid.columnconfigure(f3,0,weight=1)
 
+tk.Grid.rowconfigure(f3,0,weight=1)
+tk.Label(logwin,text='Login',font=h1fnt).grid(column=0,row=0)
+
+#FRAME 4
+tk.Grid.rowconfigure(logwin,1,weight=1)
+f4=tk.Frame(logwin)
+f4.grid(row=1,column=0,sticky=tk.NSEW,padx=10,pady=10)
+
+#frame 4 grid
+tk.Grid.columnconfigure(f4,0,weight=1)
+tk.Grid.columnconfigure(f4,1,weight=1)
+
+#tk.Grid.rowconfigure(f4,3,weight=1)
+tk.Label(f4,text='Username',font=fnt).grid(column=0,row=3,padx=10,pady=10,sticky=tk.E)
+login_uname=tk.Entry(f4,font=fnt)
+login_uname.grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
+
+#tk.Grid.rowconfigure(f4,4,weight=1)
+tk.Label(f4,text='Password',font=fnt,justify=tk.CENTER).grid(column=0,row=4,padx=10,pady=10,sticky=tk.E)
+login_passwd=tk.Entry(f4,show='*',font=fnt)
+login_passwd.grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
+
+#tk.Grid.rowconfigure(f4,5,weight=1)
 img1=tk.PhotoImage(file='monoico/icon-669.png')
-logsubmit=tk.Button(logwin,text='Login...',image=img1,command=onlogin)
-logsubmit.grid(column=1,row=5,padx=10,pady=10)
+logsubmit=tk.Button(f4,text='Login...',image=img1,command=onlogin)
+logsubmit.grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 
-reg=tk.Button(logwin,text='Login or register...',font=fntit,command=main_login)
-reg.grid(column=1,row=6,padx=10,pady=10)
+tk.Grid.rowconfigure(f4,6,weight=1)
+reg=tk.Button(f4,text='Login or register...',font=fntit,command=main_login)
+reg.grid(column=1,row=6,padx=10,pady=1,sticky=tk.W)
 
 logwin.mainloop()

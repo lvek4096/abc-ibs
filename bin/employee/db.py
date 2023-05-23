@@ -14,8 +14,8 @@ fntit=('IBM Plex Mono',12,'italic')
 h1fnt=('IBM Plex Sans',24)
 
 dbmainwin=tk.Tk()
-dbmainwin.title('Database')
-dbmainwin.resizable(False,False)
+dbmainwin.title('Database Manager')
+#dbmainwin.resizable(False,False)
 
 def showtb():
 
@@ -87,49 +87,81 @@ def deltb():
 	else:
 		messagebox.showerror('Error','Please choose a table.',parent=dbmainwin)
 
+tk.Grid.columnconfigure(dbmainwin,0,weight=1)
+
+#FRAME 1
+tk.Grid.rowconfigure(dbmainwin,0,weight=1)
+f1=tk.Frame(dbmainwin)
+f1.grid(row=0,column=0,sticky=tk.NSEW)
+
+#frame 1 grid
+tk.Grid.columnconfigure(f1,0,weight=1)
+tk.Grid.columnconfigure(f1,1,weight=1)
+
+tk.Grid.rowconfigure(f1,0,weight=1)
 img6=tk.PhotoImage(file='monoico/icon-829.png')
-tk.Label(dbmainwin,image=img6).grid(column=0,row=0,padx=10,pady=10)
-tk.Label(dbmainwin,text=('View database'),font=h1fnt).grid(column=1,row=0,sticky=tk.W,padx=10,pady=10)
+tk.Label(f1,image=img6).grid(column=0,row=0,padx=10,pady=10,sticky=tk.E)
+tk.Label(f1,text=('Manage the databases...'),font=h1fnt).grid(column=1,row=0,sticky=tk.W,padx=10,pady=10)
+tk.Grid.rowconfigure(f1,1,weight=1)
+tk.Label(f1,text=('Connected to database: '+con.database),font=('IBM Plex Sans',12),justify=tk.LEFT,fg='green').grid(column=1,row=3,sticky=tk.W,padx=10,pady=1)
 
-tk.Label(dbmainwin,text=('Connected to database: '+con.database),font=('IBM Plex Sans',12),justify=tk.LEFT,fg='green').grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
+#FRAME 2
+tk.Grid.rowconfigure(dbmainwin,1,weight=1)
+f2=tk.Frame(dbmainwin)
+f2.grid(row=1,column=0,padx=10,pady=10,sticky=tk.NSEW)
 
-tk.Label(dbmainwin,text='Choose a table.',font=fntit,justify=tk.LEFT).grid(column=1,row=4,sticky=tk.W,padx=10,pady=10)
+#frame 2 grid
+tk.Grid.columnconfigure(f2,0,weight=1)
+tk.Grid.columnconfigure(f2,1,weight=1)
+tk.Grid.columnconfigure(f2,2,weight=1)
+tk.Grid.columnconfigure(f2,3,weight=1)
+
+#tk.Grid.rowconfigure(f2,4,weight=1)
+tk.Label(f2,text='Choose a table.',font=fntit,justify=tk.LEFT).grid(column=1,row=4,sticky=tk.W,padx=10,pady=10)
 img7=tk.PhotoImage(file='monoico/icon-830.png')
-tk.Label(dbmainwin,image=img7).grid(column=0,row=4,sticky=tk.E,padx=10,pady=10)
+tk.Label(f2,image=img7).grid(column=0,row=4,sticky=tk.E,padx=10,pady=10)
+
+#tk.Grid.rowconfigure(f2,5,weight=1)
 n=tk.StringVar()
-table=ttk.Combobox(dbmainwin,textvariable=n,font=fnt)
+table=ttk.Combobox(f2,textvariable=n,font=fnt)
 table.grid(row=5,column=1,padx=10,pady=10,sticky=tk.EW)
 table['values']=b
 
-tk.Label(dbmainwin,text='You can:',font=fntit,justify=tk.LEFT).grid(column=1,row=6,sticky=tk.W,padx=10,pady=10)
+tk.Grid.rowconfigure(f2,6,weight=1)
+tk.Label(f2,text='You can:',font=fntit,justify=tk.LEFT).grid(column=1,row=6,sticky=tk.W,padx=10,pady=10)
 
+#tk.Grid.rowconfigure(f2,7,weight=1)
 img8=tk.PhotoImage(file='monoico/icon-758.png')
-tbviewbtn=tk.Button(dbmainwin,text='viewtable',image=img8,font=fnt,command=showtb)
-tbviewbtn.grid(column=0,row=7,padx=10,pady=10)
-tk.Label(dbmainwin,text='View the table.',font=fnt,fg='blue').grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
+tbviewbtn=tk.Button(f2,text='viewtable',image=img8,font=fnt,command=showtb)
+tbviewbtn.grid(column=0,row=7,padx=10,pady=10,sticky=tk.E)
+tk.Label(f2,text='View the table.',font=fnt,fg='blue').grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
 
+#tk.Grid.rowconfigure(f2,8,weight=1)
 img10=tk.PhotoImage(file='monoico/icon-321.png')
-deltbbtn=tk.Button(dbmainwin,text='deltable',image=img10,font=fnt,command=deltb)
-deltbbtn.grid(column=0,row=8,padx=10,pady=10)
-tk.Label(dbmainwin,text='Delete all the contents\nof the table.',font=fnt,justify=tk.LEFT).grid(column=1,row=8,padx=10,pady=10,sticky=tk.W)
-tk.Message(dbmainwin,text='WARNING:\nThis will delete all the contents of the table chosen permanently.',font=fnt,fg='white',bg='orange').grid(column=1,row=9,padx=10,sticky=tk.W)
+deltbbtn=tk.Button(f2,text='deltable',image=img10,font=fnt,command=deltb)
+deltbbtn.grid(column=0,row=8,padx=10,pady=10,sticky=tk.E)
+tk.Label(f2,text='Delete all the contents\nof the table.',font=fnt,justify=tk.LEFT).grid(column=1,row=8,padx=10,pady=10,sticky=tk.W)
+#tk.Grid.rowconfigure(f2,9,weight=1)
+tk.Message(f2,text='WARNING:\nThis will delete all the contents of the table chosen permanently.',font=fnt,fg='white',bg='orange').grid(column=1,row=9,padx=10,sticky=tk.NW)
 
 img11=tk.PhotoImage(file='monoico/icon-598.png')
-deltbbtn=tk.Button(dbmainwin,text='droptable',image=img11,font=fnt,command=droptb)
-deltbbtn.grid(column=2,row=8,padx=10,pady=10)
-tk.Label(dbmainwin,text='Drop the table.',font=fnt,fg='red').grid(column=3,row=8,padx=10,pady=10,sticky=tk.W)
-tk.Message(dbmainwin,text='WARNING:\nThis will drop the table chosen\nand its contents permanently.',font=fnt,fg='white',bg='red').grid(column=3,row=9,padx=10,sticky=tk.W)
+deltbbtn=tk.Button(f2,text='droptable',image=img11,font=fnt,command=droptb)
+deltbbtn.grid(column=2,row=8,padx=10,pady=10,sticky=tk.E)
+tk.Label(f2,text='Drop the table.',font=fnt,fg='red').grid(column=3,row=8,padx=10,pady=10,sticky=tk.W)
+#tk.Grid.rowconfigure(f2,9,weight=1)
+tk.Message(f2,text='WARNING:\nThis will drop the table chosen\nand its contents permanently.',font=fnt,fg='white',bg='red').grid(column=3,row=9,padx=10,sticky=tk.NW)
 
 def home():
 	dbmainwin.destroy()
 	os.system('python3 admin.py')
+tk.Grid.rowconfigure(f2,15,weight=1)
+tk.Label(f2,text='or',font=fntit,justify=tk.LEFT).grid(column=1,row=15,sticky=tk.W,padx=10,pady=10)
 
-tk.Label(dbmainwin,text='or',font=fntit,justify=tk.LEFT).grid(column=1,row=15,sticky=tk.W,padx=10,pady=10)
-
+tk.Grid.rowconfigure(f2,16,weight=1)
 img9=tk.PhotoImage(file='monoico/icon-714.png')
-bkgbtn=tk.Button(dbmainwin,text='exit',image=img9,font=fnt,command=home)
-bkgbtn.grid(column=0,row=16,padx=10,pady=10)
-tk.Label(dbmainwin,text='Return home.',font=fnt).grid(column=1,row=16,padx=10,pady=10,sticky=tk.W)
+bkgbtn=tk.Button(f2,text='exit',image=img9,font=fnt,command=home)
+bkgbtn.grid(column=0,row=16,padx=10,pady=10,sticky=tk.E)
+tk.Label(f2,text='Return home.',font=fnt).grid(column=1,row=16,padx=10,pady=10,sticky=tk.W)
 
 def help():
 	helpwin=tk.Toplevel()
@@ -157,8 +189,8 @@ database along with its contents.'''
 	a.configure(state='disabled')
 
 img12=tk.PhotoImage(file='monoico/icon-595.png')
-bkgbtn=tk.Button(dbmainwin,text='help',image=img12,font=fnt,command=help)
-bkgbtn.grid(column=2,row=16,padx=10,pady=10)
-tk.Label(dbmainwin,text='Know the difference\nbetween DELETE FROM and DROP.',font=fnt,justify=tk.LEFT).grid(column=3,row=16,padx=10,pady=10,sticky=tk.W)
+bkgbtn=tk.Button(f2,text='help',image=img12,font=fnt,command=help)
+bkgbtn.grid(column=2,row=16,padx=10,pady=10,sticky=tk.E)
+tk.Label(f2,text='Know the difference\nbetween DELETE FROM and DROP.',font=fnt,justify=tk.LEFT).grid(column=3,row=16,padx=10,pady=10,sticky=tk.W)
 
 dbmainwin.mainloop()

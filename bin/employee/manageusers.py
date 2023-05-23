@@ -12,9 +12,9 @@ fnt=('IBM Plex Mono',12)
 fntit=('IBM Plex Mono',12,'italic')
 h1fnt=('IBM Plex Sans',24)
 
-manageempwin=tk.Tk()
-manageempwin.title('Manage users')
-manageempwin.resizable(False,False)
+manageuserwin=tk.Tk()
+manageuserwin.title('Manage users')
+#manageuserwin.resizable(False,False)
 
 def viewall():
 	viewall_win=tk.Toplevel()
@@ -130,7 +130,7 @@ def delone():
 					con.commit()
 					messagebox.showinfo('','User '+uname.get()+' deleted.',parent=delone_win)
 				else:
-					messagebox.showinfo('','User '+uname.get()+' not deleted. The database\nhas not been modified.',parent=delone_win)
+					messagebox.showinfo('','User '+uname.get()+' not deleted.\nThe database has not been modified.',parent=delone_win)
 			else:
 				messagebox.showerror('Error','Username \''+uname.get()+'\' does not exist.',parent=delone_win)
 		else:
@@ -158,7 +158,6 @@ def delone():
 	uname=ttk.Combobox(delone_win,textvariable=n,font=fnt,width=19)
 	uname.grid(column=1,row=5,sticky=tk.EW,padx=10,pady=10)
 	uname['values']=c
-	uname.current(0)
 
 	img13=tk.PhotoImage(file='monoico/icon-694.png')
 	delbtn=tk.Button(delone_win,text='del',image=img13,font=fnt,command=deleteemp)
@@ -277,50 +276,79 @@ def add():
 	exitbtn.grid(column=0,row=15,padx=10,pady=10,sticky=tk.SW)
 	exitbtn.image=exitimg
 
+tk.Grid.columnconfigure(manageuserwin,0,weight=1)
+
+#FRAME 1
+tk.Grid.rowconfigure(manageuserwin,0,weight=1)
+f1=tk.Frame(manageuserwin)
+f1.grid(row=0,column=0,sticky=tk.NSEW)
+
+#frame 1 grid
+tk.Grid.columnconfigure(f1,0,weight=1)
+tk.Grid.columnconfigure(f1,1,weight=1)
+
+tk.Grid.rowconfigure(f1,0,weight=1)
 img6=tk.PhotoImage(file='monoico/icon-675.png')
-tk.Label(manageempwin,image=img6).grid(column=0,row=0,sticky=tk.E,padx=10,pady=10)
-tk.Label(manageempwin,text=('Manage users'),font=h1fnt).grid(column=1,row=0,sticky=tk.W,padx=10,pady=10)
+tk.Label(f1,image=img6).grid(column=0,row=0,sticky=tk.E,padx=10,pady=10)
+tk.Label(f1,text=('Manage the users...'),font=h1fnt).grid(column=1,row=0,sticky=tk.W,padx=10,pady=10)
+#tk.Grid.rowconfigure(f1,1,weight=1)
+tk.Label(f1,text=('Connected to database: '+con.database),font=('IBM Plex Sans',12),justify=tk.LEFT,fg='green').grid(column=1,row=1,sticky=tk.W,padx=10,pady=10)
 
-tk.Label(manageempwin,text=('Connected to database: '+con.database),font=('IBM Plex Sans',12),justify=tk.LEFT,fg='green').grid(column=1,row=2,sticky=tk.W,padx=10,pady=10)
+#FRAME 2
+tk.Grid.rowconfigure(manageuserwin,1,weight=1)
+f2=tk.Frame(manageuserwin)
+f2.grid(row=1,column=0,padx=10,pady=10,sticky=tk.NSEW)
 
-tk.Label(manageempwin,text='You can:',font=fntit,justify=tk.LEFT).grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
+#frame 2 grid
+tk.Grid.columnconfigure(f2,0,weight=1)
+tk.Grid.columnconfigure(f2,1,weight=1)
+tk.Grid.columnconfigure(f2,2,weight=1)
+tk.Grid.columnconfigure(f2,3,weight=1)
 
+tk.Grid.rowconfigure(f2,3,weight=1)
+tk.Label(f2,text='You can:',font=fntit,justify=tk.LEFT).grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
+
+#tk.Grid.rowconfigure(f2,5,weight=1)
 img8=tk.PhotoImage(file='monoico/icon-675.png')
-tbviewbtn=tk.Button(manageempwin,text='view all',image=img8,font=fnt,command=viewall)
-tbviewbtn.grid(column=0,row=5,padx=10,pady=10)
-tk.Label(manageempwin,text='View all user details.',font=fnt,fg='blue').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
+tbviewbtn=tk.Button(f2,text='view all',image=img8,font=fnt,command=viewall)
+tbviewbtn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
+tk.Label(f2,text='View all user details.',font=fnt,fg='blue').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 
 img10=tk.PhotoImage(file='monoico/icon-666.png')
-viewbtn=tk.Button(manageempwin,text='viewone',image=img10,font=fnt,command=viewone)
-viewbtn.grid(column=2,row=5,padx=10,pady=10)
-tk.Label(manageempwin,text='View a single user\'s details.',font=fnt).grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
+viewbtn=tk.Button(f2,text='viewone',image=img10,font=fnt,command=viewone)
+viewbtn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
+tk.Label(f2,text='View a single user\'s details.',font=fnt).grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
 
+#tk.Grid.rowconfigure(f2,6,weight=1)
 img7=tk.PhotoImage(file='monoico/icon-67.png')
-tbviewbtn=tk.Button(manageempwin,text='add',image=img7,font=fnt,command=add)
-tbviewbtn.grid(column=0,row=6,padx=10,pady=10)
-tk.Label(manageempwin,text='Add a user.',font=fnt,fg='green').grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
+tbviewbtn=tk.Button(f2,text='add',image=img7,font=fnt,command=add)
+tbviewbtn.grid(column=0,row=6,padx=10,pady=10,sticky=tk.E)
+tk.Label(f2,text='Add a user.',font=fnt,fg='green').grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
 
 img11=tk.PhotoImage(file='monoico/icon-79.png')
-passbtn=tk.Button(manageempwin,text='passwd',image=img11,font=fnt,command=passwd)
-passbtn.grid(column=2,row=6,padx=10,pady=10)
-tk.Label(manageempwin,text='Change the password for a user.',font=fnt).grid(column=3,row=6,padx=10,pady=10,sticky=tk.W)
+passbtn=tk.Button(f2,text='passwd',image=img11,font=fnt,command=passwd)
+passbtn.grid(column=2,row=6,padx=10,pady=10,sticky=tk.E)
+tk.Label(f2,text='Change the password for a user.',font=fnt).grid(column=3,row=6,padx=10,pady=10,sticky=tk.W)
 
+#tk.Grid.rowconfigure(f2,7,weight=1)
 img12=tk.PhotoImage(file='monoico/icon-76.png')
-delbtn=tk.Button(manageempwin,text='del',image=img12,font=fnt,command=delone)
-delbtn.grid(column=0,row=7,padx=10,pady=10)
-tk.Label(manageempwin,text='Delete a user.',font=fnt,fg='red').grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
-tk.Message(manageempwin,text='WARNING: This will delete\na user\'s profile\nfrom the system permanently.',width=500,font=fnt,fg='white',bg='red').grid(column=1,row=8,padx=10,pady=10,sticky=tk.W)
+delbtn=tk.Button(f2,text='del',image=img12,font=fnt,command=delone)
+delbtn.grid(column=0,row=7,padx=10,pady=10,sticky=tk.E)
+tk.Label(f2,text='Delete a user.',font=fnt,fg='red').grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
+#tk.Grid.rowconfigure(f2,8,weight=1)
+tk.Message(f2,text='WARNING: This will delete\na user\'s profile\nfrom the system permanently.',width=500,font=fnt,fg='white',bg='red').grid(column=1,row=8,padx=10,pady=10,sticky=tk.NW)
 
 def home():
-	manageempwin.destroy()
+	manageuserwin.destroy()
 	os.system('python3 admin.py')
+tk.Grid.rowconfigure(f2,15,weight=1)
+tk.Label(f2,text='or:',font=fntit,justify=tk.LEFT).grid(column=1,row=15,sticky=tk.W,padx=10,pady=10)
 
-tk.Label(manageempwin,text='or:',font=fntit,justify=tk.LEFT).grid(column=1,row=15,sticky=tk.W,padx=10,pady=10)
-
+tk.Grid.rowconfigure(f2,16,weight=1)
 img9=tk.PhotoImage(file='monoico/icon-714.png')
-bkgbtn=tk.Button(manageempwin,text='exit',image=img9,font=fnt,command=home)
-bkgbtn.grid(column=0,row=16,padx=10,pady=10)
-tk.Label(manageempwin,text='Return home.',font=fnt).grid(column=1,row=16,padx=10,pady=10,sticky=tk.W)
+bkgbtn=tk.Button(f2,text='exit',image=img9,font=fnt,command=home)
+bkgbtn.grid(column=0,row=16,padx=10,pady=10,sticky=tk.E)
+tk.Label(f2,text='Return home.',font=fnt).grid(column=1,row=16,padx=10,pady=10,sticky=tk.W)
 
 
-manageempwin.mainloop()
+manageuserwin.mainloop()
