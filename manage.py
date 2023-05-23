@@ -861,22 +861,25 @@ def manage_users():	#Manage users
 		delone_win=tk.Toplevel()
 		delone_win.resizable(False,False)
 		delone_win.title('Delete user')
+		cur.execute('select uname,fname from users')
+		a=cur.fetchall()
+		user_namelist=dict(a)
 
 		def delete_user(): #deletes user from DB.
 			
 			if not uname.get()=='' and not uname.get().isspace():
 				if uname.get() in users_list:
 					messagebox.showwarning('','This operation will delete\nthe user permanently.\nContinue?',parent=delone_win)
-					confirm=messagebox.askyesno('','Do you wish to delete the user '+uname.get()+'?',parent=delone_win)
+					confirm=messagebox.askyesno('','Do you wish to delete the user '+user_namelist[uname.get()]+'?',parent=delone_win)
 					if confirm == True:
 						sql='delete from users where uname =%s'
 						val=(uname.get(),)
 						cur.execute(sql,val)
 						con.commit()
-						messagebox.showinfo('','User '+uname.get()+' deleted.',parent=delone_win)
+						messagebox.showinfo('','User '+user_namelist[uname.get()]+' deleted.',parent=delone_win)
 						delone_win.destroy()
 					else:
-						messagebox.showinfo('','User '+uname.get()+' not deleted.\nThe database has not been modified.',parent=delone_win)
+						messagebox.showinfo('','User '+user_namelist[uname.get()]+' not deleted.\nThe database has not been modified.',parent=delone_win)
 				else:
 					messagebox.showerror('Error','Username \''+uname.get()+'\' does not exist.',parent=delone_win)
 			else:
@@ -983,7 +986,7 @@ def manage_users():	#Manage users
 							cur.execute(regsql,regval)
 							con.commit()
 
-							messagebox.showinfo('','The new user '+reg_uname_inp+'\nhas been successfully registered.',parent=regwin)
+							messagebox.showinfo('','The new user '+reg_fname_inp+'\nhas been successfully registered.',parent=regwin)
 							regwin.destroy()
 						else:
 							messagebox.showerror('Error','Invalid phone number entered.',parent=regwin)

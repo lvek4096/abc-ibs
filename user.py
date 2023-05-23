@@ -346,11 +346,15 @@ def manage_user_profile():		#manages profile
 		def manage(): #Manage user window
 
 			def delete():	#Delete function
+				cur.execute('select uname,fname from users')
+				a=cur.fetchall()
+				user_namelist=dict(a)				
 				def deluser():	#Delete user from DB
 					cur.execute('select uname,passwd from users')
 					b=cur.fetchall()
 					upass=dict(b)
 					p=del_passwd.get()
+					
 					if not p=='' and not p.isspace():
 						if p == upass[uname_inp]:
 							confirm=messagebox.askyesno('','Really delete your user profile?',parent=delwin)
@@ -359,7 +363,7 @@ def manage_user_profile():		#manages profile
 								val=(uname_inp,)
 								cur.execute(sql,val)
 								con.commit()
-								messagebox.showinfo('','Username '+uname_inp+' deleted.\nYou will be returned to the start page.',parent=delwin)
+								messagebox.showinfo('','User '+user_namelist[uname_inp]+' deleted.\nYou will be returned to the start page.',parent=delwin)
 								delwin.destroy()
 								manage_userswin.destroy()
 								os.system('python3 start.py')
@@ -482,7 +486,7 @@ def manage_user_profile():		#manages profile
 									val=(new_email,uname_inp)
 									cur.execute(sql,val)
 									con.commit()
-									messagebox.showinfo('','Electronic mail address changed successfully to '+new_email+'.\nPlease log out for any changes to take effect.',parent=chinfo_contacts)
+									messagebox.showinfo('','Electronic mail address changed successfully to '+new_email+'',parent=chinfo_contacts)
 									conf()							
 								else:
 									messagebox.showerror('Error','Invalid electronic mail entered',parent=chinfo_contacts)
@@ -492,7 +496,7 @@ def manage_user_profile():		#manages profile
 									val=(new_num,uname_inp)
 									cur.execute(sql,val)
 									con.commit()
-									messagebox.showinfo('','Phone number changed successfully to '+new_num+'.\nPlease log out for any changes to take effect.',parent=chinfo_contacts)
+									messagebox.showinfo('','Phone number changed successfully to '+new_num+'.',parent=chinfo_contacts)
 									conf()						
 								else:
 									messagebox.showerror('Error','Invalid phone number entered',parent=chinfo_contacts)
@@ -507,7 +511,7 @@ def manage_user_profile():		#manages profile
 									val=(new_num,uname_inp)
 									cur.execute(sql,val)
 									con.commit()
-									messagebox.showinfo('','Electronic mail address and phone number changed successfully to '+new_email+' and '+new_num+', respectively.\nPlease log out for any changes to take effect.',parent=chinfo_contacts)
+									messagebox.showinfo('','Electronic mail address and phone number changed successfully to '+new_email+' and '+new_num+', respectively.',parent=chinfo_contacts)
 									conf()							
 								else:
 									messagebox.showerror('Error','Invalid electronic mail or phone number entered',parent=chinfo_contacts)

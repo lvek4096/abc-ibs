@@ -89,6 +89,9 @@ def emp_main():
 
 			def admins():
 				manage.manage_admin()
+
+			def manage_payments():
+				managebkgs.payments()
 			
 			def passwd():
 				passwd_win=tk.Toplevel()
@@ -222,6 +225,12 @@ def emp_main():
 			btn3.image=img10
 			tk.Label(f2,text='Make and manage bookings.',font=fnt).grid(column=1,row=8,padx=10,pady=10,sticky=tk.W)
 
+			img10=tk.PhotoImage(file='icons/make-payment.png')
+			btn3=tk.Button(f2,text='Payment',image=img10,font=fnt,command=manage_payments)
+			btn3.grid(column=2,row=8,padx=10,pady=10,sticky=tk.E)
+			btn3.image=img10
+			tk.Label(f2,text='View and manage transactions.',font=fnt).grid(column=3,row=8,padx=10,pady=10,sticky=tk.W)
+			
 			tk.Grid.rowconfigure(f2,9,weight=1)
 			
 			root.mainloop()
@@ -247,6 +256,9 @@ def emp_main():
 				
 			def managebusbkgs():
 				managebkgs.bus()
+
+			def managepayments():
+				managebkgs.payments()
 
 			if emptype_inp=='Agent':
 				main_menu=tk.Tk()
@@ -348,6 +360,9 @@ def emp_main():
 			
 			btn5=tk.Button(f2,text='Manage taxi bookings',font=fntit,command=managetaxibkgs)
 			btn5.grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
+
+			btn7=tk.Button(f2,text='Manage payments',font=fntit,command=managepayments)
+			btn7.grid(column=2,row=7,padx=10,pady=10,sticky=tk.W)
 			
 			btn6=tk.Button(f2,text='Manage bus bookings',font=fntit,command=managebusbkgs)
 			btn6.grid(column=3,row=7,padx=10,pady=10,sticky=tk.W)

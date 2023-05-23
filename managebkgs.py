@@ -141,7 +141,7 @@ def bus():	#manage bus bookings
 					else:
 						messagebox.showinfo('','Booking '+bkgid.get()+' not deleted.\nThe database has not been modified.',parent=delone_win)
 				else:
-					messagebox.showerror('Error','Bookinge \''+bkgid.get()+'\' does not exist.',parent=delone_win)
+					messagebox.showerror('Error','Booking \''+bkgid.get()+'\' does not exist.',parent=delone_win)
 			else:
 				messagebox.showerror('','Please enter the booking ID.',parent=delone_win)
 			
@@ -158,7 +158,7 @@ def bus():	#manage bus bookings
 		for i in d:
 			bus_bkgid_list.append(str(i[0]))
 
-		tk.Label(delone_win,text='Select a booking.',font=fntit).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
+		tk.Label(delone_win,text='Select the booking to be deleted.',font=fntit).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
 
 		n=tk.StringVar()
 		bkgid=ttk.Combobox(delone_win,textvariable=n,font=fnt,width=19)
@@ -364,7 +364,7 @@ def taxi():	#Manage taxi bookings
 					else:
 						messagebox.showinfo('','Booking '+bkgid.get()+' not deleted.\nThe database has not been modified.',parent=delone_win)
 				else:
-					messagebox.showerror('Error','Bookinge \''+bkgid.get()+'\' does not exist.',parent=delone_win)
+					messagebox.showerror('Error','Booking \''+bkgid.get()+'\' does not exist.',parent=delone_win)
 			else:
 				messagebox.showerror('','Please enter the booking ID.',parent=delone_win)
 			
@@ -381,7 +381,7 @@ def taxi():	#Manage taxi bookings
 		for i in d:
 			taxi_bkgid_list.append(str(i[0]))
 
-		tk.Label(delone_win,text='Select a booking.',font=fntit).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
+		tk.Label(delone_win,text='Select the booking to be deleted.',font=fntit).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
 
 		n=tk.StringVar()
 		bkgid=ttk.Combobox(delone_win,textvariable=n,font=fnt,width=19)
@@ -446,6 +446,235 @@ def taxi():	#Manage taxi bookings
 	tk.Label(f2,text='Delete a booking.',font=fnt,fg='red').grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
 	tk.Grid.rowconfigure(f2,8,weight=1)
 	tk.Message(f2,text='WARNING: This will delete\nthe booking selected\nfrom the system permanently.',width=500,font=fnt,fg='white',bg='red').grid(column=1,row=8,padx=10,pady=10,sticky=tk.NW)
+
+	tk.Grid.rowconfigure(f2,16,weight=1)
+	
+	managetaxibkgs.mainloop()
+
+def payments():	#Manage payment details
+	import mysql.connector as ms
+	import tkinter as tk
+	import platform as pf
+	import ctypes
+	from tkinter import ttk
+	from tkinter import messagebox
+	
+	#Enables DPI scaling on supported versions of Windows
+	if pf.system()=='Windows':
+		try:
+			ctypes.windll.shcore.SetProcessDpiAwareness(True)
+		except:
+			pass
+
+	try:
+		con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456',database='taxi')
+	except:
+		con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
+	cur=con.cursor()
+
+	fnt=('Consolas',12)
+	fntit=('Consolas',12,'italic')
+	h1fnt=('Segoe UI',24)
+
+	managetaxibkgs=tk.Toplevel()
+	managetaxibkgs.title('Transaction Manager')
+
+	def viewall():  #View all transactions
+		viewall_win=tk.Toplevel()
+		viewall_win.title('All transactions')
+		viewall_win.resizable(False,False)
+		
+		header=('Payment ID','Timestamp','Booking ID','Amount','Payment Type','Card Number','Card Name','CVV','Expiry Month','Expiry Year')
+
+		sql2=str('select * from payment_details')			#getting data from table
+		cur.execute(sql2)
+		data=[header]+cur.fetchall()						#appending header to data
+		
+		rows=len(data)
+		cols=len(data[0])
+
+		for i in range(rows):							#drawing the table in GUI
+			for j in range(cols):
+				entry = tk.Label(viewall_win,borderwidth=1,relief='solid',padx=10,height=2,font=fnt)
+				entry.grid(row=i, column=j,padx=2,pady=2,sticky=tk.EW)
+				entry.configure(text=data[i][j])
+				if i==0:
+					entry.configure(fg='red',font=fntit)	#colors and italicises header
+
+	def viewone():	#View single transaction
+		
+		def get_taxibkginfo():
+			
+			if (not payid.get()=='' and not payid.get().isspace()) and (not payid.get()=='' and not payid.get().isspace()):
+				if payid.get() in payment_id_list:
+					sql='select * from payment_details where pay_id=%s'
+					val=(payid.get(),)
+					cur.execute(sql,val)
+					c=cur.fetchall()
+					pay_id=c[0][0]
+					pay_ts=c[0][1]
+					bkgid=c[0][2]
+					amt=c[0][3]
+					pay_type=c[0][4]
+					cardno=c[0][5]
+					cardname=c[0][6]
+					cvv=c[0][7]
+					exp_mo=c[0][8]
+					exp_yr=c[0][9]
+					
+					e=[('Payment ID',pay_id),('Timestamp',pay_ts),('Booking ID',bkgid),('Amount',amt),('Payment Type',pay_type),('Card Number',cardno),('Cardholder Name',cardname),('CVV',cvv),('Expiry Month',exp_mo),('Expiry Year',exp_yr)]
+					
+					rows=len(e)
+					cols=len(e[0])
+					tk.Label(frame3,font=fntit,text='Data').grid(row=0,column=0,sticky=tk.W)
+					for i in range(rows):							#drawing the table in GUI
+						for j in range(cols):
+							entry = tk.Label(frame2,borderwidth=1,relief='solid',padx=10,width=30,height=2,font=fnt)
+							entry.grid(row=i,column=j,padx=2,pady=2,sticky=tk.EW)
+							entry.configure(text=e[i][j])
+							if j==0:
+								entry.configure(fg='red',font=fntit) #colors and italicises header
+				else:
+					messagebox.showerror('Error','Transaction \''+payid.get()+'\' does not exist.',parent=viewone_win)
+			else:
+				messagebox.showerror('Error','Please enter the transaction (payment) ID.',parent=viewone_win)
+		viewone_win=tk.Toplevel()
+		viewone_win.title('View transaction details')
+		viewone_win.resizable(False,False)
+		
+		frame1=tk.Frame(viewone_win)
+		frame1.grid(row=0,column=0,padx=10,pady=10,sticky=tk.EW)
+
+		frame2=tk.Frame(viewone_win)
+		frame2.grid(row=2,column=0,padx=10,pady=10,sticky=tk.EW)
+
+		frame3=tk.Frame(viewone_win)
+		frame3.grid(row=1,column=0,padx=10,pady=10,sticky=tk.W)
+
+		cur.execute('select pay_id from payment_details')
+		a=cur.fetchall()
+		payment_id_list=[]
+		for i in a:
+			payment_id_list.append(i[0])
+
+		img14=tk.PhotoImage(file='icons/searchusr.png')
+		img=tk.Label(frame1,image=img14,font=h1fnt)
+		img.grid(column=0,row=0,padx=10,pady=10)
+		img.image=img14
+
+		tk.Label(frame1,font=h1fnt,text='View transaction details...').grid(row=0,column=1,padx=10,pady=10,sticky=tk.W)
+
+		tk.Label(frame1,font=fnt,text='Enter transaction (payment) ID.').grid(row=4,column=1,padx=10,pady=10,sticky=tk.W)
+		n=tk.StringVar()
+		payid=ttk.Combobox(frame1,textvariable=n,font=fnt)
+		payid.grid(row=5,column=1,padx=10,pady=10,sticky=tk.EW)
+		payid['values']=payment_id_list
+		
+		submit=tk.Button(frame1,font=fntit,text='Submit',command=get_taxibkginfo)
+		submit.grid(row=5,column=2,padx=10,pady=10)
+		viewone_win.bind('<Return>',lambda event:get_taxibkginfo())
+
+	def delone(): #Cancel single transaction.
+		delone_win=tk.Toplevel()
+		delone_win.resizable(False,False)
+		delone_win.title('Cancel transaction')
+		def delete_transaction():
+			if not payid.get()=='' and not payid.get().isspace():
+				if payid.get() in payment_id_list:
+					messagebox.showwarning('','This operation will cancel\nthe transaction selected permanently.\nContinue?',parent=delone_win)
+					confirm=messagebox.askyesno('','Do you wish to cancel the transaction '+payid.get()+'?',parent=delone_win)
+					if confirm == True:
+						sql='delete from payment_details where pay_id =%s'
+						val=(payid.get(),)
+						cur.execute(sql,val)
+						con.commit()
+						messagebox.showinfo('','Transaction '+payid.get()+' cancelled.',parent=delone_win)
+						delone_win.destroy()
+					else:
+						messagebox.showinfo('','Transaction '+payid.get()+' not cancelled.\nThe database has not been modified.',parent=delone_win)
+				else:
+					messagebox.showerror('Error','Transaction \''+payid.get()+'\' does not exist.',parent=delone_win)
+			else:
+				messagebox.showerror('','Please enter the transaction (payment) ID.',parent=delone_win)
+			
+		img14=tk.PhotoImage(file='icons/delete.png')
+		img=tk.Label(delone_win,image=img14,font=h1fnt)
+		img.grid(column=0,row=0,padx=10,pady=10)
+		img.image=img14
+
+		tk.Label(delone_win,text='Cancel a transaction',font=h1fnt).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
+
+		cur.execute('select pay_id from payment_details')
+		d=cur.fetchall()
+		payment_id_list=[]
+		for i in d:
+			payment_id_list.append(str(i[0]))
+
+		tk.Label(delone_win,text='Select the transaction to be cancelled.',font=fntit).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
+
+		n=tk.StringVar()
+		payid=ttk.Combobox(delone_win,textvariable=n,font=fnt,width=19)
+		payid.grid(column=1,row=5,sticky=tk.EW,padx=10,pady=10)
+		payid['values']=payment_id_list
+
+		delbtn=tk.Button(delone_win,text='Delete',font=fntit,command=delete_transaction,fg='red')
+		delbtn.grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
+		delone_win.bind('<Return>',lambda event:delete_transaction())
+
+	tk.Grid.columnconfigure(managetaxibkgs,0,weight=1)
+
+	#FRAME 1
+	tk.Grid.rowconfigure(managetaxibkgs,0,weight=1)
+	f1=tk.Frame(managetaxibkgs)
+	f1.grid(row=0,column=0,sticky=tk.NSEW)
+
+	#frame 1 grid
+	tk.Grid.columnconfigure(f1,0,weight=1)
+	tk.Grid.columnconfigure(f1,1,weight=1)
+
+	tk.Grid.rowconfigure(f1,0,weight=1)
+	img6=tk.PhotoImage(file='icons/make-payment.png')
+	himg=tk.Label(f1,image=img6)
+	himg.grid(column=0,row=0,sticky=tk.E,padx=10,pady=10)
+	himg.image=img6
+	tk.Label(f1,text=('Manage transactions...'),font=h1fnt).grid(column=1,row=0,sticky=tk.W,padx=10,pady=10)
+
+	tk.Label(f1,text=('Connected to database: '+con.database),font=('Segoe UI',12),justify=tk.LEFT,fg='green').grid(column=1,row=1,sticky=tk.W,padx=10,pady=10)
+	ttk.Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10,columnspan=2)
+	#FRAME 2
+	tk.Grid.rowconfigure(managetaxibkgs,1,weight=1)
+	f2=tk.Frame(managetaxibkgs)
+	f2.grid(row=1,column=0,padx=10,pady=10,sticky=tk.NSEW)
+
+	#frame 2 grid
+	tk.Grid.columnconfigure(f2,0,weight=1)
+	tk.Grid.columnconfigure(f2,1,weight=1)
+	tk.Grid.columnconfigure(f2,2,weight=1)
+	tk.Grid.columnconfigure(f2,3,weight=1)
+
+	tk.Label(f2,text='You can:',font=fntit,justify=tk.LEFT).grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
+
+	tk.Grid.rowconfigure(f2,5,weight=1)
+	img8=tk.PhotoImage(file='icons/preview.png')
+	tbviewbtn=tk.Button(f2,text='view all',image=img8,font=fnt,command=viewall)
+	tbviewbtn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
+	tbviewbtn.image=img8
+	tk.Label(f2,text='View all transaction details.',font=fnt,fg='blue').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
+
+	img10=tk.PhotoImage(file='icons/search_bkgs.png')
+	viewbtn=tk.Button(f2,text='viewone',image=img10,font=fnt,command=viewone)
+	viewbtn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
+	viewbtn.image=img10
+	tk.Label(f2,text='View a single transaction\'s details.',font=fnt).grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
+
+	tk.Grid.rowconfigure(f2,7,weight=1)
+	img12=tk.PhotoImage(file='icons/delete.png')
+	delbtn=tk.Button(f2,text='del',image=img12,font=fnt,command=delone)
+	delbtn.grid(column=0,row=7,padx=10,pady=10,sticky=tk.E)
+	delbtn.image=img12
+	tk.Label(f2,text='Cancel a transaction.',font=fnt,fg='red').grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
+	tk.Grid.rowconfigure(f2,8,weight=1)
+	tk.Message(f2,text='WARNING: This will cancel\nthe transaction selected\nfrom the system permanently.',width=500,font=fnt,fg='white',bg='red').grid(column=1,row=8,padx=10,pady=10,sticky=tk.NW)
 
 	tk.Grid.rowconfigure(f2,16,weight=1)
 	
