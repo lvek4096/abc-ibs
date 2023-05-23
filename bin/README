@@ -1,0 +1,92 @@
+THIS PROGRAM IS CURRENTLY UNDER A DEVELOPMENT FREEZE.
+
+============
+Taxi Booking
+============
+
+A. About
+This program helps one to easily book taxis.
+It is written fully in Python.
+Modules Used:
+	- Tkinter (GUI)
+	- MySQL connector (to connect to MySQL database)
+	- platform (System information)
+	- random (random number generator for booking ID)
+
+B. Running the program
+
+	1. Open 'taxi' folder in the command line: 
+		cd <path-to-folder>				# cd changes current directory
+	2. Enter:
+		python3 home.py					# runs .py file
+	The program will open in a new window.
+	
+	DO NOT CLOSE THE COMMAND LINE WINDOW WHILE THE PROGRAM IS RUNNING. THE PROGRAM WILL TERMINATE IF DONE SO.
+
+C. Compatibility
+This application is cross-platform; however, the host system must have the following:
+	1. Python 3.10 or greater.
+	2. MySQL connector (mysql.connector)
+	3. Tkinter
+	
+To install the above module(s),
+1. Windows
+	a. MySQL connector
+		C:/> pip install mysql.connector
+	b. Tkinter
+		Tkinter is installed by default in default Python distribution (msstore)
+
+2. Linux
+	a. MySQL connector
+		$ pip install mysql.connector
+	b. Tkinter
+		> Ubuntu/Debian and related:
+		
+		$ sudo apt install tk
+		
+D. MySQL database configuration
+
+create database taxi;
+create table taxi_bkgs(bkgid int primary key,start varchar(50),end varchar(50),jdate date,jtime time,taxitype varchar);
+create table bus_bkgs(bkgid int primary key,start varchar(50),end varchar(50),jdate date,jtime time,bustype varchar(50));
+create table users(uuid varchar(5) primary key,uname varchar(50),passwd varchar(50));
+
+MySQL table format:
+taxi_bkgs
++----------+-------------+------+-----+---------+-------+
+| Field    | Type        | Null | Key | Default | Extra |
++----------+-------------+------+-----+---------+-------+
+| bkgid    | int         | NO   | PRI | NULL    |       |
+| start    | varchar(50) | YES  |     | NULL    |       |
+| end      | varchar(50) | YES  |     | NULL    |       |
+| jdate    | date        | YES  |     | NULL    |       |
+| jtime    | time        | YES  |     | NULL    |       |
+| taxitype | varchar(50) | YES  |     | NULL    |       |
++----------+-------------+------+-----+---------+-------+
+6 rows in set (0.02 sec)
+
+bus_bkgs
++---------+-------------+------+-----+---------+-------+
+| Field   | Type        | Null | Key | Default | Extra |
++---------+-------------+------+-----+---------+-------+
+| bkgid   | int         | NO   | PRI | NULL    |       |
+| start   | varchar(50) | YES  |     | NULL    |       |
+| end     | varchar(50) | YES  |     | NULL    |       |
+| jdate   | date        | YES  |     | NULL    |       |
+| jtime   | time        | YES  |     | NULL    |       |
+| bustype | varchar(50) | YES  |     | NULL    |       |
++---------+-------------+------+-----+---------+-------+
+6 rows in set (0.00 sec)
+
+users
++--------+-------------+------+-----+---------+-------+
+| Field  | Type        | Null | Key | Default | Extra |
++--------+-------------+------+-----+---------+-------+
+| uuid   | varchar(5)  | NO   | PRI | NULL    |       |
+| uname  | varchar(50) | YES  |     | NULL    |       |
+| passwd | varchar(50) | YES  |     | NULL    |       |
++--------+-------------+------+-----+---------+-------+
+3 rows in set (0.00 sec)
+
+
+EOF.

@@ -1,20 +1,21 @@
 #import statements
 import mysql.connector as ms
 import random as rd
-import platform as pf
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
+import os
 
 #definitions
 id=rd.randint(10000,99999)	#random number for ID
 locations='ABCDEFGHIJKLMNOPQRSTUVWXYZ'	#defines locations
 #ctype=['Standard','Premium','Express']	#defines coach type
-build='30'	#Program build
+build='35'	#Program build
 
 #mysql connection
 con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
 cur=con.cursor()
-print('Connected to database.')
+#print('Connected to database.')
 
 if con.is_connected()==True:
 	dbstatus='Connected to database.'
@@ -29,133 +30,91 @@ h1fnt=('IBM Plex Sans',24)
 #Main Window parameters
 window.title('Bus Booking')
 #window.geometry('640x480')
-
+window.resizable(False, False)
 def submit():	#Backend - takes inputs, sends to MySQL db
 	#Converts inputs to variables
-	start_inp=start.get()
-	end_inp=end.get()
+	start_inp=start.get().upper()
+	end_inp=end.get().upper()
 	date_inp=date.get()
 	time_inp=time.get()
 	bustype_inp=n.get()
 
-	confirm=tk.Message(window,text='',width=500,font=fnt)
-	confirm.grid(column=1,row=11)
+	#confirm=tk.Message(window,text='',width=500,font=fnt)
+	#confirm.grid(column=1,row=11)
 
 	l1=[id,start_inp,end_inp,date_inp,time_inp,bustype_inp]
 
-	if start_inp in locations and end_inp in locations:
+	if (not start_inp=='' and not start_inp.isspace()) and (not end_inp=='' and not end_inp.isspace()) and (not date_inp=='' and not date_inp.isspace()) and (not time_inp=='' and not time_inp.isspace()):
+		if start_inp in locations and end_inp in locations:
 
-		#Sends inputs to MySQL db
-		sql='insert into bus_bkgs values (%s,%s,%s,%s,%s,%s)'
-		val=(id,start_inp,end_inp,date_inp,time_inp,bustype_inp)
-		cur.execute(sql,val)
-		con.commit()
+			#Sends inputs to MySQL db
+			sql='insert into bus_bkgs values (%s,%s,%s,%s,%s,%s)'
+			val=(id,start_inp,end_inp,date_inp,time_inp,bustype_inp)
+			cur.execute(sql,val)
+			con.commit()
 
-		#data=[];data.append(l1)
-		#df=pd.DataFrame(data,columns=['ID','From','To','Date','Time'])
+			#data=[];data.append(l1)
+			#df=pd.DataFrame(data,columns=['ID','From','To','Date','Time'])
 	
-		#Shows confirmation on GUI Window
-		confirm.configure(text=('Booking\n'+str(l1)+'\nentered successfully'))
+			#Shows confirmation on GUI Window
+			#confirm.configure(text=('Booking\n'+str(l1)+'\nentered successfully'))
+			messagebox.showinfo('','The booking \n'+str(l1)+'\nwas made successfully.')
+		else:
+			#confirm.configure(text=('Invalid origin or destination entered.'))
+			messagebox.showerror('Error','Invalid origin or destination entered.')
 	else:
-		confirm.configure(text=('Invalid origin or destination entered.'))
-def about():	#About the program
-	about=tk.Toplevel()
-	#about.geometry('160x120')
-	abttitle='About this '+pf.system()+' system'
-
-	#Labels
-	tk.Label(about,text='About',font=h1fnt).grid(column=1,row=0)
-	tk.Label(about,text=('Build '+build),font=fnt).grid(column=1,row=1)
-	tk.Label(about,text='This is pre-release software.\nBugs may exist and features may not be complete.\nUse at your own risk.',font=fntit).grid(column=1,row=2)
-	tk.Label(about,text='-------------------------------',font=fnt).grid(column=1,row=3)
-	tk.Label(about,text=('Python',pf.python_version()),font=fnt).grid(column=1,row=4)
-	tk.Label(about,text=('Tkinter',tk.TkVersion),font=fnt).grid(column=1,row=5)
-	tk.Label(about,text=('MySQL',ms.__version__),font=fnt).grid(column=1,row=6)
-	tk.Label(about,text='-------------------------------',font=fnt).grid(column=1,row=7)
-	
-	if pf.system()=='Windows':
-		src=tk.PhotoImage(file='img/oldwin.png')
-	elif pf.system()=='Darwin':
-		src=tk.PhotoImage(file='img/oldmac.png')	
-	elif pf.system()=='Linux':
-		src=tk.PhotoImage(file='img/linux.png')
-
-	osimg=tk.Label(about,image=src)
-	osimg.grid(column=1,row=8)
-
-	#System info
-	if pf.system()=='Windows':		#Additional info - Windows systems ONLY
-		tk.Label(about,text=(pf.system(),pf.release(),pf.version()),font=fnt).grid(column=1,row=10)
-	else:
-		tk.Label(about,text=(pf.system(),pf.release()),font=fnt).grid(column=1,row=10)
-	
-	#Additional Linux distribution info - Linux ONLY
-	if pf.system()=='Linux':
-		linux=pf.freedesktop_os_release()
-		tk.Label(about,text=(linux['NAME']+' '+linux['VERSION']),font=fnt).grid(column=1,row=11)
-	
-	tk.Label(about,text='-------------------------------',font=fnt).grid(column=1,row=12)
-	
-	#CPU type - i386 (32-bit); AMD64/x86_64 (64-bit) etc.
-	tk.Label(about,text=(pf.machine()+' system'),font=fnt).grid(column=1,row=13)
-	
-	tk.Label(about,text='-------------------------------',font=fnt).grid(column=1,row=14)
-
-	def showdbinfo():
-		def hidedbinfo():
-			dbinfo.grid_forget()
-			showdb.configure(text='Show database information',command=showdbinfo)
-
-		dbinfo=tk.Label(about,text=('MySQL '+con.get_server_info()+'\n'+dbstatus+'\nDatabase: '+con.database),font=fnt)
-		dbinfo.grid(column=1,row=16)
-		showdb.configure(text='Hide database information',command=hidedbinfo)
-
-	showdb=tk.Button(about,text='Show database information',font=fnt,command=showdbinfo);showdb.grid(column=1,row=15)
-	
-	tk.Label(about,text='-------------------------------',font=fnt).grid(column=1,row=19)
-	#Closes the window
-	clsimg=tk.PhotoImage(file='ico/emblem-unreadable.png')
-	cls=tk.Button(about,font=fnt,text='Close',image=clsimg,command=about.destroy)
-	cls.grid(column=1,row=20)
-	cls.image=clsimg
-	
-	about.mainloop()
-
+		messagebox.showerror('Error','Do not leave any fields blank.')
 #Window
-tk.Label(window,text='BUS BOOKING',font=h1fnt).grid(column=1,row=0)
+tk.Label(window,text='BUS BOOKING',font=h1fnt,bg='yellow').grid(column=1,row=0,padx=10,pady=10)
 #tk.Label(window,text='This is pre-release software.\nBugs may exist and features may not be complete.\nUse at your own risk.',font=fnt).grid(column=1,row=1)
+
 #Input fields
-tk.Label(text='ID',font=fnt).grid(column=0,row=3)
-bkgid=tk.Label(window,text=id,font=fnt);bkgid.grid(column=1,row=3)
+tk.Label(text='ID',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
+bkgid=tk.Label(window,text=id,font=fnt)
+bkgid.grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
 
-tk.Label(window,text='From',font=fnt).grid(column=0,row=4)
-start=tk.Entry(window,font=fnt);start.grid(column=1,row=4)
+tk.Label(window,text='From',font=fnt).grid(column=0,row=4,sticky=tk.E,padx=10,pady=10)
+start=tk.Entry(window,font=fnt)
+start.grid(column=1,row=4,sticky=tk.EW,padx=10,pady=10)
 
-tk.Label(window,text='To',font=fnt).grid(column=0,row=5)
-end=tk.Entry(window,font=fnt);end.grid(column=1,row=5)
+tk.Label(window,text='To',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
+end=tk.Entry(window,font=fnt)
+end.grid(column=1,row=5,sticky=tk.EW,padx=10,pady=10)
 
-tk.Label(window,text='Date',font=fnt).grid(column=0,row=6)
-date=tk.Entry(window,font=fnt);date.grid(column=1,row=6)
+tk.Label(window,text='Date',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
+date=tk.Entry(window,font=fnt)
+date.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
+tk.Label(window,text='[YYYY-MM-DD]',font=fnt).grid(column=2,row=6,padx=10,pady=10)
 
-tk.Label(window,text='Time',font=fnt).grid(column=0,row=7)
-time=tk.Entry(window,font=fnt);time.grid(column=1,row=7)
-
+tk.Label(window,text='Time',font=fnt).grid(column=0,row=7,sticky=tk.E,padx=10,pady=10)
+time=tk.Entry(window,font=fnt)
+time.grid(column=1,row=7,sticky=tk.EW,padx=10,pady=10)
+tk.Label(window,text='[HH:MM]',font=fnt).grid(column=2,row=7,padx=10,pady=10)
 
 n=tk.StringVar()
-tk.Label(window,text='Bus Type',font=fnt).grid(column=0,row=8)
-bustype=ttk.Combobox(window,textvariable=n,font=fnt,width=19);bustype.grid(column=1,row=8)
-bustype['values']=('Express','Standart','Premium')
-bustype.current(1)
+tk.Label(window,text='Bus Type',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
+bustype=ttk.Combobox(window,textvariable=n,font=fnt,width=19);bustype.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
+bustype['values']=('Standart','Express','Premium')
+bustype.current(0)
 #buttons
 
-subimg=tk.PhotoImage(file='ico/emblem-default.png')
-btn=tk.Button(window,font=fnt,text='Submit',image=subimg,command=submit);btn.grid(column=1,row=9)
+subimg=tk.PhotoImage(file='monoico/icon-511.png')
+btn=tk.Button(window,font=fnt,text='Submit',image=subimg,command=submit);btn.grid(column=1,row=9,padx=10,pady=10)
 btn.image=subimg
 
-abtimg=tk.PhotoImage(file='ico/dialog-information.png')
-btn2=tk.Button(window,font=fnt,text='About this program...',image=abtimg,command=about);btn2.grid(column=2,row=12)
-btn2.img=abtimg
+#abtimg=tk.PhotoImage(file='ico/dialog-information.png')
+#btn2=tk.Button(window,font=fnt,text='About this program...',image=abtimg,command=aboutprg);btn2.grid(column=2,row=11)
+#btn2.img=abtimg
+
+def close():
+	window.destroy()
+	os.system('python3 home.py')
+
+clsimg=tk.PhotoImage(file='monoico/icon-269.png')
+btn3=tk.Button(window,font=fnt,image=clsimg,command=close);btn3.grid(column=0,row=11,padx=10,pady=10,sticky=tk.SW)
+btn3.img=clsimg
+
 
 #Version on system
-tk.Label(window,text=('Build '+build+' on\n'+pf.system()+' '+pf.release()),font=fntit).grid(column=0,row=13)
+#tk.Label(window,text=('Build '+build+' on\n'+pf.system()+' '+pf.release()),font=fntit).grid(column=0,row=13)
 window.mainloop()
