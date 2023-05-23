@@ -13,7 +13,8 @@ h1fnt=('IBM Plex Sans',24)
 
 root=tk.Tk()
 root.title('Admin menu')
-#root.resizable(False,False)
+w,h=root.winfo_screenwidth(),root.winfo_screenheight()
+root.geometry(str(w)+'x'+str(h))
 
 def logout():
 	root.destroy()
@@ -29,7 +30,7 @@ def emp():
 
 def bookings():
 	root.destroy()
-	os.system('python3 adminbkgs.py')
+	os.system('python3 empbkgs.py')
 
 def users():
 	root.destroy()

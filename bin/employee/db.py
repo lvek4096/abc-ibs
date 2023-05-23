@@ -15,7 +15,8 @@ h1fnt=('IBM Plex Sans',24)
 
 dbmainwin=tk.Tk()
 dbmainwin.title('Database Manager')
-#dbmainwin.resizable(False,False)
+w,h=dbmainwin.winfo_screenwidth(),dbmainwin.winfo_screenheight()
+dbmainwin.geometry(str(w)+'x'+str(h))
 
 def showtb():
 
@@ -60,7 +61,7 @@ for i in a:
 def droptb():
 	if not table.get()=='' and not table.get().isspace():
 		messagebox.showwarning('WARNING','The table chosen will be dropped\nfrom the database permanently.\nContinue?')
-		confirm=messagebox.askyesno('','Do you wish to drop the table \''+table.get()+'\'\nalong with its contents?')
+		confirm=messagebox.askyesno('','Do you wish to drop the table \''+table.get()+'\'\nalong with its contents ?')
 		if confirm == True:
 			sql=str('drop table '+table.get())
 			cur.execute(sql)
@@ -75,7 +76,7 @@ def droptb():
 def deltb():
 	if not table.get()=='' and not table.get().isspace():
 		messagebox.showwarning('WARNING','All the contents of the table chosen will be deleted permanently.\nContinue?')
-		confirm=messagebox.askyesno('','Do you wish to delete\nall records from the table \''+table.get()+'\'\n?')
+		confirm=messagebox.askyesno('','Do you wish to delete\nall records from the table \''+table.get()+'\'?')
 		if confirm == True:
 			sql=str('delete from '+table.get())
 			cur.execute(sql)

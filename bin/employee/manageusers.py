@@ -14,14 +14,15 @@ h1fnt=('IBM Plex Sans',24)
 
 manageuserwin=tk.Tk()
 manageuserwin.title('Manage users')
-#manageuserwin.resizable(False,False)
+w,h=manageuserwin.winfo_screenwidth(),manageuserwin.winfo_screenheight()
+manageuserwin.geometry(str(w)+'x'+str(h))
 
 def viewall():
 	viewall_win=tk.Toplevel()
-	viewall_win.title('user')
+	viewall_win.title('All users')
 	viewall_win.resizable(False,False)
 	
-	header=('User ID','Username','Password')
+	header=('User ID','Full Name','Electronic Mail','Number','Username','Password')
 
 	sql2=str('select * from users')			#getting data from table
 	#print(sql2)
@@ -53,11 +54,14 @@ def viewone():
 				val=(uname.get(),)
 				cur.execute(sql,val)
 				c=cur.fetchall()
-				emp_id=c[0][0]
-				emp_uname=c[0][1]
-				emp_passwd=c[0][2]
+				user_id=c[0][0]
+				user_fname=c[0][1]
+				user_email=c[0][2]
+				user_num=c[0][3]
+				user_uname=c[0][4]
+				user_passwd=c[0][5]
 				
-				e=[('User ID',emp_id),('Username',emp_uname),('Password',emp_passwd)]
+				e=[('User ID',user_id),('Full Name',user_fname),('Electronic Mail',user_email),('Phone Number',user_num),('Username',user_uname),('Password',user_passwd)]
 				
 				#details.configure(text=txt)
 				#details.grid(row=7,column=0,sticky=tk.EW)
@@ -95,7 +99,7 @@ def viewone():
 	for i in a:
 		b.append(i[0])
 
-	img14=tk.PhotoImage(file='monoico/icon-666.png')
+	img14=tk.PhotoImage(file='monoico/icon-716.png')
 	img=tk.Label(frame1,image=img14,font=h1fnt)
 	img.grid(column=0,row=0,padx=10,pady=10)
 	img.image=img14
@@ -119,6 +123,9 @@ def delone():
 	delone_win.title('')
 
 	def deleteemp():
+		#cur.execute('select uname,fname from users')
+		#a=dict(cur.fetchall())
+		
 		if not uname.get()=='' and not uname.get().isspace():
 			if uname.get() in c:
 				messagebox.showwarning('','This operation will delete\nthe user permanently.\nContinue?',parent=delone_win)
@@ -216,65 +223,87 @@ def passwd():
 	subbtn.image=img13
 	subbtn.grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
 
-def add():
-	add_win=tk.Toplevel()
-	add_win.resizable(False,False)
-	add_win.title('')
-
-	def add_emp():
-		uname_inp=uname.get().lower()
-		passwd_inp=passwd.get()
+def register():
+	uuid='U'+str(rd.randint(1000,9999))
+	
+	def reguser():
+		
+		#status=tk.Label(regwin,font=fnt);status.grid(column=1,row=7,padx=10,pady=10)
+		
+		reg_fname_inp=reg_fname.get()
+		reg_email_inp=reg_email.get()
+		reg_num_inp=reg_num.get()
+		reg_uname_inp=reg_uname.get().lower()
+		reg_passwd_inp=reg_passwd.get()
 
 		cur.execute('select uname from users')
-		a=cur.fetchall()
-		b=[]
-		for i in a:
-			b.append(i[0])
+		users=cur.fetchall()
 
-		#l1=[id,uname_inp,fname_inp,passwd_inp]
-		if (not uname_inp=='' and not uname_inp.isspace()) and (not passwd_inp=='' and not passwd_inp.isspace()):
-			if uname_inp not in b:
-				#Sends inputs to MySQL db
-				sql='insert into users values (%s,%s,%s)'
-				val=(id,uname_inp,passwd_inp)
-				cur.execute(sql,val)
-				con.commit()
-				messagebox.showinfo('','User \''+uname_inp+'\' registered successfully.',parent=add_win)
+		b=(reg_uname_inp,)
+		if (not reg_fname_inp.isspace()==True and not reg_fname_inp=='') and (not reg_email_inp.isspace()==True and not reg_email_inp=='') and (not reg_num_inp.isspace()==True and not reg_num_inp=='') and (not reg_uname_inp.isspace()==True and not reg_uname_inp=='') and (not reg_passwd_inp.isspace()==True and not reg_passwd_inp==''):		#checks if inputs are not empty or contains spaces
+			if b not in users:
+				if '@' in reg_email_inp and '.' in reg_email_inp:
+					if len(reg_num_inp) == 10:
+						regsql='insert into users values(%s,%s,%s,%s,%s,%s)'
+						regval=(uuid,reg_fname_inp,reg_email_inp,reg_num_inp,reg_uname_inp,reg_passwd_inp)
+
+						cur.execute(regsql,regval)
+						con.commit()
+
+						messagebox.showinfo('','The new user '+reg_uname_inp+'\nhas been successfully registered.',parent=regwin)
+
+					else:
+						messagebox.showerror('Error','Invalid phone number entered.',parent=regwin)
+				else:
+					messagebox.showerror('Error','Invalid electronic mail ID entered.',parent=regwin)		
 			else:
-				messagebox.showerror('Error','Username \''+uname_inp+'\'\nalready exists.',parent=add_win)
+
+				messagebox.showerror('Error','Username '+reg_uname_inp+'\nalready exists.',parent=regwin)
 		else:
-			messagebox.showerror('Error','Please do not leave any fields blank.',parent=add_win)
+			messagebox.showerror('Error','Please do not leave any fields blank.',parent=regwin)
 	
-	id='U'+str(rd.randint(1000,9999))
+	regwin=tk.Toplevel()
+	regwin.title('Register')
+	regwin.resizable(False, False)
 
-	img14=tk.PhotoImage(file='monoico/icon-67.png')
-	img=tk.Label(add_win,image=img14,font=h1fnt)
-	img.grid(column=0,row=0,padx=10,pady=10)
-	img.image=img14
+	tk.Label(regwin,text='Register',font=h1fnt).grid(column=0,row=0,padx=10,pady=10,columnspan=2,sticky=tk.EW)
+	
+	tk.Label(regwin,text='ID',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
+	tk.Label(regwin,text=uuid,font=fnt).grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
+	
+	tk.Label(regwin,text='1. Personal info',font=fntit).grid(column=0,row=5,sticky=tk.W,padx=10,pady=10)
 
-	tk.Label(add_win,text='Register user',font=h1fnt).grid(column=1,row=0,sticky=tk.W,padx=10,pady=10)
+	tk.Label(regwin,text='Name',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
+	reg_fname=tk.Entry(regwin,font=fnt)
+	reg_fname.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
 
-	tk.Label(add_win,text='UID',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
-	bkgid=tk.Label(add_win,text=id,font=fnt)
-	bkgid.grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
+	tk.Label(regwin,text='Electronic mail ID',font=fnt).grid(column=0,row=7,sticky=tk.E,padx=10,pady=10)
+	reg_email=tk.Entry(regwin,font=fnt)
+	reg_email.grid(column=1,row=7,sticky=tk.EW,padx=10,pady=10)
 
-	tk.Label(add_win,text='Username',font=fnt).grid(column=0,row=4,sticky=tk.E,padx=10,pady=10)
-	uname=tk.Entry(add_win,font=fnt)
-	uname.grid(column=1,row=4,sticky=tk.EW,padx=10,pady=10)
+	tk.Label(regwin,text='Phone number',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
+	reg_num=tk.Entry(regwin,font=fnt)
+	reg_num.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
 
-	tk.Label(add_win,text='Password',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
-	passwd=tk.Entry(add_win,font=fnt,show='*')
-	passwd.grid(column=1,row=5,sticky=tk.EW,padx=10,pady=10)
+	tk.Label(regwin,text='2. Login info',font=fntit).grid(column=0,row=10,sticky=tk.W,padx=10,pady=10)
 
-	subimg=tk.PhotoImage(file='monoico/icon-308.png')
-	subbtn=tk.Button(add_win,font=fnt,text='Submit',image=subimg,command=add_emp)
-	subbtn.grid(column=1,row=12,padx=10,pady=10,sticky=tk.W)
-	subbtn.image=subimg
+	tk.Label(regwin,text='Username',font=fnt).grid(column=0,row=11,sticky=tk.E,padx=10,pady=10)
+	reg_uname=tk.Entry(regwin,font=fnt)
+	reg_uname.grid(column=1,row=11,sticky=tk.EW,padx=10,pady=10)
 
-	exitimg=tk.PhotoImage(file='monoico/icon-66.png')
-	exitbtn=tk.Button(add_win,font=fnt,text='Exit',image=exitimg,command=add_win.destroy)
-	exitbtn.grid(column=0,row=15,padx=10,pady=10,sticky=tk.SW)
-	exitbtn.image=exitimg
+	tk.Label(regwin,text='Password',font=fnt).grid(column=0,row=12,sticky=tk.E,padx=10,pady=10)
+	reg_passwd=tk.Entry(regwin,show='*',font=fnt)
+	reg_passwd.grid(column=1,row=12,sticky=tk.EW,padx=10,pady=10)
+
+	regsubimg=tk.PhotoImage(file='monoico/icon-67.png')	
+	regsubmit=tk.Button(regwin,image=regsubimg,command=reguser)
+	regsubmit.grid(column=1,row=14,padx=10,pady=10,sticky=tk.W)
+	regsubmit.image=regsubimg
+	
+	regcloseimg=tk.PhotoImage(file='monoico/icon-66.png')
+	regclose=tk.Button(regwin,text='Close',image=regcloseimg,command=regwin.destroy)
+	regclose.grid(column=0,row=15,sticky=tk.SW,padx=10,pady=10)
+	regclose.image=regcloseimg
 
 tk.Grid.columnconfigure(manageuserwin,0,weight=1)
 
@@ -314,14 +343,14 @@ tbviewbtn=tk.Button(f2,text='view all',image=img8,font=fnt,command=viewall)
 tbviewbtn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
 tk.Label(f2,text='View all user details.',font=fnt,fg='blue').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 
-img10=tk.PhotoImage(file='monoico/icon-666.png')
+img10=tk.PhotoImage(file='monoico/icon-716.png')
 viewbtn=tk.Button(f2,text='viewone',image=img10,font=fnt,command=viewone)
 viewbtn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
 tk.Label(f2,text='View a single user\'s details.',font=fnt).grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
 
 #tk.Grid.rowconfigure(f2,6,weight=1)
 img7=tk.PhotoImage(file='monoico/icon-67.png')
-tbviewbtn=tk.Button(f2,text='add',image=img7,font=fnt,command=add)
+tbviewbtn=tk.Button(f2,text='add',image=img7,font=fnt,command=register)
 tbviewbtn.grid(column=0,row=6,padx=10,pady=10,sticky=tk.E)
 tk.Label(f2,text='Add a user.',font=fnt,fg='green').grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
 

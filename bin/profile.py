@@ -1,8 +1,9 @@
 import tkinter as tk
+from tkinter import messagebox
 import mysql.connector as ms
-
 from tkinter import messagebox
 import os
+
 
 con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
 cur=con.cursor()
@@ -10,7 +11,8 @@ cur=con.cursor()
 #init GUI
 logwin=tk.Tk()
 logwin.title('Manage your profile...')
-#logwin.resizable(False,False)
+w,h=logwin.winfo_screenwidth(),logwin.winfo_screenheight()
+logwin.geometry(str(w)+'x'+str(h))
 fnt=('IBM Plex Mono',12)
 fntit=('IBM Plex Mono',12,'italic')
 h1fnt=('IBM Plex Sans',24)
@@ -116,8 +118,136 @@ def onlogin():
 			manage_userswin.destroy()
 			os.system('python3 start.py')
 		
-		def chinfo():
-			pass
+		def info():
+			chinfo_home=tk.Toplevel()
+			chinfo_home.resizable(False,False)
+			chinfo_home.title('')
+			tk.Label(chinfo_home,text=('Change your\npersonal information'),font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,sticky=tk.W)
+			
+			def name():
+
+				def chname():
+					new_name=en1.get()
+
+					if not new_name=='' and not new_name.isspace():
+						sql="update users set fname=%s where uname like %s"
+						val=(new_name,uname_inp)
+
+						cur.execute(sql,val)
+						con.commit()
+
+						messagebox.showinfo('','Name successfully changed from '+fnamelist[uname_inp]+' to '+new_name+'.\nPlease log out for any changes to take effect.',parent=chinfo_name)
+						tk.Label(chinfo_name,text='Please log out for\nany changes to take effect.',font=fnt,justify=tk.LEFT).grid(row=8,column=1,sticky=tk.W,padx=10,pady=10)
+						chinfo_name.destroy()
+					else:
+						messagebox.showerror('','No new name has been specified.',parent=chinfo_name)
+				chinfo_name=tk.Toplevel()
+				chinfo_name.resizable(False,False)
+				chinfo_name.title('')
+				tk.Label(chinfo_name,text=('Change your display name'),font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,sticky=tk.W)
+				#tk.Label(chinfo_name,text=(''),font=fnt,justify=tk.LEFT).grid(column=1,row=1,padx=10,sticky=tk.W)
+				
+				tk.Label(chinfo_name,text='Current name',font=fnt).grid(row=5,column=0,sticky=tk.E,padx=10,pady=10)
+				tk.Label(chinfo_name,text=fnamelist[uname_inp],font=fnt).grid(row=5,column=1,sticky=tk.W,padx=10,pady=10)
+
+				tk.Label(chinfo_name,text='New name',font=fnt).grid(row=6,column=0,sticky=tk.E,padx=10,pady=10)
+				en1=tk.Entry(chinfo_name,font=fnt)
+				en1.grid(row=6,column=1,sticky=tk.W,padx=10,pady=10)
+
+				img10=tk.PhotoImage(file='monoico/icon-134.png')
+				btn3=tk.Button(chinfo_name,image=img10,command=chname)
+				btn3.image=img10
+				btn3.grid(row=10,column=1,padx=10,pady=10,sticky=tk.W)
+			
+			def contacts():
+				def chcontacts():
+					new_email=en2.get()
+					new_num=en3.get()
+				
+					def conf():
+						tk.Label(chinfo_contacts,text='Please log out for\nany changes to take effect.',font=fnt,justify=tk.LEFT).grid(row=10,column=1,sticky=tk.W,padx=10,pady=10)
+						chinfo_contacts.destroy()
+						
+					if (not new_num=='' and not new_num.isspace()) or (not new_email=='' and not new_email.isspace()):
+						if new_num=='' or new_num.isspace():
+							if '@' in new_email and '.' in new_email:
+								sql='update users set email=%s where uname like %s' 
+								val=(new_email,uname_inp)
+								cur.execute(sql,val)
+								con.commit()
+								messagebox.showinfo('','Electronic mail address changed successfully to '+new_email+'.\nPlease log out for any changes to take effect.',parent=chinfo_contacts)
+								conf()							
+							else:
+								messagebox.showerror('Error','Invalid electronic mail entered',parent=chinfo_contacts)
+						elif new_email=='' or new_email.isspace():
+							if len(new_num)==10:
+								sql='update users set num=%s where uname like %s' 
+								val=(new_num,uname_inp)
+								cur.execute(sql,val)
+								con.commit()
+								messagebox.showinfo('','Phone number changed successfully to '+new_num+'.\nPlease log out for any changes to take effect.',parent=chinfo_contacts)
+								conf()						
+							else:
+								messagebox.showerror('Error','Invalid phone number entered',parent=chinfo_contacts)
+						elif (not new_num=='' and not new_num.isspace()) and (not new_email=='' and not new_email.isspace()):
+							if ('@' in new_email and '.' in new_email) and (len(new_num)==10):
+								sql='update users set email=%s where uname like %s' 
+								val=(new_email,uname_inp)
+								cur.execute(sql,val)
+								con.commit()
+
+								sql='update users set num=%s where uname like %s' 
+								val=(new_num,uname_inp)
+								cur.execute(sql,val)
+								con.commit()
+								messagebox.showinfo('','Electronic mail address and phone number changed successfully to '+new_email+' and '+new_num+', respectively.\nPlease log out for any changes to take effect.',parent=chinfo_contacts)
+								conf()							
+							else:
+								messagebox.showerror('Error','Invalid electronic mail or phone number entered',parent=chinfo_contacts)
+					else:
+						messagebox.showerror('Error','Please fill at least one field.',parent=chinfo_contacts)
+
+				cur.execute('select uname,email from users')
+				a=dict(cur.fetchall())
+
+				cur.execute('select uname,num from users')
+				b=dict(cur.fetchall())
+
+				chinfo_contacts=tk.Toplevel()
+				chinfo_contacts.resizable(False,False)
+				chinfo_contacts.title('')
+				tk.Label(chinfo_contacts,text=('Change your contact details'),font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,sticky=tk.W)
+				tk.Label(chinfo_contacts,text='If you do not wish to change a\nparticular contact, then leave the\ncorresponding field blank.',font=fnt,justify=tk.LEFT).grid(row=2,column=1,sticky=tk.W,padx=10,pady=10)
+				tk.Label(chinfo_contacts,text='Current\nelectronic mail address',font=fnt,justify=tk.RIGHT).grid(row=5,column=0,sticky=tk.E,padx=10,pady=10)
+				tk.Label(chinfo_contacts,text=a[uname_inp],font=fnt).grid(row=5,column=1,sticky=tk.W,padx=10,pady=10)
+
+				tk.Label(chinfo_contacts,text='New\nelectronic mail address',font=fnt,justify=tk.RIGHT).grid(row=6,column=0,sticky=tk.E,padx=10,pady=10)
+				en2=tk.Entry(chinfo_contacts,font=fnt)
+				en2.grid(row=6,column=1,sticky=tk.EW,padx=10,pady=10)
+
+				tk.Label(chinfo_contacts,text='Current phone number',font=fnt).grid(row=7,column=0,sticky=tk.E,padx=10,pady=10)
+				tk.Label(chinfo_contacts,text=b[uname_inp],font=fnt).grid(row=7,column=1,sticky=tk.W,padx=10,pady=10)
+
+				tk.Label(chinfo_contacts,text='New phone number',font=fnt).grid(row=8,column=0,sticky=tk.E,padx=10,pady=10)
+				en3=tk.Entry(chinfo_contacts,font=fnt)
+				en3.grid(row=8,column=1,sticky=tk.EW,padx=10,pady=10)
+
+				img10=tk.PhotoImage(file='monoico/icon-134.png')
+				btn3=tk.Button(chinfo_contacts,image=img10,command=chcontacts)
+				btn3.image=img10
+				btn3.grid(row=15,column=1,padx=10,pady=10,sticky=tk.W)
+
+			img1=tk.PhotoImage(file='monoico/icon-302.png')
+			btn1=tk.Button(chinfo_home,text='Name',image=img1,command=name)
+			btn1.image=img1
+			btn1.grid(column=0,row=3,padx=10,pady=10,sticky=tk.E)
+			tk.Label(chinfo_home,text='Change your display name',font=fnt,justify=tk.LEFT).grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
+
+			img2=tk.PhotoImage(file='monoico/icon-666.png')
+			btn2=tk.Button(chinfo_home,text='Contact',image=img2,command=contacts)
+			btn2.image=img2
+			btn2.grid(column=0,row=6,padx=10,pady=10,sticky=tk.E)
+			tk.Label(chinfo_home,text='Change your contact details',font=fnt).grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
 
 		cur.execute('select uname,uuid from users')
 		uuidlist=dict(cur.fetchall())
@@ -128,6 +258,8 @@ def onlogin():
 
 		manage_userswin=tk.Tk()
 		manage_userswin.title('Manage your profile')
+		w,h=manage_userswin.winfo_screenwidth(),manage_userswin.winfo_screenheight()
+		manage_userswin.geometry(str(w)+'x'+str(h))
 		
 		tk.Grid.columnconfigure(manage_userswin,0,weight=1)
 		
@@ -164,9 +296,9 @@ def onlogin():
 		tk.Label(f2,text='Change your password.',font=fnt).grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 
 		img9=tk.PhotoImage(file='monoico/icon-86.png')
-		delusrbtn=tk.Button(f2,text='Manage Personal Info',image=img9,command=chinfo)
+		delusrbtn=tk.Button(f2,text='Manage Personal Info',image=img9,command=info)
 		delusrbtn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
-		tk.Label(f2,text='Change personal information.',font=fnt,justify=tk.LEFT).grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
+		tk.Label(f2,text='Change your personal information.',font=fnt,justify=tk.LEFT).grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
 
 		#tk.Grid.rowconfigure(f2,6,weight=1)
 		img3=tk.PhotoImage(file='monoico/icon-722.png')

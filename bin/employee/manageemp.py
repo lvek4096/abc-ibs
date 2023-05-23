@@ -14,11 +14,12 @@ h1fnt=('IBM Plex Sans',24)
 
 manageempwin=tk.Tk()
 manageempwin.title('Manage employees')
-#manageempwin.resizable(False,False)
+w,h=manageempwin.winfo_screenwidth(),manageempwin.winfo_screenheight()
+manageempwin.geometry(str(w)+'x'+str(h))
 
 def viewall():
 	viewall_win=tk.Toplevel()
-	viewall_win.title('employees')
+	viewall_win.title('All employees')
 	viewall_win.resizable(False,False)
 	
 	header=('Employee ID','Employee Username','Employee Name','Employee Password')
@@ -96,7 +97,7 @@ def viewone():
 	for i in a:
 		b.append(i[0])
 
-	img14=tk.PhotoImage(file='monoico/icon-666.png')
+	img14=tk.PhotoImage(file='monoico/icon-716.png')
 	img=tk.Label(frame1,image=img14,font=h1fnt)
 	img.grid(column=0,row=0,padx=10,pady=10)
 	img.image=img14
@@ -254,7 +255,7 @@ def add():
 	
 	id='E'+str(rd.randint(1000,9999))
 
-	img14=tk.PhotoImage(file='monoico/icon-777.png')
+	img14=tk.PhotoImage(file='monoico/icon-67.png')
 	img=tk.Label(add_win,image=img14,font=h1fnt)
 	img.grid(column=0,row=0,padx=10,pady=10)
 	img.image=img14
@@ -265,13 +266,13 @@ def add():
 	bkgid=tk.Label(add_win,text=id,font=fnt)
 	bkgid.grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
 
-	tk.Label(add_win,text='Username',font=fnt).grid(column=0,row=4,sticky=tk.E,padx=10,pady=10)
-	uname=tk.Entry(add_win,font=fnt)
-	uname.grid(column=1,row=4,sticky=tk.EW,padx=10,pady=10)
-
-	tk.Label(add_win,text='Full Name',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
+	tk.Label(add_win,text='Full Name',font=fnt).grid(column=0,row=4,sticky=tk.E,padx=10,pady=10)
 	fname=tk.Entry(add_win,font=fnt)
-	fname.grid(column=1,row=5,sticky=tk.EW,padx=10,pady=10)
+	fname.grid(column=1,row=4,sticky=tk.EW,padx=10,pady=10)
+
+	tk.Label(add_win,text='Username',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
+	uname=tk.Entry(add_win,font=fnt)
+	uname.grid(column=1,row=5,sticky=tk.EW,padx=10,pady=10)
 
 	tk.Label(add_win,text='Password',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
 	passwd=tk.Entry(add_win,font=fnt,show='*')
@@ -325,13 +326,13 @@ tbviewbtn=tk.Button(f2,text='view all',image=img8,font=fnt,command=viewall)
 tbviewbtn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
 tk.Label(f2,text='View all employee details.',font=fnt,fg='blue').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 
-img10=tk.PhotoImage(file='monoico/icon-666.png')
+img10=tk.PhotoImage(file='monoico/icon-716.png')
 viewbtn=tk.Button(f2,text='viewone',image=img10,font=fnt,command=viewone)
 viewbtn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
 tk.Label(f2,text='View a single employee\'s details.',font=fnt).grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
 
 #tk.Grid.rowconfigure(f2,6,weight=1)
-img7=tk.PhotoImage(file='monoico/icon-777.png')
+img7=tk.PhotoImage(file='monoico/icon-67.png')
 tbviewbtn=tk.Button(f2,text='add',image=img7,font=fnt,command=add)
 tbviewbtn.grid(column=0,row=6,padx=10,pady=10,sticky=tk.E)
 tk.Label(f2,text='Register an employee.',font=fnt,fg='green').grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)

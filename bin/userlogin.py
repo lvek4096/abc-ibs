@@ -15,7 +15,8 @@ logwin.title('')
 fnt=('IBM Plex Mono',12)
 fntit=('IBM Plex Mono',12,'italic')
 h1fnt=('IBM Plex Sans',24)
-#logwin.resizable(False, False)
+w,h=logwin.winfo_screenwidth(),logwin.winfo_screenheight()
+logwin.geometry(str(w)+'x'+str(h))
 
 #login
 def login():
@@ -55,17 +56,20 @@ def register():
 		b=(reg_uname_inp,)
 		if (not reg_fname_inp.isspace()==True and not reg_fname_inp=='') and (not reg_email_inp.isspace()==True and not reg_email_inp=='') and (not reg_num_inp.isspace()==True and not reg_num_inp=='') and (not reg_uname_inp.isspace()==True and not reg_uname_inp=='') and (not reg_passwd_inp.isspace()==True and not reg_passwd_inp==''):		#checks if inputs are not empty or contains spaces
 			if b not in users:
-				if len(reg_num_inp) == 10:
-					regsql='insert into users values(%s,%s,%s,%s,%s,%s)'
-					regval=(uuid,reg_fname_inp,reg_email_inp,reg_num_inp,reg_uname_inp,reg_passwd_inp)
+				if '@' in reg_email_inp and '.' in reg_email_inp:
+					if len(reg_num_inp) == 10:
+						regsql='insert into users values(%s,%s,%s,%s,%s,%s)'
+						regval=(uuid,reg_fname_inp,reg_email_inp,reg_num_inp,reg_uname_inp,reg_passwd_inp)
 
-					cur.execute(regsql,regval)
-					con.commit()
+						cur.execute(regsql,regval)
+						con.commit()
 
-					messagebox.showinfo('','The new user '+reg_fname_inp+'\nhas been successfully registered.',parent=regwin)
+						messagebox.showinfo('','The new user '+reg_fname_inp+'\nhas been successfully registered.',parent=regwin)
 
+					else:
+						messagebox.showerror('Error','Invalid phone number entered.',parent=regwin)
 				else:
-					messagebox.showerror('Error','Invalid phone number entered.',parent=regwin)
+					messagebox.showerror('Error','Invalid electronic mail ID entered.',parent=regwin)		
 			else:
 
 				messagebox.showerror('Error','Username '+reg_uname_inp+'\nalready exists.',parent=regwin)
@@ -76,7 +80,7 @@ def register():
 	regwin.title('Register')
 	regwin.resizable(False, False)
 
-	tk.Label(regwin,text='Register',font=h1fnt).grid(column=0,row=0,padx=10,pady=10,sticky=tk.W)
+	tk.Label(regwin,text='Register',font=h1fnt).grid(column=0,row=0,padx=10,pady=10,columnspan=2,sticky=tk.EW)
 	
 	tk.Label(regwin,text='ID',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
 	tk.Label(regwin,text=uuid,font=fnt).grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
@@ -91,7 +95,7 @@ def register():
 	reg_email=tk.Entry(regwin,font=fnt)
 	reg_email.grid(column=1,row=7,sticky=tk.EW,padx=10,pady=10)
 
-	tk.Label(regwin,text='Number',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
+	tk.Label(regwin,text='Phone number',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
 	reg_num=tk.Entry(regwin,font=fnt)
 	reg_num.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
 
@@ -107,7 +111,7 @@ def register():
 
 	regsubimg=tk.PhotoImage(file='monoico/icon-67.png')	
 	regsubmit=tk.Button(regwin,image=regsubimg,command=reguser)
-	regsubmit.grid(column=1,row=14,padx=10,pady=10)
+	regsubmit.grid(column=1,row=14,padx=10,pady=10,sticky=tk.W)
 	regsubmit.image=regsubimg
 	
 	regcloseimg=tk.PhotoImage(file='monoico/icon-66.png')

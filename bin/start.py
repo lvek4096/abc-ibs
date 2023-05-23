@@ -12,6 +12,7 @@ hfnt=('IBM Plex Sans',36,'bold')
 con=ms.connect(host='localhost',user='john',password='123456')
 cur=con.cursor()
 
+os.system('python3 init.py')
 #functions	
 def make_booking():
 	welcome.destroy()
@@ -19,11 +20,13 @@ def make_booking():
 
 def manage_user():
 	welcome.destroy()
-	os.system('python3 manageusr.py')
+	os.system('python3 profile.py')
 	
 #main window
 welcome=tk.Tk()
 welcome.title('')
+w,h=welcome.winfo_screenwidth(),welcome.winfo_screenheight()
+welcome.geometry(str(w)+'x'+str(h))
 
 tk.Grid.columnconfigure(welcome,0,weight=1)
 #FRAME 1

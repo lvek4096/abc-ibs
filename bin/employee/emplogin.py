@@ -14,25 +14,30 @@ h1fnt=('IBM Plex Sans',24)
 
 emplogwin=tk.Tk()
 emplogwin.title('Login for employees')
-#emplogwin.resizable(False,False)
+w,h=emplogwin.winfo_screenwidth(),emplogwin.winfo_screenheight()
+emplogwin.geometry(str(w)+'x'+str(h))
 
 def login():
 	emp_uname_inp=emp_uname.get().lower()
 	emptype_inp=n.get()
 	emp_passwd_inp=emp_passwd.get()
 	
-	if emptype_inp == 'Driver':
+	if emptype_inp == 'Agent':
 		
 		cur.execute('select emp_uname,emp_passwd from employees')
 		e=dict(cur.fetchall())
+
+		cur.execute('select emp_uname,emp_name from employees')
+		f=dict(cur.fetchall())
 		if not emp_uname_inp=='' or emp_uname_inp.isspace():
 			if emp_uname_inp in e.keys():
 				if emp_passwd_inp==e[emp_uname_inp]:
-					messagebox.showinfo('','Welcome '+emp_uname_inp+'.')
+					emplogwin.destroy()
+					os.system('python3 empbkgs.py')
 				else:
-					messagebox.showerror('Error','Invalid password for\ndriver '+emp_uname_inp+'.')
+					messagebox.showerror('Error','Invalid password for\nemployee '+f[emp_uname_inp]+'.')
 			else:
-				messagebox.showerror('Error','Driver '+emp_uname_inp+' does not exist.')
+				messagebox.showerror('Error','Employee '+emp_uname_inp+' does not exist.')
 		else:
 			messagebox.showerror('Error','Do not leave any fields empty.')
 	elif emptype_inp == 'Administrator':
@@ -42,7 +47,6 @@ def login():
 		if emp_uname_inp in a.keys():
 			if emp_passwd_inp==a[emp_uname_inp]:
 				emplogwin.destroy()
-				os.chdir('employee')
 				os.system('python3 admin.py')
 			else:
 				messagebox.showerror('Error','Invalid password for\nadministrator '+emp_uname_inp+'.')
@@ -62,7 +66,7 @@ f1.grid(row=0,column=0,sticky=tk.NSEW)
 tk.Grid.columnconfigure(f1,0,weight=1)
 
 tk.Grid.rowconfigure(f1,0,weight=1)
-tk.Label(f1,text='Login for employees',font=h1fnt).grid(column=0,row=0)
+tk.Label(f1,text='Login for employees',font=h1fnt,justify=tk.CENTER).grid(column=0,row=0)
 
 #FRAME 2
 tk.Grid.rowconfigure(emplogwin,1,weight=1)
@@ -75,7 +79,7 @@ tk.Grid.columnconfigure(f2,1,weight=1)
 
 tk.Label(f2,text='Login as',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
 n=tk.StringVar()
-values=('','Driver','Administrator')
+values=('','Agent','Administrator')
 emptype=ttk.OptionMenu(f2,n,*values);emptype.grid(column=1,row=5,sticky=tk.W,padx=10,pady=10)
 
 tk.Label(f2,text='Username',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)

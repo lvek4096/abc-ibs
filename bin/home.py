@@ -1,11 +1,9 @@
 import platform as pf
-from re import X
 import tkinter as tk
 import os
 import mysql.connector as ms
 from tkinter import scrolledtext
-from tkinter import messagebox
-build='125 (Beta III)'		#Program build
+build='145 (Beta III)'		#Program build
 
 disclaimer='''WARNING
 This is pre-release software.
@@ -65,27 +63,7 @@ def book_bus():		#Opens bus booking window
 	os.system('python3 bus.py')
 
 def about():	#System information
-	'''
-	def ee():
-		q_win=tk.Toplevel()
-		q_win.resizable(False,False)
-		q_win.title('')
-		def anspy():
-			messagebox.showinfo('Correct Answer','The image shows Python code.\n"print()" is used in Python to print; and text with # are comments.',parent=q_win)
 
-		def ansc():
-			messagebox.showerror('Wrong Answer','The image shows Python, not C code.\n"print()" is used in Python to print; and text with # are comments;\nIn C, "#include<.h>" imports modules like "import" in Python.',parent=q_win)
-		img=tk.PhotoImage(file='img/py.png')
-		a=tk.Label(q_win,image=img)
-		a.pack(fill='x')
-		a.image=img
-
-		tk.Label(q_win,text='Q. Is the above code written in Python or C ?',font=fntit).pack()
-
-		tk.Button(q_win,text='Python code',command=anspy,font=fnt).pack()
-
-		tk.Button(q_win,text='C code',command=ansc,font=fnt).pack()
-	'''
 	about=tk.Toplevel()
 	abttitle='About this program on '+pf.system()
 	about.resizable(False, False)
@@ -165,12 +143,6 @@ def about():	#System information
 	cls.grid(column=1,row=25,padx=10,pady=10)
 	cls.image=img1
 
-	'''
-	img2=tk.PhotoImage(file='monoico/icon-80.png')
-	q=tk.Button(about,font=fnt,text='EE',image=img2,command=ee)
-	q.grid(column=1,row=26,padx=10,pady=10)
-	q.image=img2
-	'''
 
 def logout():	#Logs out and returns to the start page.
 	main_menu.destroy()
@@ -178,7 +150,8 @@ def logout():	#Logs out and returns to the start page.
 
 main_menu=tk.Tk()
 main_menu.title('Main Menu')
-#main_menu.resizable(False, False)
+w,h=main_menu.winfo_screenwidth(),main_menu.winfo_screenheight()
+main_menu.geometry(str(w)+'x'+str(h))
 
 tk.Grid.columnconfigure(main_menu,0,weight=1)
 
@@ -232,9 +205,8 @@ exitbtn.grid(column=2,row=11,padx=10,pady=10,sticky=tk.E)
 tk.Label(f2,text='Logout and exit',font=fnt,fg='red').grid(column=3,row=11,padx=10,pady=10,sticky=tk.W)
 
 tk.Grid.rowconfigure(f2,12,weight=1)
-#tk.Label(f2,text=('Know more about\nthis program.'),font=fntit,fg='green',justify=tk.LEFT).grid(column=3,row=12,padx=10,pady=10,sticky=tk.W)
 img0=tk.PhotoImage(file='monoico/icon-78.png')
 infobtn=tk.Button(f2,font=fnt,text='About this program...',image=img0,command=about)
 infobtn.grid(column=2,row=12,padx=10,pady=10,sticky=tk.E)
 tk.Label(f2,text=('Build '+build+' on\n'+pf.system()+' '+pf.release()),font=fntit,justify=tk.LEFT,fg='green').grid(column=3,row=12,padx=10,pady=10,sticky=tk.W)
-f2.mainloop()
+main_menu.mainloop()
