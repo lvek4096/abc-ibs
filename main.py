@@ -45,8 +45,12 @@ def init():		#Initialisation script
 		try:
 			con=ms.connect(host=host,user=uname,password=passwd)
 		except:
-			con=ms.connect(host='localhost',user='root',password='123456')
-			messagebox.showerror('Error','Incorrect hostname or credentials provided.\nFalling back to default credentials.')
+			try:
+				con=ms.connect(host='localhost',user='root',password='123456')
+				messagebox.showerror('Error','Incorrect hostname or credentials provided.\nFalling back to default credentials.')
+			except:
+				messagebox.showerror('Error','DBMS not found on localhost or remote system.\nThe program will terminate.')
+				quit()
 
 		if con.is_connected():
 			init_window.destroy()
@@ -121,8 +125,8 @@ def init():		#Initialisation script
 
 def about():	#About page
 	#Build number
-	build='309 [RC3]'
-	build_timestamp='2023-04-06 01:05:00'	
+	build='310 [V3]'
+	build_timestamp='2023-04-13 00:23:26'	
 	credits_txt='''
 Developed by
 Amadeus Software
@@ -3804,11 +3808,6 @@ which deletes the table structure from the database along with its contents.'''
 		def agent_portal():		#Agent booking menu
 
 			#functions
-			def book_taxi():	#Opens taxi booking window.
-				manage_taxibkg()
-
-			def book_bus():		#Opens bus booking window
-				manage_busbkg()
 			
 			def about_this_program():
 				about()
@@ -3912,13 +3911,13 @@ which deletes the table structure from the database along with its contents.'''
 
 			tk.Grid.rowconfigure(f2,5,weight=1)
 			img6=tk.PhotoImage(file='icons/taxi.png')
-			bkgbtn=tk.Button(f2,text='Book taxi',image=img6,font=fnt,command=book_taxi)
+			bkgbtn=tk.Button(f2,text='Book taxi',image=img6,font=fnt,command=taxi_booking)
 			bkgbtn.grid(column=0,row=5,padx=10,pady=1,sticky=tk.E)
 			bkgbtn.image=img6
 			tk.Label(f2,text='Book a taxi.',font=fnt,bg='yellow').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 					
 			img4=tk.PhotoImage(file='icons/bus.png')
-			passbtn=tk.Button(f2,text='Book Bus',image=img4,command=book_bus)
+			passbtn=tk.Button(f2,text='Book Bus',image=img4,command=bus_booking)
 			passbtn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
 			passbtn.image=img4
 			tk.Label(f2,text='Book a bus.',font=fnt,fg='blue').grid(column=3,row=5,padx=5,pady=10,sticky=tk.W)
