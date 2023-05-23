@@ -9,8 +9,8 @@ def about():	#System information
 	import ctypes
 
 	#Build number
-	build='281 [V2]'
-	build_date='2023-01-20'	
+	build='285 [V2]'
+	build_date='2023-01-21'	
 
 	credits_txt='''
 Developed by

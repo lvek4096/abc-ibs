@@ -497,7 +497,7 @@ def payments():	#Manage payment details
 		viewall_win.title('All transactions')
 		viewall_win.resizable(False,False)
 		
-		header=('Payment ID','Timestamp','Booking ID','Amount','Payment Type','Card Number','Card Name','CVV','Expiry Month','Expiry Year')
+		header=('Payment ID','Timestamp','Booking ID','Amount ($)','Payment Type','Card Number','Card Name','CVV','Expiry Month','Expiry Year')
 
 		sql2=str('select * from payment_details')			#getting data from table
 		cur.execute(sql2)
@@ -535,7 +535,7 @@ def payments():	#Manage payment details
 					exp_mo=c[0][8]
 					exp_yr=c[0][9]
 					
-					e=[('Payment ID',pay_id),('Timestamp',pay_ts),('Booking ID',bkgid),('Amount',amt),('Payment Type',pay_type),('Card Number',cardno),('Cardholder Name',cardname),('CVV',cvv),('Expiry Month',exp_mo),('Expiry Year',exp_yr)]
+					e=[('Payment ID',pay_id),('Timestamp',pay_ts),('Booking ID',bkgid),('Amount ($)',amt),('Payment Type',pay_type),('Card Number',cardno),('Cardholder Name',cardname),('CVV',cvv),('Expiry Month',exp_mo),('Expiry Year',exp_yr)]
 					
 					rows=len(e)
 					cols=len(e[0])

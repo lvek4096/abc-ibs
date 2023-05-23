@@ -129,6 +129,8 @@ def emp_main():
 
 				subbtn=tk.Button(passwd_win,text='Make changes',font=fntit,command=change_admin_passwd)
 				subbtn.grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)	
+
+				passwd_win.bind('<Return>',lambda event:change_admin_passwd())
 			
 			tk.Grid.columnconfigure(root,0,weight=1)
 
@@ -175,7 +177,7 @@ def emp_main():
 			
 			tk.Label(f1,text=('User ID: '+uuidlist[emp_uname_inp]),font=('Segoe UI',12),fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
 
-			tk.Label(f1,text='Administrator\'s Toolbox',font=('Segoe UI',12),justify=tk.CENTER,fg='white',bg='#1b69bc').grid(column=0,row=3,padx=10)
+			tk.Label(f1,text='Administrators\' Toolbox',font=('Segoe UI',12),justify=tk.CENTER,fg='white',bg='#1b69bc').grid(column=0,row=3,padx=10)
 
 			Separator(f1,orient='horizontal').grid(column=0,row=4,sticky=tk.EW,padx=10,pady=10)
 			

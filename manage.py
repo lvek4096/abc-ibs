@@ -1127,6 +1127,7 @@ def manage_db():		#Manage db
 	import os
 	from tkinter import messagebox
 	from tkinter import scrolledtext
+	from tkinter.ttk import Separator
 
 	#Enables DPI scaling on supported versions of Windows
 	if pf.system()=='Windows':
@@ -1162,7 +1163,7 @@ def manage_db():		#Manage db
 				dbwin=tk.Toplevel()
 				dbwin.resizable(False,False)
 				dbwin.title(table.get()+' table')
-				sql=str('show columns from '+table.get())		#getting headers for table
+				sql=str('desc '+table.get())		#getting headers for table
 				cur.execute(sql)
 				a=cur.fetchall()
 				headers_list=[]
@@ -1228,17 +1229,29 @@ def manage_db():		#Manage db
 	def exporttb():		#Export selected table to CSV
 		if not table.get()=='' and not table.get().isspace():
 			if table.get() in tables_list:
-				df=pd.read_sql('select * from '+table.get(),con)
+				cur.execute('select * from '+table.get())
+				data=cur.fetchall()
+
+				sql=str('desc '+table.get())		#Getting description of table structure
+				cur.execute(sql)
+				desc=cur.fetchall()
+
+				headers_list=[]						#Getting headers from description
+				for x in desc:		
+					col=x[0]							
+					headers_list.append(col)
+
+				df=pd.DataFrame(data,columns=headers_list)		#Conversion of data to Pandas dataframe
 				df.set_index(df.columns[0],inplace=True)
 				
 				def export_to_csv():
-					path_input=path.get()
-					if not path_input=='' and not path_input.isspace():
+					filename_inp=filename.get()
+					if not filename_inp=='' and not filename_inp.isspace():
 						df.reset_index(inplace=True)
 						os.chdir('export')
-						df.to_csv(path_input,index=False)
+						df.to_csv(filename_inp,index=False)
 						os.chdir('./..')
-						messagebox.showinfo('','Table '+table.get()+' exported to '+path_input+'.',parent=export_win)
+						messagebox.showinfo('','Table '+table.get()+' exported to '+filename_inp+'.',parent=export_win)
 						export_win.destroy()
 					else:
 						messagebox.showerror('Error','Please enter a filename.',parent=export_win)
@@ -1248,14 +1261,22 @@ def manage_db():		#Manage db
 				export_win.title('Export to CSV')
 				
 				tk.Label(export_win,font=h1fnt,text='Export to CSV file...').grid(row=0,column=0,padx=10,pady=10,sticky=tk.NW)
-				
-				tk.Label(export_win,font=fnt,text='Enter the name of the\nCSV file.\nThe file will be saved to the\n\'export\' folder.',justify=tk.LEFT).grid(row=3,column=0,padx=10,pady=10,sticky=tk.W)
 
-				path=tk.Entry(export_win,font=fnt)
-				path.grid(row=5,column=0,padx=10,pady=10,sticky=tk.EW)
+				Separator(export_win,orient='horizontal').grid(column=0,row=1,sticky=tk.EW,padx=10,pady=10)
+				
+				tk.Label(export_win,font=('Consolas',12,'bold italic'),text='Data').grid(row=2,column=0,padx=10,pady=10,sticky=tk.NW)
+
+				tk.Label(export_win,font=fntit,text=str(df)).grid(row=3,column=0,padx=10,pady=10,sticky=tk.NW)
+
+				Separator(export_win,orient='horizontal').grid(column=0,row=4,sticky=tk.EW,padx=10,pady=10)
+
+				tk.Label(export_win,font=fnt,text='Enter the name of the CSV file.\nThe file will be saved to the \'export\' folder.',justify=tk.LEFT).grid(row=5,column=0,padx=10,pady=10,sticky=tk.W)
+
+				filename=tk.Entry(export_win,font=fnt,width=40)
+				filename.grid(row=7,column=0,padx=10,pady=10,sticky=tk.W)
 
 				submit=tk.Button(export_win,font=fnt,text='Export',command=export_to_csv)
-				submit.grid(row=6,column=0,padx=10,pady=10)
+				submit.grid(row=8,column=0,padx=10,pady=10,sticky=tk.W)
 
 				#Binds Enter key to export function
 				export_win.bind('<Return>',lambda event:export_to_csv())
@@ -1276,15 +1297,13 @@ def manage_db():		#Manage db
 		
 		tk.Label(helpwin,text='What is the difference between\n\'deleting from\' and \'dropping\' a table?',font=h1fnt,justify=tk.LEFT).grid(row=0,column=1,padx=10,pady=10,sticky=tk.W)
 		txt=''''Deleting' from a table performs the SQL DELETE FROM
-operation, which, by default, deletes all records
-from the table, whilst keeping the table structure
-intact.
+operation, which (by default, unless a condition is specified with the WHERE clause), 
+deletes all records from the table, whilst keeping the table structure intact.
 
-On the other hand, 'dropping' a table performs the
-SQL DROP TABLE deletes the table structure from the
-database along with its contents.'''
+On the other hand, 'dropping' a table performs the SQL DROP TABLE operation, 
+which deletes the table structure from the database along with its contents.'''
 
-		a=scrolledtext.ScrolledText(helpwin,wrap=tk.WORD,width=30,height=10,font=fnt)
+		a=scrolledtext.ScrolledText(helpwin,wrap=tk.WORD,width=30,height=10,font=fntit)
 		a.grid(row=3,column=1,padx=10,pady=10,sticky=tk.EW)
 		a.insert(tk.INSERT,txt)
 		a.configure(state='disabled')
@@ -1294,7 +1313,7 @@ database along with its contents.'''
 	user=tk.Menu(menubar,tearoff=0)
 	menubar.add_cascade(label='Help',menu=user,font=menufnt)
 
-	user.add_command(label='DELETE FROM vs DROP table',command=help,font=menufnt,underline=0)
+	user.add_command(label='\'Deleting from\' vs \'dropping\' a table',command=help,font=menufnt,underline=0)
 
 	dbmainwin.config(menu=menubar)
 		
