@@ -9,14 +9,13 @@ def about():	#System information
 	import ctypes
 
 	#Build number
-	build='262'
+	build='266'
 	build_date='2023-01-18'	
 
 	credits_txt='''
 Developed by
-Amadeus Software Solutions
+Amadeus Software
 for ABC Lines
-
 '''
 
 	#Enables DPI scaling on supported Windows versions
@@ -81,7 +80,7 @@ for ABC Lines
 
 	#System info
 	if pf.system()=='Windows':		#Additional info - Windows systems ONLY
-		tk.Label(about,text=(pf.system(),pf.release(),pf.version()),font=('Consolas',12,'bold italic')).grid(column=2,row=7,padx=10)
+		tk.Label(about,text=(pf.system()+' '+pf.release()+'\n(Build '+pf.version()+')'),font=('Consolas',12,'bold italic')).grid(column=2,row=7,padx=10)
 	else:
 		tk.Label(about,text=(pf.system(),pf.release()),font=('Consolas',12,'bold italic')).grid(column=2,row=7,padx=10)
 	
@@ -103,9 +102,12 @@ for ABC Lines
 	tk.Label(about,text=(pf.machine()+' system'),font=fnt).grid(column=0,row=12,columnspan=3,padx=10)
 	Separator(about,orient='horizontal').grid(column=0,row=16,sticky=tk.EW,padx=10,pady=10,columnspan=3)
 	
-
-	dbinfo=tk.Label(about,text='Connected to database \''+con.database+'\'',font=fnt)
-	dbinfo.grid(column=0,row=18,columnspan=3,padx=10)
+	
+	dbinfohdg=tk.Label(about,text='MySQL database details:',font=('Consolas',12,'bold italic'))
+	dbinfohdg.grid(column=0,row=18,columnspan=3,padx=10)
+	
+	dbinfo=tk.Label(about,text='Connected to database \''+con.database+'\''+' on '+con.server_host,font=fnt)
+	dbinfo.grid(column=0,row=19,columnspan=3,padx=10)
 	
 	
 	Separator(about,orient='horizontal').grid(column=0,row=24,sticky=tk.EW,padx=10,pady=10,columnspan=3)

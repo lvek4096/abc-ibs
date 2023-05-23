@@ -305,6 +305,7 @@ def manage_user_profile():		#manages profile
 	import os
 	import platform as pf
 	import ctypes
+	import sysinfo
 
 	try:
 		con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456',database='taxi')
@@ -334,6 +335,7 @@ def manage_user_profile():		#manages profile
 	fnt=('Consolas',12)
 	fntit=('Consolas',12,'italic')
 	h1fnt=('Segoe UI',24)
+	menufnt=('Consolas',11)
 
 	def bookings_login():
 		logwin.destroy()
@@ -555,6 +557,9 @@ def manage_user_profile():		#manages profile
 				btn2.grid(column=0,row=6,padx=10,pady=10,sticky=tk.E)
 				tk.Label(chinfo_home,text='Change your contact details',font=fnt).grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
 
+			def about_this_program():	#About this program
+				sysinfo.about()
+
 			cur.execute('select uname,uuid from users')
 			uuidlist=dict(cur.fetchall())
 			cur.execute('select uname,fname from users')
@@ -570,6 +575,13 @@ def manage_user_profile():		#manages profile
 				w,h=manage_userswin.winfo_screenwidth(),manage_userswin.winfo_screenheight()
 				manage_userswin.geometry(str(w)+'x'+str(h))
 			
+			#Menubar
+			menubar=tk.Menu(manage_userswin)
+			more=tk.Menu(menubar,tearoff=0)
+			menubar.add_cascade(label='Info',menu=more,font=menufnt)
+			more.add_command(label='About this program...',command=about_this_program,font=menufnt,underline=0)
+			manage_userswin.config(menu=menubar)
+
 			tk.Grid.columnconfigure(manage_userswin,0,weight=1)
 			
 			#FRAME 1
