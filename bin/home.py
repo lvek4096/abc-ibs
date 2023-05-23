@@ -5,7 +5,7 @@ import os
 import mysql.connector as ms
 from tkinter import scrolledtext
 from tkinter import messagebox
-build='100 (Public Beta III)\n'		#Program build
+build='105'		#Program build
 
 disclaimer='''WARNING
 This is pre-release software.
@@ -194,19 +194,28 @@ tk.Label(main_menu,text='Book a bus.',font=fnt,fg='blue').grid(column=3,row=5,pa
 
 tk.Label(main_menu,text=('or:'),font=fntit).grid(column=1,row=9,padx=10,sticky=tk.W)
 
+def manage_user():
+	main_menu.destroy()
+	os.system('python3 manageusers.py')
+
+img10=tk.PhotoImage(file='monoico/icon-514.png')
+passbtn=tk.Button(main_menu,text='Profile',image=img10,command=manage_user)
+passbtn.grid(column=0,row=10,padx=10,pady=10)
+tk.Label(main_menu,text='Manage user profile.',font=fnt).grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
+
 img7=tk.PhotoImage(file='monoico/icon-670.png')
 logoutbtn=tk.Button(main_menu,text='Logout',font=fnt,image=img7,command=logout)
-logoutbtn.grid(column=0,row=10,padx=10,pady=10)
-tk.Label(main_menu,text='Logout',font=fnt).grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
+logoutbtn.grid(column=0,row=11,padx=10,pady=10)
+tk.Label(main_menu,text='Logout',font=fnt).grid(column=1,row=11,padx=10,pady=10,sticky=tk.W)
 
 img8=tk.PhotoImage(file='monoico/icon-66.png')
 exitbtn=tk.Button(main_menu,text='Logout and exit',font=fnt,image=img8,command=main_menu.destroy)
-exitbtn.grid(column=2,row=10,padx=10,pady=10)
-tk.Label(main_menu,text='Logout and exit',font=fnt,fg='red').grid(column=3,row=10,padx=10,pady=10,sticky=tk.W)
+exitbtn.grid(column=2,row=11,padx=10,pady=10)
+tk.Label(main_menu,text='Logout and exit',font=fnt,fg='red').grid(column=3,row=11,padx=10,pady=10,sticky=tk.W)
 
-tk.Label(main_menu,text=('Know more about\nthis program'),font=fntit,fg='green',justify=tk.LEFT).grid(column=3,row=11,padx=10,pady=10)
+tk.Label(main_menu,text=('Know more about\nthis program.'),font=fntit,fg='green',justify=tk.LEFT).grid(column=3,row=12,padx=10,pady=10)
 img0=tk.PhotoImage(file='monoico/icon-78.png')
 infobtn=tk.Button(main_menu,font=fnt,text='About this program...',image=img0,command=about)
-infobtn.grid(column=2,row=11,padx=10,pady=10)
-tk.Label(main_menu,text=('Build '+build+' on\n'+pf.system()+' '+pf.release()),font=fntit,justify=tk.RIGHT).grid(column=1,row=11,padx=10,pady=10)
+infobtn.grid(column=2,row=12,padx=10,pady=10)
+tk.Label(main_menu,text=('Build '+build+' on\n'+pf.system()+' '+pf.release()),font=fntit,justify=tk.RIGHT).grid(column=1,row=12,padx=10,pady=10)
 main_menu.mainloop()

@@ -103,7 +103,7 @@ def viewone():
 
 	tk.Label(frame1,font=h1fnt,text='View employee details').grid(row=0,column=1,padx=10,pady=10,sticky=tk.W)
 
-	tk.Label(frame1,font=fnt,text='Enter username').grid(row=4,column=1,padx=10,pady=10,sticky=tk.W)
+	tk.Label(frame1,font=fnt,text='Enter username of employee.').grid(row=4,column=1,padx=10,pady=10,sticky=tk.W)
 	n=tk.StringVar()
 	uname=ttk.Combobox(frame1,textvariable=n,font=fnt)
 	uname.grid(row=5,column=1,padx=10,pady=10,sticky=tk.EW)
@@ -155,7 +155,7 @@ def delone():
 	for i in d:
 		c.append(i[0])
 
-	tk.Label(delone_win,text='Select an employee',font=fntit).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
+	tk.Label(delone_win,text='Select an employee.',font=fntit).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
 
 	n=tk.StringVar()
 	uname=ttk.Combobox(delone_win,textvariable=n,font=fnt,width=19)

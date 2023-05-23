@@ -19,7 +19,7 @@ def make_booking():
 
 def manage_user():
 	welcome.destroy()
-	os.system('python3 users.py')
+	os.system('python3 manageusers.py')
 	
 #main window
 welcome=tk.Tk()

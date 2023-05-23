@@ -36,28 +36,28 @@ def users():
 	os.system('python3 manageusers.py')
 
 
-tk.Label(root,text='Welcome',font=h1fnt).grid(column=1,row=0,padx=10,pady=10)
+tk.Label(root,text='Welcome',font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
 tk.Label(root,text='You can:',font=fntit).grid(column=1,row=2,sticky=tk.W,padx=10)
 		
 img6=tk.PhotoImage(file='monoico/icon-829.png')
 bkgbtn=tk.Button(root,text='View the database',image=img6,font=fnt,command=db)
 bkgbtn.grid(column=0,row=5,padx=10,pady=10)
-tk.Label(root,text='View databases',font=fnt,fg='blue').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
+tk.Label(root,text='Manage the databases.',font=fnt,fg='blue').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 
 img9=tk.PhotoImage(file='monoico/icon-306.png')
 bkgbtn=tk.Button(root,text='Manage employees',image=img9,font=fnt,command=emp)
 bkgbtn.grid(column=2,row=5,padx=10,pady=10)
-tk.Label(root,text='Manage employees',font=fnt,fg='green').grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
+tk.Label(root,text='Manage the employees.',font=fnt,fg='green').grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
 
 img10=tk.PhotoImage(file='monoico/icon-13.png')
 bkgbtn=tk.Button(root,text='Bookings',image=img10,font=fnt,command=bookings)
 bkgbtn.grid(column=0,row=6,padx=10,pady=10)
-tk.Label(root,text='Make bookings',font=fnt).grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
+tk.Label(root,text='Make bookings.',font=fnt).grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
 
 img11=tk.PhotoImage(file='monoico/icon-675.png')
 bkgbtn=tk.Button(root,text='Manage users',image=img11,font=fnt,command=users)
 bkgbtn.grid(column=2,row=6,padx=10,pady=10)
-tk.Label(root,text='Manage users',font=fnt).grid(column=3,row=6,padx=10,pady=10,sticky=tk.W)
+tk.Label(root,text='Manage the users.',font=fnt).grid(column=3,row=6,padx=10,pady=10,sticky=tk.W)
 
 tk.Label(root,text='or:',font=fntit).grid(column=1,row=9,padx=10,sticky=tk.W)
 
@@ -101,15 +101,15 @@ def chrootpasswd():
 img12=tk.PhotoImage(file='monoico/icon-79.png')
 bkgbtn=tk.Button(root,text='root password',image=img12,font=fnt,command=chrootpasswd)
 bkgbtn.grid(column=0,row=10,padx=10,pady=10)
-tk.Label(root,text='Change the\nadministrator password',font=fnt,justify=tk.LEFT).grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
+tk.Label(root,text='Change the\nadministrator password.',font=fnt,justify=tk.LEFT).grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
 
 img7=tk.PhotoImage(file='monoico/icon-670.png')
-bkgbtn=tk.Button(root,text='Logout',image=img7,font=fnt,command=logout)
+bkgbtn=tk.Button(root,text='Logout.',image=img7,font=fnt,command=logout)
 bkgbtn.grid(column=0,row=11,padx=10,pady=10)
 tk.Label(root,text='Logout',font=fnt).grid(column=1,row=11,padx=10,pady=10,sticky=tk.W)
 
 img8=tk.PhotoImage(file='monoico/icon-66.png')
 bkgbtn=tk.Button(root,text='Exit',image=img8,font=fnt,command=root.destroy)
 bkgbtn.grid(column=2,row=11,padx=10,pady=10)
-tk.Label(root,text='Logout and exit',font=fnt,fg='red').grid(column=3,row=11,padx=10,pady=10,sticky=tk.W)
+tk.Label(root,text='Logout and exit.',font=fnt,fg='red').grid(column=3,row=11,padx=10,pady=10,sticky=tk.W)
 root.mainloop()

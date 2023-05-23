@@ -21,12 +21,10 @@ h1fnt=('IBM Plex Sans',24)
 #functions
 def book_taxi():	#Opens taxi booking window.
 	main_menu.destroy()
-	os.chdir('../')
 	os.system('python3 taxi.py')
 
 def book_bus():		#Opens bus booking window
 	main_menu.destroy()
-	os.chdir('../')
 	os.system('python3 bus.py')
 
 def home():	#Logs out and returns to the start page.

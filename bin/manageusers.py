@@ -17,9 +17,9 @@ logwin.resizable(False, False)
 
 def main_login():
 	logwin.destroy()
-	os.system('python3 login.py')
+	os.system('python3 userlogin.py')
 
-def login():
+def onlogin():
 	def manage():
 		def delete():
 			def deluser():
@@ -130,19 +130,19 @@ def login():
 		img4=tk.PhotoImage(file='monoico/icon-79.png')
 		passbtn=tk.Button(manage_userswin,text='Change Password',image=img4,command=passwd)
 		passbtn.grid(column=0,row=5,padx=10,pady=10)
-		tk.Label(manage_userswin,text='Change your password',font=fnt).grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
+		tk.Label(manage_userswin,text='Change your password.',font=fnt).grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 
 		img3=tk.PhotoImage(file='monoico/icon-722.png')
 		delusrbtn=tk.Button(manage_userswin,text='Remove User',image=img3,command=delete)
 		delusrbtn.grid(column=2,row=5,padx=10,pady=10)
-		tk.Label(manage_userswin,text='Delete your profile',font=fnt,fg='red').grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
+		tk.Label(manage_userswin,text='Delete your profile.',font=fnt,fg='red').grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
 		
 		tk.Label(manage_userswin,text=('or:'),font=fntit).grid(column=1,row=9,padx=10,sticky=tk.W)
 
 		img6=tk.PhotoImage(file='monoico/icon-693.png')
 		bkgbtn=tk.Button(manage_userswin,text='Make a booking',image=img6,font=fnt,command=booking)
 		bkgbtn.grid(column=0,row=10,padx=10,pady=10)
-		tk.Label(manage_userswin,text='Make a booking',font=fnt,fg='green').grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
+		tk.Label(manage_userswin,text='Make a booking.',font=fnt,fg='green').grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
 
 		img7=tk.PhotoImage(file='monoico/icon-670.png')
 		logoutbtn=tk.Button(manage_userswin,text='Logout',font=fnt,image=img7,command=logout)
@@ -180,23 +180,10 @@ login_passwd=tk.Entry(logwin,show='*',font=fnt)
 login_passwd.grid(column=1,row=4,sticky=tk.EW,padx=10,pady=10)
 
 img1=tk.PhotoImage(file='monoico/icon-669.png')
-logsubmit=tk.Button(logwin,text='Login...',image=img1,command=login)
+logsubmit=tk.Button(logwin,text='Login...',image=img1,command=onlogin)
 logsubmit.grid(column=1,row=5,padx=10,pady=10)
-#tk.Label(logwin,text='Click to register ->',font=fnt).grid(column=1,row=8)
 
-'''
-img2=tk.PhotoImage(file='monoico/icon-67.png')
-reg=tk.Button(logwin,text='Register',image=img2)
-reg.grid(column=1,row=8,padx=10,pady=10)
-
-img3=tk.PhotoImage(file='monoico/icon-722.png')
-delusrbtn=tk.Button(logwin,text='Remove User',image=img3)
-delusrbtn.grid(column=0,row=8,padx=10,pady=10)
-'''
-
-#img1=tk.PhotoImage(file='monoico/icon-669.png')
 reg=tk.Button(logwin,text='Login or register...',font=fntit,command=main_login)
 reg.grid(column=1,row=6,padx=10,pady=10)
 
-#tk.Label(logwin,text=('Build '+build+' on\n'+pf.system()+' '+pf.release()),font=fntit).grid(column=0,row=12)
 logwin.mainloop()

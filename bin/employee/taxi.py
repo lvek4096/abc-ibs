@@ -215,7 +215,7 @@ btn.image=subimg
 
 def close():
 	window.destroy()
-	os.system('python3 home.py')
+	os.system('python3 adminbkgs.py')
 
 clsimg=tk.PhotoImage(file='monoico/icon-269.png')
 btn3=tk.Button(window,font=fnt,image=clsimg,command=close)

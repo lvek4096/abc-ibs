@@ -20,9 +20,9 @@ def login():
 	emp_uname_inp=emp_uname.get().lower()
 	emptype_inp=n.get()
 	emp_passwd_inp=emp_passwd.get()
-	os.chdir('./employee')
+	
 	if emptype_inp == 'Driver':
-
+		os.chdir('employee')
 		cur.execute('select emp_uname,emp_passwd from employees')
 		e=dict(cur.fetchall())
 		if not emp_uname_inp=='' or emp_uname_inp.isspace():
@@ -36,6 +36,7 @@ def login():
 		else:
 			messagebox.showerror('Error','Do not leave any fields empty.')
 	elif emptype_inp == 'Administrator':
+		os.chdir('employee')
 		cur.execute('select admin_uname,admin_passwd from admin')
 		a=dict(cur.fetchall())
 		if emp_uname_inp in a.keys():
