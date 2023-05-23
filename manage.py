@@ -19,9 +19,9 @@ def manage_admin():	#Manage admins
 	cur=con.cursor()
 
 	#Fonts
-	fnt=('IBM Plex Mono',12)
-	fntit=('IBM Plex Mono',12,'italic')
-	h1fnt=('IBM Plex Sans',24)
+	fnt=('Consolas',12)
+	fntit=('Consolas',12,'italic')
+	h1fnt=('Segoe UI',24)
 
 	#Creating Toplevel window
 	manageadminwin=tk.Toplevel()
@@ -314,7 +314,7 @@ def manage_admin():	#Manage admins
 	himg.image=img6
 	tk.Label(f1,text=('Manage the administrators...'),font=h1fnt).grid(column=1,row=0,sticky=tk.W,padx=10,pady=10)
 
-	tk.Label(f1,text=('Connected to database: '+con.database),font=('IBM Plex Sans',12),justify=tk.LEFT,fg='green').grid(column=1,row=1,sticky=tk.W,padx=10,pady=10)
+	tk.Label(f1,text=('Connected to database: '+con.database),font=('Segoe UI',12),justify=tk.LEFT,fg='green').grid(column=1,row=1,sticky=tk.W,padx=10,pady=10)
 	ttk.Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 	#FRAME 2
 	tk.Grid.rowconfigure(manageadminwin,1,weight=1)
@@ -387,9 +387,9 @@ def manage_agents():	#Manage agents (employees)
 	cur=con.cursor()
 
 	#Fonts for GUI
-	fnt=('IBM Plex Mono',12)
-	fntit=('IBM Plex Mono',12,'italic')
-	h1fnt=('IBM Plex Sans',24)
+	fnt=('Consolas',12)
+	fntit=('Consolas',12,'italic')
+	h1fnt=('Segoe UI',24)
 
 	#Creating Toplevel window
 	manage_agentwin=tk.Toplevel()
@@ -673,7 +673,7 @@ def manage_agents():	#Manage agents (employees)
 	himg.image=img6
 	tk.Label(f1,text=('Manage the agents...'),font=h1fnt).grid(column=1,row=0,sticky=tk.W,padx=10,pady=10)
 
-	tk.Label(f1,text=('Connected to database: '+con.database),font=('IBM Plex Sans',12),justify=tk.LEFT,fg='green').grid(column=1,row=1,sticky=tk.W,padx=10,pady=10)
+	tk.Label(f1,text=('Connected to database: '+con.database),font=('Segoe UI',12),justify=tk.LEFT,fg='green').grid(column=1,row=1,sticky=tk.W,padx=10,pady=10)
 	ttk.Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 	#FRAME 2
 	tk.Grid.rowconfigure(manage_agentwin,1,weight=1)
@@ -744,9 +744,9 @@ def manage_users():	#Manage users
 	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
 	cur=con.cursor()
 
-	fnt=('IBM Plex Mono',12)
-	fntit=('IBM Plex Mono',12,'italic')
-	h1fnt=('IBM Plex Sans',24)
+	fnt=('Consolas',12)
+	fntit=('Consolas',12,'italic')
+	h1fnt=('Segoe UI',24)
 
 	manageuserwin=tk.Toplevel()
 	manageuserwin.title('User Manager')
@@ -1045,7 +1045,7 @@ def manage_users():	#Manage users
 	himg=tk.Label(f1,text=('Manage the users...'),font=h1fnt)
 	himg.grid(column=1,row=0,sticky=tk.W,padx=10,pady=10)
 	himg.image=img6
-	tk.Label(f1,text=('Connected to database: '+con.database),font=('IBM Plex Sans',12),justify=tk.LEFT,fg='green').grid(column=1,row=1,sticky=tk.W,padx=10,pady=10)
+	tk.Label(f1,text=('Connected to database: '+con.database),font=('Segoe UI',12),justify=tk.LEFT,fg='green').grid(column=1,row=1,sticky=tk.W,padx=10,pady=10)
 
 	ttk.Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 
@@ -1126,10 +1126,10 @@ def manage_db():		#Manage db
 	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
 	cur=con.cursor()
 
-	fnt=('IBM Plex Mono',12)
-	fntit=('IBM Plex Mono',12,'italic')
-	h1fnt=('IBM Plex Sans',24)
-	menufnt=('IBM Plex Mono',11)
+	fnt=('Consolas',12)
+	fntit=('Consolas',12,'italic')
+	h1fnt=('Segoe UI',24)
+	menufnt=('Consolas',11)
 
 	dbmainwin=tk.Toplevel()
 	dbmainwin.title('Database Manager')
@@ -1233,8 +1233,6 @@ def manage_db():		#Manage db
 				
 				tk.Label(export_win,font=h1fnt,text='Export to CSV file...').grid(row=0,column=0,padx=10,pady=10,sticky=tk.NW)
 				
-				tk.Label(export_win,font=('IBM Plex Mono',12,'bold italic'),text='Data',justify=tk.LEFT).grid(row=1,column=0,padx=10,pady=10,sticky=tk.W)
-				
 				tk.Label(export_win,font=fnt,text='Enter the name of the\nCSV file.\nThe file will be saved to the\n\'export\' folder.',justify=tk.LEFT).grid(row=3,column=0,padx=10,pady=10,sticky=tk.W)
 
 				path=tk.Entry(export_win,font=fnt)
@@ -1304,7 +1302,7 @@ database along with its contents.'''
 
 	tk.Label(f1,text=('Manage the databases...'),font=h1fnt).grid(column=1,row=0,sticky=tk.W,padx=10,pady=10)
 	tk.Grid.rowconfigure(f1,1,weight=1)
-	tk.Label(f1,text=('Connected to database: '+con.database),font=('IBM Plex Sans',12),justify=tk.LEFT,fg='green').grid(column=1,row=1,sticky=tk.W,padx=10,pady=1)
+	tk.Label(f1,text=('Connected to database: '+con.database),font=('Segoe UI',12),justify=tk.LEFT,fg='green').grid(column=1,row=1,sticky=tk.W,padx=10,pady=1)
 	ttk.Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 	#FRAME 2
 	tk.Grid.rowconfigure(dbmainwin,1,weight=1)

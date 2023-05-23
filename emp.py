@@ -35,10 +35,10 @@ def emp_main():
 	init.initdb()
 	
 	#fonts
-	fnt=('IBM Plex Mono',12)
-	fntit=('IBM Plex Mono',12,'italic')
-	h1fnt=('IBM Plex Sans',24)
-	menufnt=('IBM Plex Mono',11)
+	fnt=('Consolas',12)
+	fntit=('Consolas',12,'italic')
+	h1fnt=('Segoe UI',24)
+	menufnt=('Consolas',11)
 
 	#main window
 	emp_login_win=tk.Tk()
@@ -166,9 +166,9 @@ def emp_main():
 			
 			tk.Label(f1,text='Welcome, '+a[emp_uname_inp],font=h1fnt,justify=tk.CENTER,fg='white',bg='#283593').grid(column=0,row=1,padx=10)
 			
-			tk.Label(f1,text=('User ID: '+uuidlist[emp_uname_inp]),font=('IBM Plex Sans',12),fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
+			tk.Label(f1,text=('User ID: '+uuidlist[emp_uname_inp]),font=('Segoe UI',12),fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
 
-			tk.Label(f1,text='Administrator\'s Toolbox',font=('IBM Plex Sans',12),justify=tk.CENTER,fg='white',bg='#283593').grid(column=0,row=3,padx=10)
+			tk.Label(f1,text='Administrator\'s Toolbox',font=('Segoe UI',12),justify=tk.CENTER,fg='white',bg='#283593').grid(column=0,row=3,padx=10)
 
 			Separator(f1,orient='horizontal').grid(column=0,row=4,sticky=tk.EW,padx=10,pady=10)
 			
@@ -306,8 +306,8 @@ def emp_main():
 				logo.image=logo_img
 				
 				txt='Welcome, '+b[emp_uname_inp]
-				tk.Label(f1,text=('User ID: '+uuidlist[emp_uname_inp]),font=('IBM Plex Sans',12),fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
-				tk.Label(f1,text='Make and manage bookings',fg='white',bg='#283593',font=('IBM Plex Sans',12),justify=tk.CENTER).grid(column=0,row=3,padx=10,pady=10)
+				tk.Label(f1,text=('User ID: '+uuidlist[emp_uname_inp]),font=('Segoe UI',12),fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
+				tk.Label(f1,text='Make and manage bookings',fg='white',bg='#283593',font=('Segoe UI',12),justify=tk.CENTER).grid(column=0,row=3,padx=10,pady=10)
 			elif emptype_inp=='Administrator':
 				txt='Make and manage bookings'
 			

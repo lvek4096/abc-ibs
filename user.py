@@ -25,10 +25,10 @@ def bookings():		#make bookings
 	#init GUI
 	logwin=tk.Tk()
 	logwin.title('Make bookings')
-	fnt=('IBM Plex Mono',12)
-	fntit=('IBM Plex Mono',12,'italic')
-	h1fnt=('IBM Plex Sans',24)
-	menufnt=('IBM Plex Mono',11)
+	fnt=('Consolas',12)
+	fntit=('Consolas',12,'italic')
+	h1fnt=('Segoe UI',24)
+	menufnt=('Consolas',11)
 
 	#Maximises windows
 	try:
@@ -95,7 +95,7 @@ def bookings():		#make bookings
 			logo.image=logo_img
 
 			tk.Label(f1,text='Welcome, '+a[uname_inp],font=h1fnt,fg='white',bg='#283593').grid(column=0,row=1)
-			tk.Label(f1,text=('ID: '+uuidlist[uname_inp]),font=('IBM Plex Sans',12),fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
+			tk.Label(f1,text=('ID: '+uuidlist[uname_inp]),font=('Segoe UI',12),fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
 			
 			
 			Separator(f1,orient='horizontal').grid(column=0,row=3,sticky=tk.EW,padx=10,pady=10)
@@ -325,9 +325,9 @@ def manage_user_profile():		#manages profile
 		logwin.geometry(str(w)+'x'+str(h))
 
 
-	fnt=('IBM Plex Mono',12)
-	fntit=('IBM Plex Mono',12,'italic')
-	h1fnt=('IBM Plex Sans',24)
+	fnt=('Consolas',12)
+	fntit=('Consolas',12,'italic')
+	h1fnt=('Segoe UI',24)
 
 	def bookings_login():
 		logwin.destroy()
@@ -401,7 +401,7 @@ def manage_user_profile():		#manages profile
 				passwin.title('Change Password')
 				passwin.resizable(False,False)
 
-				tk.Label(passwin,text='Changing password for '+fnamelist[uname_inp],font=('IBM Plex Sans',18)).grid(column=1,row=0,padx=10,pady=10)
+				tk.Label(passwin,text='Changing password for '+fnamelist[uname_inp],font=('Segoe UI',18)).grid(column=1,row=0,padx=10,pady=10)
 
 				tk.Label(passwin,text='Current Password',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
 				old_pass=tk.Entry(passwin,show='*',font=fnt);old_pass.grid(column=1,row=5,sticky=tk.EW,padx=10,pady=10)
@@ -585,8 +585,8 @@ def manage_user_profile():		#manages profile
 			logo.image=logo_img
 
 			tk.Label(f1,text=('Welcome, '+fnamelist[uname_inp]),font=h1fnt,fg='white',bg='#283593').grid(column=0,row=1,padx=10,sticky=tk.EW)
-			tk.Label(f1,text=('ID: '+uuidlist[uname_inp]),font=('IBM Plex Sans',12),fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
-			tk.Label(f1,text=('Manage your profile'),font=('IBM Plex Sans',12),fg='white',bg='#283593').grid(column=0,row=3,padx=10,sticky=tk.EW)
+			tk.Label(f1,text=('ID: '+uuidlist[uname_inp]),font=('Segoe UI',12),fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
+			tk.Label(f1,text=('Manage your profile'),font=('Segoe UI',12),fg='white',bg='#283593').grid(column=0,row=3,padx=10,sticky=tk.EW)
 			
 			Separator(f1,orient='horizontal').grid(column=0,row=4,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 			#FRAME 2

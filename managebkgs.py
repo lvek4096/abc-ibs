@@ -16,9 +16,9 @@ def bus():	#manage bus bookings
 	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
 	cur=con.cursor()
 
-	fnt=('IBM Plex Mono',12)
-	fntit=('IBM Plex Mono',12,'italic')
-	h1fnt=('IBM Plex Sans',24)
+	fnt=('Consolas',12)
+	fntit=('Consolas',12,'italic')
+	h1fnt=('Segoe UI',24)
 
 	managebusbkgs=tk.Toplevel()
 	managebusbkgs.title('Bus Bookings Manager')
@@ -183,7 +183,7 @@ def bus():	#manage bus bookings
 	himg.grid(column=0,row=0,sticky=tk.E,padx=10,pady=10)
 	himg.image=img6
 	tk.Label(f1,text=('Manage the bus booking...'),font=h1fnt).grid(column=1,row=0,sticky=tk.W,padx=10,pady=10)
-	tk.Label(f1,text=('Connected to database: '+con.database),font=('IBM Plex Sans',12),justify=tk.LEFT,fg='green').grid(column=1,row=1,sticky=tk.W,padx=10,pady=10)
+	tk.Label(f1,text=('Connected to database: '+con.database),font=('Segoe UI',12),justify=tk.LEFT,fg='green').grid(column=1,row=1,sticky=tk.W,padx=10,pady=10)
 	ttk.Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 	#FRAME 2
 	tk.Grid.rowconfigure(managebusbkgs,1,weight=1)
@@ -241,9 +241,9 @@ def taxi():	#Manage taxi bookings
 	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
 	cur=con.cursor()
 
-	fnt=('IBM Plex Mono',12)
-	fntit=('IBM Plex Mono',12,'italic')
-	h1fnt=('IBM Plex Sans',24)
+	fnt=('Consolas',12)
+	fntit=('Consolas',12,'italic')
+	h1fnt=('Segoe UI',24)
 
 	managetaxibkgs=tk.Toplevel()
 	managetaxibkgs.title('Taxi Bookings Manager')
@@ -404,7 +404,7 @@ def taxi():	#Manage taxi bookings
 	himg.image=img6
 	tk.Label(f1,text=('Manage the taxi booking...'),font=h1fnt).grid(column=1,row=0,sticky=tk.W,padx=10,pady=10)
 
-	tk.Label(f1,text=('Connected to database: '+con.database),font=('IBM Plex Sans',12),justify=tk.LEFT,fg='green').grid(column=1,row=1,sticky=tk.W,padx=10,pady=10)
+	tk.Label(f1,text=('Connected to database: '+con.database),font=('Segoe UI',12),justify=tk.LEFT,fg='green').grid(column=1,row=1,sticky=tk.W,padx=10,pady=10)
 	ttk.Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 	#FRAME 2
 	tk.Grid.rowconfigure(managetaxibkgs,1,weight=1)

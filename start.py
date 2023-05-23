@@ -16,11 +16,11 @@ import sysinfo
 #definitions
 
 #Font
-fnt=('IBM Plex Mono',12,'bold italic')
-fntit=('IBM Plex Mono',12,'italic')
-h1fnt=('IBM Plex Sans',24)
-hfnt=('IBM Plex Sans',36,'bold')
-menufnt=('IBM Plex Mono',11)
+fnt=('Consolas',12,'bold italic')
+fntit=('Consolas',12,'italic')
+h1fnt=('Segoe UI',24)
+hfnt=('Segoe UI',36,'bold')
+menufnt=('Consolas',11)
 
 #MySQL connection
 

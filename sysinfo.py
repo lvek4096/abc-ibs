@@ -9,8 +9,8 @@ def about():	#System information
 	import ctypes
 
 	#Build number
-	build='255'
-	build_date='2022-09-24'	
+	build='257'
+	build_date='2023-01-14'	
 
 	credits_txt='''
 Developed by
@@ -29,8 +29,8 @@ LIYO K. JOHN - MEGHNATH M.D. - MOHAMMED SAAD
 	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
 
 	#Fonts
-	fnt=('IBM Plex Mono',12)
-	h1fnt=('IBM Plex Sans',24)
+	fnt=('Consolas',12)
+	h1fnt=('Segoe UI',24)
 
 	about=tk.Toplevel()
 	abttitle='About this program'
@@ -48,7 +48,7 @@ LIYO K. JOHN - MEGHNATH M.D. - MOHAMMED SAAD
 	logo.image=logo_img
 	
 
-	credits=tk.Label(about,font=('IBM Plex Mono',12,'bold italic'),text=credits_txt,justify=tk.CENTER)
+	credits=tk.Label(about,font=('Consolas',12,'bold italic'),text=credits_txt,justify=tk.CENTER)
 	credits.grid(row=2,column=2,sticky=tk.EW,padx=10,pady=10)
 	
 	Separator(about,orient='horizontal').grid(column=0,row=5,sticky=tk.EW,padx=10,pady=10,columnspan=3)
@@ -76,9 +76,9 @@ LIYO K. JOHN - MEGHNATH M.D. - MOHAMMED SAAD
 
 	#System info
 	if pf.system()=='Windows':		#Additional info - Windows systems ONLY
-		tk.Label(about,text=(pf.system(),pf.release(),pf.version()),font=('IBM Plex Mono',12,'bold italic')).grid(column=2,row=7,padx=10)
+		tk.Label(about,text=(pf.system(),pf.release(),pf.version()),font=('Consolas',12,'bold italic')).grid(column=2,row=7,padx=10)
 	else:
-		tk.Label(about,text=(pf.system(),pf.release()),font=('IBM Plex Mono',12,'bold italic')).grid(column=2,row=7,padx=10)
+		tk.Label(about,text=(pf.system(),pf.release()),font=('Consolas',12,'bold italic')).grid(column=2,row=7,padx=10)
 	
 	#Additional distribution info - Linux ONLY
 
@@ -94,7 +94,7 @@ LIYO K. JOHN - MEGHNATH M.D. - MOHAMMED SAAD
 	Separator(about,orient='horizontal').grid(column=0,row=10,sticky=tk.EW,padx=10,pady=10,columnspan=3)
 	
 	#Hostname and CPU type (e.g.i386 (32-bit); AMD64/x86_64 (64-bit) etc.)
-	tk.Label(about,text=pf.node(),font=('IBM Plex Mono',12,'bold italic')).grid(column=0,row=11,columnspan=3,padx=10)
+	tk.Label(about,text=pf.node(),font=('Consolas',12,'bold italic')).grid(column=0,row=11,columnspan=3,padx=10)
 	tk.Label(about,text=(pf.machine()+' system'),font=fnt).grid(column=0,row=12,columnspan=3,padx=10)
 	Separator(about,orient='horizontal').grid(column=0,row=16,sticky=tk.EW,padx=10,pady=10,columnspan=3)
 	

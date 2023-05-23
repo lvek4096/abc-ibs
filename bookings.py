@@ -31,9 +31,9 @@ def bus():
 	#GUI
 	window=tk.Toplevel()
 	#fonts for GUI
-	fnt=('IBM Plex Mono',12)
-	fntit=('IBM Plex Mono',12,'italic')
-	h1fnt=('IBM Plex Sans',24)
+	fnt=('Consolas',12)
+	fntit=('Consolas',12,'italic')
+	h1fnt=('Segoe UI',24)
 	#Main Window parameters
 	window.title('Bus Booking')
 	window.resizable(False, False)
@@ -383,9 +383,9 @@ def taxi():
 	#GUI
 	window=tk.Toplevel()
 	#fonts for GUI
-	fnt=('IBM Plex Mono',12)
-	fntit=('IBM Plex Mono',12,'italic')
-	h1fnt=('IBM Plex Sans',24)
+	fnt=('Consolas',12)
+	fntit=('Consolas',12,'italic')
+	h1fnt=('Segoe UI',24)
 	#Main Window parameters
 	window.title('Taxi Booking')
 	window.resizable(False, False)
