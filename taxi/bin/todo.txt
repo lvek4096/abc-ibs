@@ -1,0 +1,12 @@
+Bugs
+====
+
+1. Bus Bookings - Any timing can be entered for booking, even past dates.  - FIXED
+2. Passwords, card details unencrypted.
+
+
+Others
+======
+
+1. Document code
+2. Prepare project file.
