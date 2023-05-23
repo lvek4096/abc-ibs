@@ -89,9 +89,10 @@ def emp_main():
 
 			def admins():
 				manage.manage_admin()
-
+			
 			def manage_payments():
 				managebkgs.payments()
+
 			
 			def passwd():
 				passwd_win=tk.Toplevel()
@@ -322,7 +323,7 @@ def emp_main():
 				
 				txt='Welcome, '+b[emp_uname_inp]
 				tk.Label(f1,text=('User ID: '+uuidlist[emp_uname_inp]),font=('Segoe UI',12),fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
-				tk.Label(f1,text='Make and manage bookings',fg='white',bg='#1b69bc',font=('Segoe UI',12),justify=tk.CENTER).grid(column=0,row=3,padx=10,pady=10)
+				tk.Label(f1,text='Agent Portal',fg='white',bg='#1b69bc',font=('Segoe UI',12),justify=tk.CENTER).grid(column=0,row=3,padx=10,pady=10)
 			elif emptype_inp=='Administrator':
 				txt='Make and manage bookings'
 			
@@ -361,8 +362,9 @@ def emp_main():
 			btn5=tk.Button(f2,text='Manage taxi bookings',font=fntit,command=managetaxibkgs)
 			btn5.grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
 
-			btn7=tk.Button(f2,text='Manage payments',font=fntit,command=managepayments)
-			btn7.grid(column=2,row=7,padx=10,pady=10,sticky=tk.W)
+			if emptype_inp=='Agent':
+				btn7=tk.Button(f2,text='Manage payments',font=fntit,command=managepayments)
+				btn7.grid(column=2,row=7,padx=10,pady=10,sticky=tk.W)
 			
 			btn6=tk.Button(f2,text='Manage bus bookings',font=fntit,command=managebusbkgs)
 			btn6.grid(column=3,row=7,padx=10,pady=10,sticky=tk.W)
@@ -386,7 +388,7 @@ def emp_main():
 			cur.execute('select emp_uname,emp_name from employees')			#list of agent usernames and names
 			f=dict(cur.fetchall())
 
-			if not emp_uname_inp=='' or emp_uname_inp.isspace():
+			if (not emp_uname_inp=='' and not emp_uname_inp.isspace()) and (not emp_passwd_inp=='' and not emp_passwd_inp.isspace()):
 				if emp_uname_inp in e.keys():
 					if emp_passwd_inp==e[emp_uname_inp]:
 						emp_login_win.destroy()
@@ -406,7 +408,7 @@ def emp_main():
 			cur.execute('select admin_uname,admin_name from admin')		#list of admin usernames and names
 			b=dict(cur.fetchall())
 
-			if not emp_uname_inp=='' or emp_uname_inp.isspace():
+			if (not emp_uname_inp=='' and not emp_uname_inp.isspace()) and (not emp_passwd_inp=='' and not emp_passwd_inp.isspace()):
 				if emp_uname_inp in a.keys():
 					if emp_passwd_inp==a[emp_uname_inp]:
 						emp_login_win.destroy()
@@ -417,6 +419,7 @@ def emp_main():
 					messagebox.showerror('Error','Administrator '+emp_uname_inp+' does not exist.')
 			else:
 				messagebox.showerror('Error','Do not leave any fields empty.')
+		
 		else:
 			messagebox.showerror('Error','Please select login type.')
 	

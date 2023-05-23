@@ -9,7 +9,7 @@ def about():	#System information
 	import ctypes
 
 	#Build number
-	build='273'
+	build='275 [V2]'
 	build_date='2023-01-19'	
 
 	credits_txt='''
@@ -44,7 +44,7 @@ for ABC Lines
 	
 	#Labels
 	tk.Label(about,text='About',font=h1fnt).grid(column=0,row=0,columnspan=3)
-	tk.Label(about,text=('Build '+build+' ('+build_date+')'),font=fnt).grid(column=0,row=1,columnspan=3)
+	tk.Label(about,text=('Build '+build+'\n('+build_date+')'),font=fnt).grid(column=0,row=1,columnspan=3)
 	
 	logo_img=tk.PhotoImage(file='img/amadeus.png')
 	logo=tk.Label(about,image=logo_img)
