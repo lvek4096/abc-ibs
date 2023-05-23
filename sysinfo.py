@@ -9,7 +9,7 @@ def about():	#System information
 	import ctypes
 
 	#Build number
-	build='292 [V2]'
+	build='299 [RC3]'
 	build_date='2023-04-02'	
 
 	credits_txt='''
@@ -28,13 +28,16 @@ for ABC Lines
 
 	#mysql connection
 	try:
-		con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456',database='taxi')
+		con=ms.connect(host='192.168.0.175',user='dbms',password='123456',database='taxi')
 	except:
 		con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
 
 	#Fonts
-	fnt=('Consolas',12)
-	h1fnt=('Segoe UI',24)
+	fnt=('Cascadia Mono',12)
+	fntit=('Cascadia Mono',12,'italic')
+	hfnt=('Segoe UI Variable Display Semibold',24)
+	h2fnt=('Segoe UI Variable Text',12)
+	menufnt=('Cascadia Mono',11)
 
 	about=tk.Toplevel()
 	abttitle='About this program'
@@ -46,7 +49,7 @@ for ABC Lines
 	
 	
 	#Labels
-	tk.Label(about,text='About',font=h1fnt).grid(column=0,row=0,columnspan=3)
+	tk.Label(about,text='About',font=hfnt).grid(column=0,row=0,columnspan=3)
 	tk.Label(about,text=('Build '+build+'\n('+build_date+')'),font=fnt).grid(column=0,row=1,columnspan=3)
 	
 	logo_img=tk.PhotoImage(file='img/amadeus.png')
@@ -55,7 +58,7 @@ for ABC Lines
 	logo.image=logo_img
 	
 
-	credits=tk.Label(about,font=('Consolas',12,'bold italic'),text=credits_txt,justify=tk.LEFT)
+	credits=tk.Label(about,font=('Cascadia Mono',12,'bold italic'),text=credits_txt,justify=tk.LEFT)
 	credits.grid(row=2,column=2,sticky=tk.NSEW,padx=10,pady=10)
 	
 	Separator(about,orient='horizontal').grid(column=0,row=5,sticky=tk.EW,padx=10,pady=10,columnspan=3)

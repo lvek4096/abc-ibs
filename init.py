@@ -2,7 +2,7 @@ def initdb():
 	import mysql.connector as ms
 
 	try:
-		con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456')
+		con=ms.connect(host='192.168.0.175',user='dbms',password='123456')
 	except:
 		con=ms.connect(host='localhost',user='root',password='123456')
 	cur=con.cursor()
