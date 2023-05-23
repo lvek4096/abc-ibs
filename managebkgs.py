@@ -7,8 +7,10 @@ def bus():
 	from tkinter import messagebox
 	import random as rd
 	
-	if pf.system()=='Windows':
+	try:
 		ctypes.windll.shcore.SetProcessDpiAwareness(True)
+	except:
+		pass
 
 	con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
 	cur=con.cursor()
@@ -243,8 +245,10 @@ def taxi():
 	from tkinter import messagebox
 	import random as rd
 	
-	if pf.system()=='Windows':
+	try:
 		ctypes.windll.shcore.SetProcessDpiAwareness(True)
+	except:
+		pass
 
 	con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
 	cur=con.cursor()

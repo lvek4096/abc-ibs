@@ -1,4 +1,4 @@
-def manageadmin():
+def manageadmin():	#Manage admins
 	import mysql.connector as ms
 	import tkinter as tk
 	import platform as pf
@@ -7,8 +7,10 @@ def manageadmin():
 	from tkinter import messagebox
 	import random as rd
 	
-	if pf.system()=='Windows':
+	try:
 		ctypes.windll.shcore.SetProcessDpiAwareness(True)
+	except:
+		pass
 
 	con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
 	cur=con.cursor()
@@ -369,7 +371,7 @@ def manageadmin():
 
 	tk.Grid.rowconfigure(f2,16,weight=1)
 
-def manageemp():
+def manageemp():	#Manage agents (employees)
 	import mysql.connector as ms
 	import tkinter as tk
 	import platform as pf
@@ -378,8 +380,10 @@ def manageemp():
 	from tkinter import messagebox
 	import random as rd
 
-	if pf.system()=='Windows':
+	try:
 		ctypes.windll.shcore.SetProcessDpiAwareness(True)
+	except:
+		pass
 
 	con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
 	cur=con.cursor()
@@ -741,7 +745,7 @@ def manageemp():
 
 	tk.Grid.rowconfigure(f2,16,weight=1)
 	
-def manageusers():
+def manageusers():	#Manage users
 	import mysql.connector as ms
 	import tkinter as tk
 	import platform as pf
@@ -750,8 +754,10 @@ def manageusers():
 	from tkinter import messagebox
 	import random as rd
 
-	if pf.system()=='Windows':
+	try:
 		ctypes.windll.shcore.SetProcessDpiAwareness(True)
+	except:
+		pass
 
 	con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
 	cur=con.cursor()
@@ -1127,7 +1133,7 @@ def manageusers():
 
 	tk.Grid.rowconfigure(f2,17,weight=1)
 
-def managedb():
+def managedb():		#Manage db
 	import mysql.connector as ms
 	import tkinter as tk
 	import platform as pf
@@ -1136,8 +1142,10 @@ def managedb():
 	from tkinter import messagebox
 	from tkinter import scrolledtext
 
-	if pf.system()=='Windows':
+	try:
 		ctypes.windll.shcore.SetProcessDpiAwareness(True)
+	except:
+		pass
 
 	#mysql connection
 	con=ms.connect(host='localhost',user='john',password='123456',database='taxi')

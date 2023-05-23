@@ -5,10 +5,13 @@ def about():	#System information
 	import mysql.connector as ms
 	from tkinter import scrolledtext
 	import ctypes
-	build='217 (RC 1)'	
+	build='226 (RC 1)'	
 
-	if pf.system()=='Windows':
+	#Enables DPI scaling on Win10+
+	try:
 		ctypes.windll.shcore.SetProcessDpiAwareness(True)
+	except:
+		pass
 
 	disclaimer='''CAUTION
 This software is currently
@@ -54,7 +57,6 @@ https://fonts.google.com/icons
 
 	#mysql connection
 	con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
-	cur=con.cursor()
 
 	if con.is_connected()==True:
 		dbstatus='Connected to database.'
@@ -89,9 +91,9 @@ https://fonts.google.com/icons
 	Separator(about,orient='horizontal').grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
 
 	if pf.system()=='Windows':
-		src=tk.PhotoImage(file='img/oldwin.png')
-	elif pf.system()=='Darwin':		#Darwin - macOS kernel
-		src=tk.PhotoImage(file='img/oldmac.png')	
+		src=tk.PhotoImage(file='img/win.png')
+	elif pf.system()=='Darwin':		#Darwin - macOS
+		src=tk.PhotoImage(file='img/macos.png')	
 	elif pf.system()=='Linux':
 		src=tk.PhotoImage(file='img/linux.png')
 

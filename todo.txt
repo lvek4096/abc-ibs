@@ -9,6 +9,6 @@ Bugs
 Others
 ======
 
-1. Document code
-2. Prepare project file.
+1. Document code  - IN PROGRESS
+2. Prepare project file.	- IN PROGRESS
 3. Theming.

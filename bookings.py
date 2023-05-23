@@ -11,24 +11,20 @@ def bus():
 	import platform as pf
 	import ctypes
 
-	if pf.system()=='Windows':
+	#Enables DPI scaling on Win10+
+	try:
 		ctypes.windll.shcore.SetProcessDpiAwareness(True)
+	except:
+		pass
 
 	#definitions
 	id=rd.randint(10000,99999)	#random number for ID
 	locations=['Blackcastle','Westerwitch','Ironlyn','Wellsummer','Meadowynne','Aldcourt','Butterhaven','Winterglass','Northcrest','Mallowdell']	#defines locations
 	ctype=['','Standard','Express','Premium']	#defines coach type
 
-
 	#mysql connection
 	con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
 	cur=con.cursor()
-
-	if con.is_connected()==True:
-		dbstatus='Connected to database.'
-	else:
-		dbstatus='Not connected to database.'
-	
 
 	#GUI
 	window=tk.Toplevel()
@@ -40,9 +36,9 @@ def bus():
 	window.title('Bus Booking')
 	window.resizable(False, False)
 
-	def payment():
+	def payment():	#Payment function
 		
-		def submit():
+		def submit():	#Takes inputs; inserts to DB
 			#timestamp to mark bookings
 			t=datetime.now()
 			today=t.strftime('%Y-%m-%d %H:%M:%S')	#Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
@@ -52,6 +48,7 @@ def bus():
 			cur.execute(sql,val)
 			con.commit()
 
+			#Confirmation message
 			submit_message=tk.Toplevel()
 			submit_message.resizable(False,False)
 			submit_message.title(' ')
@@ -83,6 +80,7 @@ def bus():
 			btn2=tk.Button(submit_message,text='OK',font=fnt,command=exit,justify=tk.CENTER)
 			btn2.grid(row=8,column=0,padx=10,pady=10)
 
+		#Taking of inputs
 		start_inp=start.get().capitalize()
 		end_inp=end.get().capitalize()
 		date_inp=date.get()
@@ -98,28 +96,29 @@ def bus():
 		ts=datetime.strptime(ts_str,format)		#Converts string back to datetime object for comparision
 
 
-		y=date_inp+' '+time_inp
+		y=date_inp+' '+time_inp		#Combines date and time inputs into correct format for comparision purpose
 
 		
-		d_res=True
+		d_res=True	#Is date and time inputted 'y' in format?
 		try:
 			d_res=bool(datetime.strptime(y,format))
-		except ValueError:
+		except ValueError:		#If 'y' not in format
 			d_res=False
 
-		if d_res==True:
-			x=datetime.strptime(y,format)
+		if d_res==True:		
+			x=datetime.strptime(y,format)	#Converts input to datetime for comparision
 
-			if x >= ts:
+			if x >= ts:		#Is y not before minimum 45min from now?
 				isNotPast=True
 			else:
 				isNotPast=False
 
-			if x <= ts+timedelta(days=1096):			# 3-year limit on dates entered
+			if x <= ts+timedelta(days=1096):		# 3-year limit on dates entered
 				isNotDistFuture=True
 			else:
 				isNotDistFuture=False
 
+		#Checking of inputs before proceeding to payment
 		if (not start_inp=='' and not start_inp.isspace()) and (not end_inp=='' and not end_inp.isspace()) and (not date_inp=='' and not date_inp.isspace()) and (not time_inp=='' and not time_inp.isspace()) and (not bustype_inp=='' and not bustype_inp.isspace()):
 			if start_inp in locations and end_inp in locations:
 				if not start_inp == end_inp:
@@ -129,14 +128,17 @@ def bus():
 							pay_win.title('')
 							pay_win.resizable(False,False)
 
-							def make_payment():
+							def make_payment():		#Payment function
+
+								#Takes inputs of payment details
 								paytype_inp=m.get()
 								cardno_inp=card_no.get()
 								cardname_inp=card_name.get()
 								expyear_inp=exp_year.get()
 								expmonth_inp=exp_month.get()
 								cvv_inp=cvv_no.get()
-
+								
+								#Gets current month and year for expiry date checking
 								x=datetime.now()
 								cmonth=x.month
 								cyear=x.year
@@ -156,7 +158,7 @@ def bus():
 
 								
 									
-
+								#Payment details input checking
 								if (not paytype_inp=='' and not paytype_inp.isspace()) and (not cardno_inp=='' and not cardno_inp.isspace()) and (not cardname_inp=='' and not cardname_inp.isspace()) and (not expyear_inp=='' and not expyear_inp.isspace()) and (not expmonth_inp=='' and not expmonth_inp.isspace()) and (not cvv_inp=='' and not cvv_inp.isspace()):
 									if len(cardno_inp) == 16:
 										if len(expyear_inp) == 4 and int(expyear_inp) >= cyear:
@@ -270,21 +272,23 @@ def bus():
 				messagebox.showerror('Error','Invalid origin or destination.',parent=window)
 		else:
 			messagebox.showerror('Error','Please do not leave any fields blank.',parent=window)
-
+	#FRAME 1
 	f1=tk.Frame(window)
 	f1.grid(row=0,column=0)
 
 	tk.Label(f1,text='BUS BOOKING',font=h1fnt,fg='blue').grid(column=1,row=0,padx=10,pady=10)
 	#Separator(f1,orient='horizontal').grid(row=1,column=1,sticky=tk.EW)
 
+	#FRAME 2
 	f2=tk.Frame(window)
 	f2.grid(row=1,column=0)
 
-	#Input fields
+	#Booking ID
 	tk.Label(f2,text='ID',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
 	bkgid=tk.Label(f2,text=id,font=fnt)
 	bkgid.grid(column=1,row=5,sticky=tk.W,padx=10,pady=10)
 
+	#Input fields
 	tk.Label(f2,text='Number of passengers',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
 	q=tk.IntVar()
 	pass_no=tk.Scale(f2,from_=1,to=100,orient='horizontal',variable=q,font=fnt)
@@ -338,8 +342,11 @@ def taxi():
 	import ctypes
 	import platform as pf
 
-	if pf.system()=='Windows':
+	#Enables DPI scaling on Win10+
+	try:
 		ctypes.windll.shcore.SetProcessDpiAwareness(True)
+	except:
+		pass
 
 	#definitions
 	id=rd.randint(10000,99999)	#random number for ID
@@ -611,14 +618,16 @@ def taxi():
 				messagebox.showerror('Error','Invalid origin or destination.',parent=window)
 		else:
 			messagebox.showerror('Error','Please do not leave any fields blank.',parent=window)
-
+	
+	#FRAME 1
 	f1=tk.Frame(window)
 	f1.grid(row=0,column=0)
 
 	tk.Label(f1,text='TAXI BOOKING',font=h1fnt,bg='yellow').grid(column=1,row=0,padx=10,pady=10)
 
 	#Separator(f1,orient='horizontal').grid(row=1,column=1,sticky=tk.EW)
-
+	
+	#FRAME 2
 	f2=tk.Frame(window)
 	f2.grid(row=1,column=0)
 
@@ -644,15 +653,8 @@ def taxi():
 	end.grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
 	end['values']=locations
 
-	'''
-	tk.Label(f2,text='Date',font=fnt).grid(column=0,row=10,sticky=tk.E,padx=10,pady=10)
-	date=tk.Entry(f2,font=fnt)
-	date.grid(column=1,row=10,sticky=tk.EW,padx=10,pady=10)
-	tk.Label(f2,text='[YYYY-MM-DD]',font=fnt).grid(column=2,row=10,padx=10,pady=10)
-	'''
-
-	a=(t+timedelta(minutes=10))
-	b=(t+timedelta(days=1,minutes=10))
+	a=(t+timedelta(minutes=10))		#today
+	b=(t+timedelta(days=1,minutes=10))		#tomorrow
 	datetype=('','Today '+a.strftime('%Y-%m-%d'),'Tomorrow '+b.strftime('%Y-%m-%d'))
 
 	p=tk.StringVar()
