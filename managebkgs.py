@@ -1,4 +1,4 @@
-def bus():
+def bus():	#manage bus bookings
 	import mysql.connector as ms
 	import tkinter as tk
 	import platform as pf
@@ -24,7 +24,7 @@ def bus():
 	managebusbkgs.title('Bus Bookings Manager')
 
 
-	def viewall():
+	def viewall():	#View all bookings
 		viewall_win=tk.Toplevel()
 		viewall_win.title('All bus bookings')
 		viewall_win.resizable(False,False)
@@ -47,7 +47,7 @@ def bus():
 				if i==0:
 					entry.configure(fg='red',font=fntit)	#colors and italicises header
 
-	def viewone():
+	def viewone():	#View one booking
 		def get_busbkginfo():
 			
 			if not bkgid.get()=='' and not bkgid.get().isspace():
@@ -83,7 +83,7 @@ def bus():
 			else:
 				messagebox.showerror('Error','Please enter the booking.',parent=viewone_win)
 		viewone_win=tk.Toplevel()
-		viewone_win.title(' ')
+		viewone_win.title('View bus booking')
 		viewone_win.resizable(False,False)
 		
 		frame1=tk.Frame(viewone_win)
@@ -118,10 +118,10 @@ def bus():
 		submit.grid(row=5,column=2,padx=10,pady=10)
 		viewone_win.bind('<Return>',lambda event:get_busbkginfo())
 
-	def delone():
+	def delone():	#Delete booking
 		delone_win=tk.Toplevel()
 		delone_win.resizable(False,False)
-		delone_win.title(' ')
+		delone_win.title('Delete bus booking')
 
 		def delete_busbkg():
 			if not bkgid.get()=='' and not bkgid.get().isspace():
@@ -223,7 +223,7 @@ def bus():
 
 	tk.Grid.rowconfigure(f2,16,weight=1)
 
-def taxi():
+def taxi():	#Manage taxi bookings
 	import mysql.connector as ms
 	import tkinter as tk
 	import platform as pf
@@ -248,7 +248,7 @@ def taxi():
 	managetaxibkgs=tk.Toplevel()
 	managetaxibkgs.title('Taxi Bookings Manager')
 
-	def viewall():
+	def viewall():  #View all bookings
 		viewall_win=tk.Toplevel()
 		viewall_win.title('All taxi bookings')
 		viewall_win.resizable(False,False)
@@ -270,7 +270,7 @@ def taxi():
 				if i==0:
 					entry.configure(fg='red',font=fntit)	#colors and italicises header
 
-	def viewone():
+	def viewone():	#View one bookings
 		def get_taxibkginfo():
 			
 			if not bkgid.get()=='' and not bkgid.get().isspace():
@@ -304,7 +304,7 @@ def taxi():
 			else:
 				messagebox.showerror('Error','Please enter the booking.',parent=viewone_win)
 		viewone_win=tk.Toplevel()
-		viewone_win.title(' ')
+		viewone_win.title('View taxi booking')
 		viewone_win.resizable(False,False)
 		
 		frame1=tk.Frame(viewone_win)
@@ -327,7 +327,7 @@ def taxi():
 		img.grid(column=0,row=0,padx=10,pady=10)
 		img.image=img14
 
-		tk.Label(frame1,font=h1fnt,text='View taxi booking details').grid(row=0,column=1,padx=10,pady=10,sticky=tk.W)
+		tk.Label(frame1,font=h1fnt,text='View taxi booking details...').grid(row=0,column=1,padx=10,pady=10,sticky=tk.W)
 
 		tk.Label(frame1,font=fnt,text='Enter booking ID.').grid(row=4,column=1,padx=10,pady=10,sticky=tk.W)
 		n=tk.StringVar()
@@ -339,10 +339,10 @@ def taxi():
 		submit.grid(row=5,column=2,padx=10,pady=10)
 		viewone_win.bind('<Return>',lambda event:get_taxibkginfo())
 
-	def delone():
+	def delone(): #Delete one booking.
 		delone_win=tk.Toplevel()
 		delone_win.resizable(False,False)
-		delone_win.title(' ')
+		delone_win.title('Delete taxi booking')
 		def delete_taxi_bkg():
 			if not bkgid.get()=='' and not bkgid.get().isspace():
 				if bkgid.get() in taxi_bkgid_list:

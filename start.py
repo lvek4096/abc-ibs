@@ -37,7 +37,7 @@ def make_booking():		#to make booking
 
 def manage_user():		#to manage user
 	welcome.destroy()
-	user.manageprofile()
+	user.manage_user_profile()
 
 def about_this_program():
 	sysinfo.about()
@@ -78,7 +78,11 @@ f1.grid(row=0,column=0,sticky=tk.NSEW)
 tk.Grid.columnconfigure(f1,0,weight=1)
 tk.Grid.rowconfigure(f1,0,weight=1)
 
-tk.Label(f1,text='Welcome',font=hfnt,fg='white',bg='#283593').grid(column=0,row=0,padx=10,pady=10,sticky=tk.EW)
+logo_img=tk.PhotoImage(file='img/logo.png')
+logo=tk.Label(f1,image=logo_img,font=hfnt,fg='white',bg='#283593')
+logo.grid(column=0,row=0,padx=10,pady=10,sticky=tk.EW)
+logo.image=logo_img
+
 Separator(f1,orient='horizontal').grid(column=0,row=1,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 
 #FRAME 2

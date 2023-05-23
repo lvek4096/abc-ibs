@@ -38,8 +38,8 @@ def bookings():		#make bookings
 		logwin.geometry(str(w)+'x'+str(h))
 
 	#login
-	def login():
-		
+	def onlogin():
+		#Main menu
 		def main():
 			#functions
 			def book_taxi():	#Opens taxi booking window.
@@ -86,9 +86,19 @@ def bookings():		#make bookings
 			uuidlist=dict(cur.fetchall())
 
 			tk.Grid.rowconfigure(f1,0,weight=1)
-			tk.Label(f1,text='Welcome, '+a[uname_inp],font=h1fnt,fg='white',bg='#283593').grid(column=0,row=0)
-			tk.Label(f1,text=('ID: '+uuidlist[uname_inp]),font=('IBM Plex Sans',12),fg='black',bg='#00e676').grid(column=0,row=1,padx=10)
-			Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10)
+			tk.Grid.rowconfigure(f1,1,weight=1)
+			tk.Grid.rowconfigure(f1,2,weight=1)
+
+			logo_img=tk.PhotoImage(file='img/logo.png')
+			logo=tk.Label(f1,image=logo_img,fg='white',bg='#283593')
+			logo.grid(column=0,row=0,padx=10,pady=10,sticky=tk.EW)
+			logo.image=logo_img
+
+			tk.Label(f1,text='Welcome, '+a[uname_inp],font=h1fnt,fg='white',bg='#283593').grid(column=0,row=1)
+			tk.Label(f1,text=('ID: '+uuidlist[uname_inp]),font=('IBM Plex Sans',12),fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
+			
+			
+			Separator(f1,orient='horizontal').grid(column=0,row=3,sticky=tk.EW,padx=10,pady=10)
 
 			#FRAME 2
 			tk.Grid.rowconfigure(main_menu,1,weight=1)
@@ -157,10 +167,10 @@ def bookings():		#make bookings
 		else:
 			messagebox.showerror('Error','Please do not leave any fields blank.')
 
-
+	#Register user
 	def register():
 		uuid='U'+str(rd.randint(10000,99999))
-		
+		#Adds user to DB
 		def reguser():
 			
 			reg_fname_inp=reg_fname.get()
@@ -174,27 +184,24 @@ def bookings():		#make bookings
 
 			b=(reg_uname_inp,)
 			if (not reg_fname_inp.isspace()==True and not reg_fname_inp=='') and (not reg_email_inp.isspace()==True and not reg_email_inp=='') and (not reg_num_inp.isspace()==True and not reg_num_inp=='') and (not reg_uname_inp.isspace()==True and not reg_uname_inp=='') and (not reg_passwd_inp.isspace()==True and not reg_passwd_inp==''):		#checks if inputs are not empty or contains spaces
-				if reg_uname_inp not in "<>,/\\\'\"!@#$%^&*()+={}[]": 	#Are special characters present?
-					if b not in users:
-						if '@' in reg_email_inp and '.' in reg_email_inp:
-							if len(reg_num_inp) == 10:
-								regsql='insert into users values(%s,%s,%s,%s,%s,%s)'
-								regval=(uuid,reg_fname_inp,reg_email_inp,reg_num_inp,reg_uname_inp,reg_passwd_inp)
+				if b not in users:
+					if '@' in reg_email_inp and '.' in reg_email_inp:
+						if len(reg_num_inp) == 10:
+							regsql='insert into users values(%s,%s,%s,%s,%s,%s)'
+							regval=(uuid,reg_fname_inp,reg_email_inp,reg_num_inp,reg_uname_inp,reg_passwd_inp)
 
-								cur.execute(regsql,regval)
-								con.commit()
+							cur.execute(regsql,regval)
+							con.commit()
 
-								messagebox.showinfo('','The new user '+reg_fname_inp+'\nhas been successfully registered.',parent=regwin)
-								regwin.destroy()
-							else:
-								messagebox.showerror('Error','Invalid phone number entered.',parent=regwin)
+							messagebox.showinfo('','The new user '+reg_fname_inp+'\nhas been successfully registered.',parent=regwin)
+							regwin.destroy()
 						else:
-							messagebox.showerror('Error','Invalid electronic mail ID entered.',parent=regwin)		
+							messagebox.showerror('Error','Invalid phone number entered.',parent=regwin)
 					else:
-
-						messagebox.showerror('Error','Username '+reg_uname_inp+'\nalready exists.',parent=regwin)
+						messagebox.showerror('Error','Invalid electronic mail ID entered.',parent=regwin)		
 				else:
-					messagebox.showerror('Error','Please do not use any special characters.',parent=regwin)			
+					messagebox.showerror('Error','Username '+reg_uname_inp+'\nalready exists.',parent=regwin)
+				
 			else:
 				messagebox.showerror('Error','Please do not leave any fields blank.',parent=regwin)
 		
@@ -234,10 +241,10 @@ def bookings():		#make bookings
 		regsubmit=tk.Button(regwin,text='Register',command=reguser,font=fntit)
 		regsubmit.grid(column=1,row=14,padx=10,pady=10,sticky=tk.W)
 		regwin.bind('<Return>',lambda event:reguser())
-		
-	def profile():
+	#Opens manage profile window
+	def manage_profile():
 		logwin.destroy()
-		manageprofile()
+		manage_user_profile()
 
 	#Window
 	tk.Grid.columnconfigure(logwin,0,weight=1)
@@ -272,7 +279,7 @@ def bookings():		#make bookings
 	login_passwd.grid(column=1,row=4,sticky=tk.W,padx=10,pady=10)
 
 	img1=tk.PhotoImage(file='icons/login.png')
-	logsubmit=tk.Button(f2,text='Login...',image=img1,command=login)
+	logsubmit=tk.Button(f2,text='Login...',image=img1,command=onlogin)
 	logsubmit.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
 
 	tk.Grid.rowconfigure(f2,12,weight=2)
@@ -281,13 +288,13 @@ def bookings():		#make bookings
 	reg=tk.Button(f2,text='Register',image=img2,command=register)
 	reg.grid(column=1,row=12,padx=10,pady=10,sticky=tk.W)
 
-	manage=tk.Button(f2,text='Manage your profile...',font=fntit,command=profile)
+	manage=tk.Button(f2,text='Manage your profile...',font=fntit,command=manage_profile)
 	manage.grid(column=1,row=11,padx=10,pady=10,columnspan=2,sticky=tk.W)
 
-	logwin.bind('<Return>',lambda event:login())
+	logwin.bind('<Return>',lambda event:onlogin())
 	logwin.mainloop()
 
-def manageprofile():		#manage profile
+def manage_user_profile():		#manages profile
 	import tkinter as tk
 	from tkinter import messagebox
 	import mysql.connector as ms
@@ -322,16 +329,16 @@ def manageprofile():		#manage profile
 	fntit=('IBM Plex Mono',12,'italic')
 	h1fnt=('IBM Plex Sans',24)
 
-	def main_login():
+	def bookings_login():
 		logwin.destroy()
 		bookings()
 
-
+	
 	def onlogin():
-		def manage():
+		def manage(): #Manage user window
 
-			def delete():
-				def deluser():
+			def delete():	#Delete function
+				def deluser():	#Delete user from DB
 					cur.execute('select uname,passwd from users')
 					b=cur.fetchall()
 					upass=dict(b)
@@ -366,9 +373,8 @@ def manageprofile():		#manage profile
 				delsubmit=tk.Button(delwin,text='Delete User',command=deluser,font=fntit,fg='red');delsubmit.grid(column=0,row=6,padx=10,pady=10)
 				delwin.bind('<Return>',lambda event:deluser())
 				
-
-			def passwd():
-				def chpasswd():
+			def passwd():	#Change password function
+				def chpasswd():		#Changes passwd in DB.
 					cur.execute('select uname,passwd from users')
 					b=cur.fetchall()
 					upass=dict(b)
@@ -407,20 +413,19 @@ def manageprofile():		#manage profile
 				passsubmit.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
 				passwin.bind('<Return>',lambda event:chpasswd())
 				
-
-			def logout():
+			def logout():	#Logs out
 				manage_userswin.destroy()
 				os.system('python3 start.py')
 			
-			def info():
+			def info():		#Changes personal information.
 				chinfo_home=tk.Toplevel()
 				chinfo_home.resizable(False,False)
-				chinfo_home.title(' ')
+				chinfo_home.title('Change personal information')
 				tk.Label(chinfo_home,text=('Change your\npersonal information'),font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,sticky=tk.W)
 				
-				def name():
+				def name():		#Change full name
 
-					def chname():
+					def chname():		#Changes name in DB
 						new_name=en1.get()
 
 						if not new_name=='' and not new_name.isspace():
@@ -437,7 +442,7 @@ def manageprofile():		#manage profile
 							messagebox.showerror('','No new name has been specified.',parent=chinfo_name)
 					chinfo_name=tk.Toplevel()
 					chinfo_name.resizable(False,False)
-					chinfo_name.title(' ')
+					chinfo_name.title('Change display name...')
 					tk.Label(chinfo_name,text=('Change your display name'),font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,sticky=tk.W)
 					
 					tk.Label(chinfo_name,text='Current name',font=fnt).grid(row=5,column=0,sticky=tk.E,padx=10,pady=10)
@@ -449,10 +454,12 @@ def manageprofile():		#manage profile
 
 					btn3=tk.Button(chinfo_name,text='Make changes',font=fntit,command=chname)
 					btn3.grid(row=10,column=1,padx=10,pady=10,sticky=tk.W)
+
+					#Binds Enter key to submit function
 					chinfo_name.bind('<Return>',lambda event:chname())
 
-				def contacts():
-					def chcontacts():
+				def contacts():		#Change contact info
+					def chcontacts():	#Changes email or phone number in DB
 						new_email=en2.get()
 						new_num=en3.get()
 					
@@ -507,7 +514,7 @@ def manageprofile():		#manage profile
 
 					chinfo_contacts=tk.Toplevel()
 					chinfo_contacts.resizable(False,False)
-					chinfo_contacts.title(' ')
+					chinfo_contacts.title('Change contact details...')
 					tk.Label(chinfo_contacts,text=('Change your contact details'),font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,sticky=tk.W)
 					tk.Label(chinfo_contacts,text='If you do not wish to change a\nparticular contact, then leave the\ncorresponding field blank.',font=fnt,justify=tk.LEFT).grid(row=2,column=1,sticky=tk.W,padx=10,pady=10)
 					tk.Label(chinfo_contacts,text='Current\nelectronic mail address',font=fnt,justify=tk.RIGHT).grid(row=5,column=0,sticky=tk.E,padx=10,pady=10)
@@ -527,6 +534,7 @@ def manageprofile():		#manage profile
 					btn3=tk.Button(chinfo_contacts,text='Make changes',font=fntit,command=chcontacts)
 					btn3.grid(row=15,column=1,padx=10,pady=10,sticky=tk.W)
 
+					#Binds Enter key to submit function
 					chinfo_contacts.bind('<Return>',lambda event:chcontacts())
 
 				img1=tk.PhotoImage(file='icons/user.png')
@@ -567,9 +575,20 @@ def manageprofile():		#manage profile
 			tk.Grid.columnconfigure(f1,0,weight=1)
 			
 			tk.Grid.rowconfigure(f1,0,weight=1)
-			tk.Label(f1,text=('Welcome, '+fnamelist[uname_inp]),font=h1fnt,fg='white',bg='#283593').grid(column=0,row=0,padx=10,sticky=tk.EW)
-			tk.Label(f1,text=('ID: '+uuidlist[uname_inp]),font=('IBM Plex Sans',12),fg='black',bg='#00e676').grid(column=0,row=1,padx=10)
-			Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10,columnspan=2)
+			tk.Grid.rowconfigure(f1,1,weight=1)
+			tk.Grid.rowconfigure(f1,2,weight=1)
+			tk.Grid.rowconfigure(f1,3,weight=1)
+
+			logo_img=tk.PhotoImage(file='img/logo.png')
+			logo=tk.Label(f1,image=logo_img,fg='white',bg='#283593')
+			logo.grid(column=0,row=0,padx=10,pady=10,sticky=tk.EW)
+			logo.image=logo_img
+
+			tk.Label(f1,text=('Welcome, '+fnamelist[uname_inp]),font=h1fnt,fg='white',bg='#283593').grid(column=0,row=1,padx=10,sticky=tk.EW)
+			tk.Label(f1,text=('ID: '+uuidlist[uname_inp]),font=('IBM Plex Sans',12),fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
+			tk.Label(f1,text=('Manage your profile'),font=('IBM Plex Sans',12),fg='white',bg='#283593').grid(column=0,row=3,padx=10,sticky=tk.EW)
+			
+			Separator(f1,orient='horizontal').grid(column=0,row=4,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 			#FRAME 2
 			tk.Grid.rowconfigure(manage_userswin,1,weight=1)
 			f2=tk.Frame(manage_userswin)
@@ -592,7 +611,7 @@ def manageprofile():		#manage profile
 			img9=tk.PhotoImage(file='icons/user.png')
 			delusrbtn=tk.Button(f2,text='Manage Personal Info',image=img9,command=info)
 			delusrbtn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
-			tk.Label(f2,text='Change your personal information.',font=fnt,justify=tk.LEFT).grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
+			tk.Label(f2,text='Change your personal information.',font=fnt,fg='green').grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
 
 			tk.Grid.rowconfigure(f2,6,weight=1)
 			img3=tk.PhotoImage(file='icons/ban_user.png')
@@ -672,8 +691,9 @@ def manageprofile():		#manage profile
 	tk.Grid.rowconfigure(f4,6,weight=1)
 	tk.Label(f4,text='Want to make bookings?\nClick here to continue.',font=fntit,justify=tk.RIGHT,bg='#00e676').grid(column=0,row=6,padx=10,pady=10,sticky=tk.E)
 	img6=tk.PhotoImage(file='icons/booking.png')
-	bkgbtn=tk.Button(f4,text='Booking',image=img6,font=fnt,command=main_login)
+	bkgbtn=tk.Button(f4,text='Booking',image=img6,font=fnt,command=bookings_login)
 	bkgbtn.grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
 
+	#Binds enter key to login function
 	logwin.bind('<Return>',lambda event:onlogin())
 	logwin.mainloop()

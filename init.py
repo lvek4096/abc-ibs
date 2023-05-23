@@ -16,7 +16,7 @@ def initdb():
 
 	try:	#creates root and demo users IF NOT EXISTS
 		cur.execute("insert into admin values('A0001','root','System Administrator','123456')")
-		cur.execute("insert into employees values('E0001','demoemp','Demonstration Employee','demo')")
+		cur.execute("insert into employees values('E0001','demoagent','Demonstration Agent','demoagent')")
 		cur.execute("insert into users values('U00001','Demonstration User','demo@abc.com','1234567890','demo','demo')")
 	except:
 		pass

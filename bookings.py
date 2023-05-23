@@ -38,7 +38,7 @@ def bus():
 	window.title('Bus Booking')
 	window.resizable(False, False)
 
-	def payment():	#Payment function
+	def payment():	#Payment window
 
 		#Taking of inputs
 		start_inp=start.get().capitalize()
@@ -59,10 +59,10 @@ def bus():
 		y=date_inp+' '+time_inp		#Combines date and time inputs into correct format for comparision purpose
 
 		
-		d_res=True	#Is date and time inputted 'y' in format?
+		d_res=True	
 		try:
-			d_res=bool(datetime.strptime(y,format))
-		except ValueError:		#If 'y' not in format
+			d_res=bool(datetime.strptime(y,format))  #Is date and time inputted in format?
+		except ValueError:		
 			d_res=False
 
 		if d_res==True:		
@@ -85,7 +85,7 @@ def bus():
 					if d_res==True and len(date_inp)==10 and len(time_inp)==5: 
 						if isNotPast==True and isNotDistFuture==True:
 							pay_win=tk.Toplevel()
-							pay_win.title(' ')
+							pay_win.title('Payment Gateway')
 							pay_win.resizable(False,False)
 
 							def make_payment():		#Payment function
@@ -104,7 +104,7 @@ def bus():
 								cyear=x.year
 
 								def pay():
-									def submit():	#Takes inputs; inserts to DB
+									def submit():	#Adds booking to DB
 										#timestamp to mark bookings
 										t=datetime.now()
 										today=t.strftime('%Y-%m-%d %H:%M:%S')	#Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
@@ -117,7 +117,7 @@ def bus():
 										#Confirmation message
 										submit_message=tk.Toplevel()
 										submit_message.resizable(False,False)
-										submit_message.title(' ')
+										submit_message.title('Booking successful')
 
 										tk.Label(submit_message,text='The booking has been\nsuccessfully made.',font=h1fnt,justify=tk.LEFT).grid(row=0,column=0,sticky=tk.W,padx=10,pady=10)
 
@@ -269,12 +269,8 @@ def bus():
 							cvv_no=tk.Entry(f4,font=fnt)
 							cvv_no.grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
 
-							#tk.Label(f4,text='Make payment',font=fnt).grid(column=0,row=10,sticky=tk.E,padx=10,pady=10)
-							#subimg=tk.PhotoImage(file='monoico/icon-394.png')
 							btn=tk.Button(f4,font=fntit,text='Pay',command=make_payment,fg='green');btn.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
-							#btn.image=subimg
-
-							#tk.Label(f4,text='Return to previous page',font=fnt).grid(column=0,row=15,sticky=tk.E,padx=10,pady=10)
+							
 							retimg=tk.PhotoImage(file='icons/return.png')
 							btn4=tk.Button(f4,font=fnt,image=retimg,command=pay_win.destroy)
 							btn4.grid(column=0,row=15,padx=10,pady=10,sticky=tk.SW)
@@ -348,6 +344,7 @@ def bus():
 	btn.grid(column=1,row=15,padx=10,pady=10,sticky=tk.W)
 	btn.image=subimg
 
+	#Binds enter key to submit function
 	window.bind('<Return>',lambda event:payment())
 
 def taxi():
@@ -393,7 +390,7 @@ def taxi():
 	window.title('Taxi Booking')
 	window.resizable(False, False)
 
-	def payment():
+	def payment():	#Payment function
 		
 		bkgdate=''
 		if 'Today' in p.get():
@@ -411,7 +408,7 @@ def taxi():
 		taxitype_inp=n.get()
 
 		format='%Y-%m-%d %H:%M'	#datetime format
-		current_ts=datetime.now()+timedelta(minutes=10)	#timestamp for reference - 45 min from current time
+		current_ts=datetime.now()+timedelta(minutes=10)	#timestamp for reference - 10 min from current time
 
 		ts_str=current_ts.strftime(format)	#Converts datetime to string in specific time format (YYYY-MM-DD HH:MM; MySQL datetime format)
 
@@ -423,19 +420,19 @@ def taxi():
 		
 		d_res=True
 		try:
-			d_res=bool(datetime.strptime(y,format))
+			d_res=bool(datetime.strptime(y,format))		#Is date and time inputted in correct format?
 		except ValueError:
 			d_res=False
 
 		if d_res==True:
-			x=datetime.strptime(y,format)
+			x=datetime.strptime(y,format)		#Converts inputs to datetime format
 
-			if x >= ts:
+			if x >= ts:							#Is input in the past?
 				isNotPast=True
 			else:
 				isNotPast=False
 
-			if x <= ts+timedelta(days=2):
+			if x <= ts+timedelta(days=2):		#Is input greater than 2 days?
 				isNotDistFuture=True
 			else:
 				isNotDistFuture=False
@@ -446,10 +443,10 @@ def taxi():
 					if d_res==True and len(date_inp)==10 and len(time_inp)==5:
 						if isNotPast==True and isNotDistFuture==True:
 							pay_win=tk.Toplevel()
-							pay_win.title(' ')
+							pay_win.title('Payment Gateway')
 							pay_win.resizable(False,False)
 
-							def make_payment():
+							def make_payment():		#Payment window
 								paytype_inp=m.get()
 								cardno_inp=card_no.get()
 								cardname_inp=card_name.get()
@@ -461,9 +458,9 @@ def taxi():
 								cmonth=x.month
 								cyear=x.year
 
-								def pay():
+								def pay():		#Makes payment
 
-									def submit():
+									def submit():		#Adds booking to DB
 
 										#timestamp to mark bookings
 										t=datetime.now()
@@ -477,7 +474,7 @@ def taxi():
 
 										submit_message=tk.Toplevel()
 										submit_message.resizable(False,False)
-										submit_message.title(' ')
+										submit_message.title('Booking successful')
 
 										tk.Label(submit_message,text='The booking has been\nsuccessfully made.',font=h1fnt,justify=tk.LEFT).grid(row=0,column=0,sticky=tk.W,padx=10,pady=10)
 										

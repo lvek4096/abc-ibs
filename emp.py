@@ -41,18 +41,18 @@ def emp_main():
 	menufnt=('IBM Plex Mono',11)
 
 	#main window
-	emplogwin=tk.Tk()
-	emplogwin.title('Employee login')
+	emp_login_win=tk.Tk()
+	emp_login_win.title('Employee login')
 
 	#maximises window
 	try:
-		emplogwin.state('zoomed')
+		emp_login_win.state('zoomed')
 	except:
-		w,h=emplogwin.winfo_screenwidth(),emplogwin.winfo_screenheight()
-		emplogwin.geometry(str(w)+'x'+str(h))
+		w,h=emp_login_win.winfo_screenwidth(),emp_login_win.winfo_screenheight()
+		emp_login_win.geometry(str(w)+'x'+str(h))
 
 	#functions
-	def login():	#action on login
+	def onlogin():	#action on login
 
 		def admin():	#Admin menu
 
@@ -69,28 +69,28 @@ def emp_main():
 				root.destroy()
 				emp_main()
 
-			def showdb():
-				manage.managedb()
+			def db():
+				manage.manage_db()
 
-			def emp():
-				manage.manageemp()
+			def agents():
+				manage.manage_agents()
 
 			def bookings():
 				empbookings()
 
 			def users():
-				manage.manageusers()
+				manage.manage_users()
 
 			def about_this_program():
 				sysinfo.about()
 
 			def admins():
-				manage.manageadmin()
+				manage.manage_admin()
 			
 			def passwd():
 				passwd_win=tk.Toplevel()
 				passwd_win.resizable(False,False)
-				passwd_win.title(' ')
+				passwd_win.title('Change administrator password')
 
 				def change_admin_passwd():
 					if not npass.get()=='' and not npass.get().isspace():
@@ -155,10 +155,22 @@ def emp_main():
 			cur.execute('select admin_uname,admin_id from admin')
 			uuidlist=dict(cur.fetchall())
 			tk.Grid.rowconfigure(f1,0,weight=1)
-			tk.Label(f1,text='Welcome, '+a[emp_uname_inp],font=h1fnt,justify=tk.CENTER,fg='white',bg='#283593').grid(column=0,row=0,padx=10,pady=10)
-			tk.Label(f1,text=('ID: '+uuidlist[emp_uname_inp]),font=('IBM Plex Sans',12),fg='black',bg='#00e676').grid(column=0,row=1,padx=10)
+			tk.Grid.rowconfigure(f1,1,weight=1)
+			tk.Grid.rowconfigure(f1,2,weight=1)
+			tk.Grid.rowconfigure(f1,3,weight=1)
+			
+			logo_img=tk.PhotoImage(file='img/logo.png')
+			logo=tk.Label(f1,image=logo_img,font=h1fnt,fg='white',bg='#283593')
+			logo.grid(column=0,row=0,padx=10,pady=10,sticky=tk.EW)
+			logo.image=logo_img
+			
+			tk.Label(f1,text='Welcome, '+a[emp_uname_inp],font=h1fnt,justify=tk.CENTER,fg='white',bg='#283593').grid(column=0,row=1,padx=10)
+			
+			tk.Label(f1,text=('User ID: '+uuidlist[emp_uname_inp]),font=('IBM Plex Sans',12),fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
 
-			Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10)
+			tk.Label(f1,text='Administrator\'s Toolbox',font=('IBM Plex Sans',12),justify=tk.CENTER,fg='white',bg='#283593').grid(column=0,row=3,padx=10)
+
+			Separator(f1,orient='horizontal').grid(column=0,row=4,sticky=tk.EW,padx=10,pady=10)
 			
 			#FRAME 2
 			tk.Grid.rowconfigure(root,1,weight=1)
@@ -175,16 +187,16 @@ def emp_main():
 
 			tk.Grid.rowconfigure(f2,5,weight=1)
 			img6=tk.PhotoImage(file='icons/dataset.png')
-			btn1=tk.Button(f2,text='View the database',image=img6,font=fnt,command=showdb,width=48,height=48)
+			btn1=tk.Button(f2,text='View the database',image=img6,font=fnt,command=db,width=48,height=48)
 			btn1.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
 			btn1.image=img6
 			tk.Label(f2,text='Manage the databases.',font=fnt,fg='blue').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 
 			img9=tk.PhotoImage(file='icons/employee.png')
-			btn2=tk.Button(f2,text='Manage employees',image=img9,font=fnt,command=emp)
+			btn2=tk.Button(f2,text='Manage agents',image=img9,font=fnt,command=agents)
 			btn2.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
 			btn2.image=img9
-			tk.Label(f2,text='Manage the employees.',font=fnt,fg='green').grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
+			tk.Label(f2,text='Manage the agents.',font=fnt,fg='green').grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
 
 			tk.Grid.rowconfigure(f2,6,weight=1)
 			img12=tk.PhotoImage(file='icons/supervisor.png')
@@ -275,22 +287,33 @@ def emp_main():
 			tk.Grid.columnconfigure(f1,0,weight=1)
 
 			tk.Grid.rowconfigure(f1,0,weight=1)
+			tk.Grid.rowconfigure(f1,1,weight=1)
+			tk.Grid.rowconfigure(f1,2,weight=1)
+			tk.Grid.rowconfigure(f1,2,weight=1)
 
 			cur.execute('select emp_uname,emp_name from employees')
 			b=dict(cur.fetchall())
 
 			cur.execute('select emp_uname,emp_id from employees')
 			uuidlist=dict(cur.fetchall())
-
+			
 			if emptype_inp=='Agent':
+				tk.Grid.rowconfigure(f1,0,weight=1)
+				
+				logo_img=tk.PhotoImage(file='img/logo.png')
+				logo=tk.Label(f1,image=logo_img,font=h1fnt,fg='white',bg='#283593')
+				logo.grid(column=0,row=0,padx=10,pady=10,sticky=tk.EW)
+				logo.image=logo_img
+				
 				txt='Welcome, '+b[emp_uname_inp]
-				tk.Label(f1,text=('ID: '+uuidlist[emp_uname_inp]),font=('IBM Plex Sans',12),fg='black',bg='#00e676').grid(column=0,row=1,padx=10)
+				tk.Label(f1,text=('User ID: '+uuidlist[emp_uname_inp]),font=('IBM Plex Sans',12),fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
+				tk.Label(f1,text='Make and manage bookings',fg='white',bg='#283593',font=('IBM Plex Sans',12),justify=tk.CENTER).grid(column=0,row=3,padx=10,pady=10)
 			elif emptype_inp=='Administrator':
 				txt='Make and manage bookings'
 			
-			tk.Label(f1,text=txt,fg='white',bg='#283593',font=h1fnt,justify=tk.CENTER).grid(column=0,row=0,padx=10,pady=10)
+			tk.Label(f1,text=txt,fg='white',bg='#283593',font=h1fnt,justify=tk.CENTER).grid(column=0,row=1,padx=10,pady=10)
 
-			Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10)
+			Separator(f1,orient='horizontal').grid(column=0,row=4,sticky=tk.EW,padx=10,pady=10)
 			#FRAME 2
 			tk.Grid.rowconfigure(main_menu,1,weight=1)
 			f2=tk.Frame(main_menu)
@@ -339,21 +362,21 @@ def emp_main():
 		#Checking for validity in inputs
 		if emptype_inp == 'Agent':
 			
-			cur.execute('select emp_uname,emp_passwd from employees')		#list of employee usernames and passwords
+			cur.execute('select emp_uname,emp_passwd from employees')		#list of agent usernames and passwords
 			e=dict(cur.fetchall())
 
-			cur.execute('select emp_uname,emp_name from employees')			#list of employee usernames and names
+			cur.execute('select emp_uname,emp_name from employees')			#list of agent usernames and names
 			f=dict(cur.fetchall())
 
 			if not emp_uname_inp=='' or emp_uname_inp.isspace():
 				if emp_uname_inp in e.keys():
 					if emp_passwd_inp==e[emp_uname_inp]:
-						emplogwin.destroy()
+						emp_login_win.destroy()
 						empbookings()
 					else:
-						messagebox.showerror('Error','Invalid password for employee '+f[emp_uname_inp]+'.')
+						messagebox.showerror('Error','Invalid password for agent '+f[emp_uname_inp]+'.')
 				else:
-					messagebox.showerror('Error','Employee '+emp_uname_inp+' does not exist.')
+					messagebox.showerror('Error','Agent '+emp_uname_inp+' does not exist.')
 			else:
 				messagebox.showerror('Error','Do not leave any fields empty.')
 		
@@ -368,7 +391,7 @@ def emp_main():
 			if not emp_uname_inp=='' or emp_uname_inp.isspace():
 				if emp_uname_inp in a.keys():
 					if emp_passwd_inp==a[emp_uname_inp]:
-						emplogwin.destroy()
+						emp_login_win.destroy()
 						admin()
 					else:
 						messagebox.showerror('Error','Invalid password for administrator '+b[emp_uname_inp]+'.')
@@ -382,30 +405,37 @@ def emp_main():
 	def about_this_program():
 		sysinfo.about()
 
-	menubar=tk.Menu(emplogwin)
+	menubar=tk.Menu(emp_login_win)
 
 	more=tk.Menu(menubar,tearoff=0)
 	menubar.add_cascade(label='Info',menu=more,font=menufnt)
 	more.add_command(label='About this program...',command=about_this_program,font=menufnt,underline=0)
-	emplogwin.config(menu=menubar)
+	emp_login_win.config(menu=menubar)
 		
-	tk.Grid.columnconfigure(emplogwin,0,weight=1)
+	tk.Grid.columnconfigure(emp_login_win,0,weight=1)
 
 	#FRAME 1
-	tk.Grid.rowconfigure(emplogwin,0,weight=1)
-	f1=tk.Frame(emplogwin,bg='#283593')
+	tk.Grid.rowconfigure(emp_login_win,0,weight=1)
+	f1=tk.Frame(emp_login_win,bg='#283593')
 	f1.grid(row=0,column=0,sticky=tk.NSEW)
 
 	#frame 1 grid
 	tk.Grid.columnconfigure(f1,0,weight=1)
-
 	tk.Grid.rowconfigure(f1,0,weight=1)
-	tk.Label(f1,text='Employee login',font=h1fnt,justify=tk.CENTER,fg='white',bg='#283593').grid(column=0,row=0)
-	ttk.Separator(f1,orient='horizontal').grid(row=1,column=0,sticky=tk.EW,padx=10,pady=10)
+	tk.Grid.rowconfigure(f1,1,weight=1)
+	
+	logo_img=tk.PhotoImage(file='img/logo.png')
+	logo=tk.Label(f1,image=logo_img,font=h1fnt,fg='white',bg='#283593')
+	logo.grid(column=0,row=0,sticky=tk.EW,padx=10,pady=10)
+	logo.image=logo_img
+
+	tk.Label(f1,text='Employee login',font=h1fnt,fg='white',bg='#283593').grid(column=0,row=1,padx=10,pady=10,sticky=tk.EW)
+	
+	ttk.Separator(f1,orient='horizontal').grid(row=2,column=0,sticky=tk.EW,pady=10,columnspan=2)
 
 	#FRAME 2
-	tk.Grid.rowconfigure(emplogwin,1,weight=1)
-	f2=tk.Frame(emplogwin)
+	tk.Grid.rowconfigure(emp_login_win,1,weight=1)
+	f2=tk.Frame(emp_login_win)
 	f2.grid(row=1,column=0,padx=10,pady=10,sticky=tk.NSEW)
 
 	#frame 2 grid
@@ -430,11 +460,11 @@ def emp_main():
 
 	#Login button
 	img1=tk.PhotoImage(file='icons/login.png')
-	logsubmit=tk.Button(f2,text='Login',image=img1,command=login)
+	logsubmit=tk.Button(f2,text='Login',image=img1,command=onlogin)
 	logsubmit.grid(column=1,row=8,padx=10,pady=10,sticky=tk.W)
 
-	emplogwin.bind('<Return>',lambda event:login())
+	emp_login_win.bind('<Return>',lambda event:onlogin())
 
-	emplogwin.mainloop()
+	emp_login_win.mainloop()
 
 emp_main()
