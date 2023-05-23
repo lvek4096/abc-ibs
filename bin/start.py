@@ -3,6 +3,9 @@ import tkinter as tk
 import os
 import mysql.connector as ms
 from tkinter.ttk import Separator
+import platform as pf
+import ctypes
+
 
 #definitions
 fnt=('IBM Plex Mono',12,'bold italic')
@@ -22,12 +25,18 @@ def make_booking():
 def manage_user():
 	welcome.destroy()
 	os.system('python3 profile.py')
+
+if pf.system()=='Windows':
+	ctypes.windll.shcore.SetProcessDpiAwareness(True)
 	
 #main window
 welcome=tk.Tk()
 welcome.title('')
-w,h=welcome.winfo_screenwidth(),welcome.winfo_screenheight()
-welcome.geometry(str(w)+'x'+str(h))
+if pf.system()=='Windows':
+	welcome.state('zoomed')
+else:
+	w,h=welcome.winfo_screenwidth(),welcome.winfo_screenheight()
+	welcome.geometry(str(w)+'x'+str(h))
 
 tk.Grid.columnconfigure(welcome,0,weight=1)
 #FRAME 1

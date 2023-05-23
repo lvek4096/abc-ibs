@@ -6,7 +6,6 @@ cur=con.cursor()
 #initial creation of db and tables if not existing in MySQL database'
 cur.execute('create database if not exists taxi')
 cur.execute('use taxi')
-#cur.execute('create table if not exists taxi_bkgs(bkgid int primary key,bkgtime datetime,start varchar(50),end varchar(50),taxitype varchar(50))')
 cur.execute('create table if not exists taxi_bkgs(bkgid int primary key,bkgtime datetime,start varchar(50),end varchar(50),jdate date,jtime time,taxitype varchar(50))')
 cur.execute('create table if not exists bus_bkgs(bkgid int primary key,bkgtime datetime,pass_no int,start varchar(50),end varchar(50),jdate date,jtime time,bustype varchar(50))')
 cur.execute('create table if not exists users(uuid varchar(5) primary key,fname varchar(50),email varchar(50),num varchar(10),uname varchar(50),passwd varchar(50))')

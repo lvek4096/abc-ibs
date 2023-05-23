@@ -3,17 +3,27 @@ from tkinter import messagebox
 import mysql.connector as ms
 from tkinter.ttk import Separator
 import os
-
-import home
+import platform as pf
+import ctypes
 
 con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
 cur=con.cursor()
 
+if pf.system()=='Windows':
+	ctypes.windll.shcore.SetProcessDpiAwareness(True)
+
 #init GUI
 logwin=tk.Tk()
 logwin.title('Manage your profile...')
-w,h=logwin.winfo_screenwidth(),logwin.winfo_screenheight()
-logwin.geometry(str(w)+'x'+str(h))
+
+
+if pf.system()=='Windows':
+	logwin.state('zoomed')
+else:
+	w,h=logwin.winfo_screenwidth(),logwin.winfo_screenheight()
+	logwin.geometry(str(w)+'x'+str(h))
+
+
 fnt=('IBM Plex Mono',12)
 fntit=('IBM Plex Mono',12,'italic')
 h1fnt=('IBM Plex Sans',24)
@@ -25,9 +35,11 @@ def main_login():
 
 def onlogin():
 	def manage():
+		'''
 		def booking():
 			manage_userswin.destroy()
-			home.main()
+			#home.main()
+		'''
 
 		def delete():
 			def deluser():
@@ -266,8 +278,11 @@ def onlogin():
 
 		manage_userswin=tk.Tk()
 		manage_userswin.title('Manage profile')
-		w,h=manage_userswin.winfo_screenwidth(),manage_userswin.winfo_screenheight()
-		manage_userswin.geometry(str(w)+'x'+str(h))
+		if pf.system()=='Windows':
+			manage_userswin.state('zoomed')
+		else:
+			w,h=manage_userswin.winfo_screenwidth(),manage_userswin.winfo_screenheight()
+			manage_userswin.geometry(str(w)+'x'+str(h))
 		
 		tk.Grid.columnconfigure(manage_userswin,0,weight=1)
 		
@@ -314,12 +329,13 @@ def onlogin():
 		tk.Label(f2,text='Delete your profile.',font=fnt,fg='red').grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
 		
 		tk.Label(f2,text=('or:'),font=fntit).grid(column=1,row=9,padx=10,sticky=tk.W)
-
+		'''
 		tk.Grid.rowconfigure(f2,10,weight=1)
 		img5=tk.PhotoImage(file='icons/booking.png')
 		bkgbtn=tk.Button(f2,text='Booking',font=fnt,image=img5,command=booking)
 		bkgbtn.grid(column=0,row=10,padx=10,pady=10,sticky=tk.E)
 		tk.Label(f2,text='Make bookings',font=fnt,fg='green').grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
+		'''
 
 		tk.Grid.rowconfigure(f2,11,weight=1)
 		img7=tk.PhotoImage(file='icons/logout.png')

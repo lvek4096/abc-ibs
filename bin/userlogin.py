@@ -4,24 +4,134 @@ import mysql.connector as ms
 from tkinter.ttk import Separator
 from tkinter import messagebox
 import os
+import platform as pf
+import ctypes
 
-import home
+import bookings
+import sysinfo
+
+#import home
 
 #mysql connection
 con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
 cur=con.cursor()
 
+if pf.system()=='Windows':
+	ctypes.windll.shcore.SetProcessDpiAwareness(True)
+	
 #init GUI
 logwin=tk.Tk()
 logwin.title('')
 fnt=('IBM Plex Mono',12)
 fntit=('IBM Plex Mono',12,'italic')
 h1fnt=('IBM Plex Sans',24)
-w,h=logwin.winfo_screenwidth(),logwin.winfo_screenheight()
-logwin.geometry(str(w)+'x'+str(h))
+menufnt=('IBM Plex Mono',11)
+
+if pf.system()=='Windows':
+	logwin.state('zoomed')
+else:
+	w,h=logwin.winfo_screenwidth(),logwin.winfo_screenheight()
+	logwin.geometry(str(w)+'x'+str(h))
 
 #login
 def login():
+	
+	def main():
+		#functions
+		def book_taxi():	#Opens taxi booking window.
+			bookings.taxi()
+
+		def book_bus():		#Opens bus booking window
+			bookings.bus()
+
+		def about_this_program():
+			sysinfo.about()
+
+		def logout():	#Logs out and returns to the start page.
+			main_menu.destroy()
+			os.system('python3 start.py')
+
+		main_menu=tk.Tk()
+		main_menu.title('Main Menu')
+		if pf.system()=='Windows':
+			main_menu.state('zoomed')
+		else:
+			w,h=main_menu.winfo_screenwidth(),main_menu.winfo_screenheight()
+			main_menu.geometry(str(w)+'x'+str(h))
+
+		menubar=tk.Menu(main_menu)
+
+		more=tk.Menu(menubar,tearoff=0)
+		menubar.add_cascade(label='Info',menu=more,font=menufnt)
+		more.add_command(label='About this program...',command=about_this_program,font=menufnt,underline=0)
+		main_menu.config(menu=menubar)
+
+		tk.Grid.columnconfigure(main_menu,0,weight=1)
+
+		#FRAME 1
+		tk.Grid.rowconfigure(main_menu,0,weight=1)
+		f1=tk.Frame(main_menu,bg='#283593')
+		f1.grid(row=0,column=0,sticky=tk.NSEW)
+
+		#frame 1 grid
+		tk.Grid.columnconfigure(f1,0,weight=1)
+
+		cur.execute('select uname,fname from users')
+		a=dict(cur.fetchall())
+
+		tk.Grid.rowconfigure(f1,0,weight=1)
+		tk.Label(f1,text='Welcome, '+a[uname_inp],font=h1fnt,fg='white',bg='#283593').grid(column=0,row=0)
+
+		Separator(f1,orient='horizontal').grid(column=0,row=1,sticky=tk.EW,padx=10,pady=10)
+
+		#FRAME 2
+		tk.Grid.rowconfigure(main_menu,1,weight=1)
+		f2=tk.Frame(main_menu)
+		f2.grid(row=1,column=0,padx=10,pady=10,sticky=tk.NSEW)
+
+		#frame 2 grid
+		tk.Grid.columnconfigure(f2,0,weight=1)
+		tk.Grid.columnconfigure(f2,1,weight=1)
+		tk.Grid.columnconfigure(f2,2,weight=1)
+		tk.Grid.columnconfigure(f2,3,weight=1)
+
+
+		tk.Label(f2,text=('You can:'),font=fntit).grid(column=1,row=2,padx=10,pady=10,sticky=tk.W)
+
+		tk.Grid.rowconfigure(f2,5,weight=1)
+		#Book Taxi
+		img6=tk.PhotoImage(file='icons/taxi.png')
+		bkgbtn=tk.Button(f2,text='Book taxi',image=img6,font=fnt,command=book_taxi)
+		bkgbtn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
+		tk.Label(f2,text='Book a taxi.',font=fnt,bg='yellow').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
+
+		#Book Bus
+		img4=tk.PhotoImage(file='icons/bus.png')
+		passbtn=tk.Button(f2,text='Book Bus',image=img4,command=book_bus)
+		passbtn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
+		tk.Label(f2,text='Book a bus.',font=fnt,fg='blue').grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
+
+
+
+		tk.Label(f2,text=('or:'),font=fntit).grid(column=1,row=9,padx=10,sticky=tk.W)
+
+		tk.Grid.rowconfigure(f2,11,weight=1)
+		#Logout
+		img7=tk.PhotoImage(file='icons/logout.png')
+		logoutbtn=tk.Button(f2,text='Logout',font=fnt,image=img7,command=logout)
+		logoutbtn.grid(column=0,row=11,padx=10,pady=10,sticky=tk.E)
+		tk.Label(f2,text='Logout',font=fnt).grid(column=1,row=11,padx=10,pady=10,sticky=tk.W)
+
+
+		#Logout and Exit
+		img8=tk.PhotoImage(file='icons/close.png')
+		exitbtn=tk.Button(f2,text='Logout and exit',font=fnt,image=img8,command=main_menu.destroy)
+		exitbtn.grid(column=2,row=11,padx=10,pady=10,sticky=tk.E)
+		tk.Label(f2,text='Logout and exit',font=fnt,fg='red').grid(column=3,row=11,padx=10,pady=10,sticky=tk.W)
+
+		tk.Grid.rowconfigure(f2,12,weight=1)
+		main_menu.mainloop()
+
 	uname_inp=login_uname.get()
 	passwd_inp=login_passwd.get()
 	cur.execute('select uname,passwd from users')
@@ -37,7 +147,7 @@ def login():
 			messagebox.showerror('Error','Invalid password entered for '+fnamelist[uname_inp]+'.')
 		else:
 			logwin.destroy()
-			home.main()
+			main()
 
 def register():
 	uuid='U'+str(rd.randint(1000,9999))

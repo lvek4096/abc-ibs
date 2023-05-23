@@ -4,7 +4,11 @@ def about():	#System information
 	from tkinter.ttk import Separator
 	import mysql.connector as ms
 	from tkinter import scrolledtext
-	build='200 (RC 1)'	
+	import ctypes
+	build='217 (RC 1)'	
+
+	if pf.system()=='Windows':
+		ctypes.windll.shcore.SetProcessDpiAwareness(True)
 
 	disclaimer='''CAUTION
 This software is currently
