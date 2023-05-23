@@ -13,6 +13,12 @@ import os
 import platform as pf
 from datetime import datetime,timedelta
 
+build='318 [V3]'
+build_timestamp='2023-05-23 12:05:05'	
+
+from escpos.printer import Usb
+prlp = Usb(idVendor=0x0483,idProduct=0x5720,timeout=0,in_ep=0x81,out_ep=0x03)		# Oscar POS88C
+
 #font choice
 if pf.system()=='Windows':
 	if int(pf.release()) > 7:
@@ -20,8 +26,8 @@ if pf.system()=='Windows':
 		fntb=('Cascadia Mono',12,'bold')
 		fntit=('Cascadia Mono',12,'italic')
 		fntbit=('Cascadia Mono',12,'bold italic')
-		h1fnt=('Segoe UI',24,'bold')
-		h2fnt=('Segoe UI',12)
+		h1fnt=('Segoe UI Variable Display',24,'bold')
+		h2fnt=('Segoe UI Variable Display',12)
 		menufnt=('Cascadia Mono',11)
 	elif int(pf.release()) == 7:
 		fnt=('Consolas',12)
@@ -48,6 +54,7 @@ elif pf.system()=='Linux':
 	h2fnt=('Ubuntu',12)
 	menufnt=('Ubuntu Mono',11)
 
+#
 # Enables support for DPI scaling awareness on supported Windows versions
 if pf.system()=='Windows':
 	try:
@@ -142,8 +149,6 @@ def init():		#Initialisation script
 
 def about():	#About page
 	#Build number
-	build='313 [V3]'
-	build_timestamp='2023-05-20 16:06:12'	
 	credits_txt='''
 Developed by
 Amadeus Software
@@ -337,9 +342,27 @@ def bus_booking():		#Bus booking
 											submit_message.clipboard_append(text2)
 											btn1.configure(fg='green',text='Copied!')
 										
+																			
 										btn1=tk.Button(submit_message,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
 										btn1.grid(row=5,column=0,padx=10,pady=10)
 										
+										
+										def prout():
+											bar_id=str(rd.randint(1000000000000,9999999999999))
+											prlp.image('img/icon-2.png')
+											prlp.text('\n'+text2)
+											prlp.text('\n')
+											prlp.barcode(bar_id,'EAN13')
+											prlp.text('\n------------------\n')
+											prlp.text('Powered by Amadeus\n')
+											prlp.text(build+'\n['+build_timestamp+']')
+											prlp.cut()
+											
+											btn3.configure(fg='green',text='Print successful!')
+
+										btn3=tk.Button(submit_message,text='Print...',font=fnt,command=prout,justify=tk.CENTER)
+										btn3.grid(row=6,column=0,padx=10,pady=10)
+									
 										def exit():
 											submit_message.destroy()
 											pay_win.destroy()
@@ -668,8 +691,22 @@ def taxi_booking():		#Taxi booking
 										btn1=tk.Button(submit_message,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
 										btn1.grid(row=5,column=0,padx=10,pady=10)
 										
-										#tk.Label(submit_message,text='The e-receipt will also be sent to\nyour registered electronic mail\naddress.',font=fnt,justify=tk.LEFT).grid(row=6,column=0,padx=10,pady=10,sticky=tk.W)
-										
+										def prout():
+											bar_id=str(rd.randint(1000000000000,9999999999999))
+											prlp.image('img/icon-2.png')
+											prlp.text('\n'+text2)
+											prlp.text('\n')
+											prlp.barcode(bar_id,'EAN13')
+											prlp.text('\n------------------\n')
+											prlp.text('Powered by Amadeus\n')
+											prlp.text(build+'\n['+build_timestamp+']')
+											prlp.cut()
+											
+											btn3.configure(fg='green',text='Print successful!')
+
+										btn3=tk.Button(submit_message,text='Print...',font=fnt,command=prout,justify=tk.CENTER)
+										btn3.grid(row=6,column=0,padx=10,pady=10)
+
 										def exit():
 											submit_message.destroy()
 											pay_win.destroy()
