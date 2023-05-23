@@ -14,8 +14,9 @@ def initdb():
 	cur.execute('create table if not exists employees(emp_id varchar(5) primary key,emp_uname varchar(50),emp_name varchar(50),emp_passwd varchar(50))')
 	cur.execute('create table if not exists admin(admin_id varchar(5) primary key,admin_uname varchar(50),admin_name varchar(50),admin_passwd varchar(50))')
 
-	try:	#creates root user IF NOT EXISTS
+	try:	#creates root and demo users IF NOT EXISTS
 		cur.execute("insert into admin values('A0001','root','System Administrator','123456')")
+		cur.execute("insert into employees values('E0001','demoemp','Demonstration Employee','demo')")
 		cur.execute("insert into users values('U00001','Demonstration User','demo@abc.com','1234567890','demo','demo')")
 	except:
 		pass

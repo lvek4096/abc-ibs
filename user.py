@@ -174,24 +174,27 @@ def bookings():		#make bookings
 
 			b=(reg_uname_inp,)
 			if (not reg_fname_inp.isspace()==True and not reg_fname_inp=='') and (not reg_email_inp.isspace()==True and not reg_email_inp=='') and (not reg_num_inp.isspace()==True and not reg_num_inp=='') and (not reg_uname_inp.isspace()==True and not reg_uname_inp=='') and (not reg_passwd_inp.isspace()==True and not reg_passwd_inp==''):		#checks if inputs are not empty or contains spaces
-				if b not in users:
-					if '@' in reg_email_inp and '.' in reg_email_inp:
-						if len(reg_num_inp) == 10:
-							regsql='insert into users values(%s,%s,%s,%s,%s,%s)'
-							regval=(uuid,reg_fname_inp,reg_email_inp,reg_num_inp,reg_uname_inp,reg_passwd_inp)
+				if reg_uname_inp not in "<>,/\\\'\"!@#$%^&*()+={}[]": 	#Are special characters present?
+					if b not in users:
+						if '@' in reg_email_inp and '.' in reg_email_inp:
+							if len(reg_num_inp) == 10:
+								regsql='insert into users values(%s,%s,%s,%s,%s,%s)'
+								regval=(uuid,reg_fname_inp,reg_email_inp,reg_num_inp,reg_uname_inp,reg_passwd_inp)
 
-							cur.execute(regsql,regval)
-							con.commit()
+								cur.execute(regsql,regval)
+								con.commit()
 
-							messagebox.showinfo('','The new user '+reg_fname_inp+'\nhas been successfully registered.',parent=regwin)
-							regwin.destroy()
+								messagebox.showinfo('','The new user '+reg_fname_inp+'\nhas been successfully registered.',parent=regwin)
+								regwin.destroy()
+							else:
+								messagebox.showerror('Error','Invalid phone number entered.',parent=regwin)
 						else:
-							messagebox.showerror('Error','Invalid phone number entered.',parent=regwin)
+							messagebox.showerror('Error','Invalid electronic mail ID entered.',parent=regwin)		
 					else:
-						messagebox.showerror('Error','Invalid electronic mail ID entered.',parent=regwin)		
-				else:
 
-					messagebox.showerror('Error','Username '+reg_uname_inp+'\nalready exists.',parent=regwin)
+						messagebox.showerror('Error','Username '+reg_uname_inp+'\nalready exists.',parent=regwin)
+				else:
+					messagebox.showerror('Error','Please do not use any special characters.',parent=regwin)			
 			else:
 				messagebox.showerror('Error','Please do not leave any fields blank.',parent=regwin)
 		
@@ -228,10 +231,8 @@ def bookings():		#make bookings
 		reg_passwd=tk.Entry(regwin,show='*',font=fnt)
 		reg_passwd.grid(column=1,row=12,sticky=tk.EW,padx=10,pady=10)
 
-		#regsubimg=tk.PhotoImage(file='icons/adduser.png')	
 		regsubmit=tk.Button(regwin,text='Register',command=reguser,font=fntit)
 		regsubmit.grid(column=1,row=14,padx=10,pady=10,sticky=tk.W)
-		#regsubmit.image=regsubimg
 		regwin.bind('<Return>',lambda event:reguser())
 		
 	def profile():
@@ -262,17 +263,14 @@ def bookings():		#make bookings
 	tk.Grid.columnconfigure(f2,0,weight=1)
 	tk.Grid.columnconfigure(f2,1,weight=1)
 
-	#tk.Grid.rowconfigure(f2,3,weight=1)
 	tk.Label(f2,text='Username',font=fnt).grid(column=0,row=3,padx=10,pady=10,sticky=tk.E)
 	login_uname=tk.Entry(f2,font=fnt)
 	login_uname.grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
 
-	#tk.Grid.rowconfigure(f2,4,weight=1)
 	tk.Label(f2,text='Password',font=fnt).grid(column=0,row=4,padx=10,pady=10,sticky=tk.E)
 	login_passwd=tk.Entry(f2,show='*',font=fnt)
 	login_passwd.grid(column=1,row=4,sticky=tk.W,padx=10,pady=10)
 
-	#tk.Grid.rowconfigure(f2,10,weight=2)
 	img1=tk.PhotoImage(file='icons/login.png')
 	logsubmit=tk.Button(f2,text='Login...',image=img1,command=login)
 	logsubmit.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
@@ -283,7 +281,6 @@ def bookings():		#make bookings
 	reg=tk.Button(f2,text='Register',image=img2,command=register)
 	reg.grid(column=1,row=12,padx=10,pady=10,sticky=tk.W)
 
-	#tk.Grid.rowconfigure(f2,11,weight=2)
 	manage=tk.Button(f2,text='Manage your profile...',font=fntit,command=profile)
 	manage.grid(column=1,row=11,padx=10,pady=10,columnspan=2,sticky=tk.W)
 
@@ -362,14 +359,11 @@ def manageprofile():		#manage profile
 				delwin.title('Delete User')
 				delwin.resizable(False,False)
 				tk.Label(delwin,text='Delete User',font=h1fnt).grid(column=0,row=0,padx=10,pady=10)
-				#tk.Label(delwin,text='Enter the username which you wish to delete',font=fnt).grid(column=0,row=1,padx=10,pady=10)
 
 				tk.Label(delwin,text='Please enter the password.',font=fnt).grid(column=0,row=4,sticky=tk.W,padx=10,pady=10)
 				del_passwd=tk.Entry(delwin,show='*',font=fnt);del_passwd.grid(column=0,row=5,sticky=tk.EW,padx=10,pady=10)
 
-				#delsubimg=tk.PhotoImage(file='icons/ban_user.png')
 				delsubmit=tk.Button(delwin,text='Delete User',command=deluser,font=fntit,fg='red');delsubmit.grid(column=0,row=6,padx=10,pady=10)
-				#delsubmit.image=delsubimg
 				delwin.bind('<Return>',lambda event:deluser())
 				
 
@@ -409,7 +403,6 @@ def manageprofile():		#manage profile
 				tk.Label(passwin,text='New Password',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
 				new_pass=tk.Entry(passwin,show='*',font=fnt);new_pass.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
 				
-				#passsubimg=tk.PhotoImage(file='monoico/icon-86.png')
 				passsubmit=tk.Button(passwin,text='Change password',command=chpasswd,font=fntit)
 				passsubmit.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
 				passwin.bind('<Return>',lambda event:chpasswd())
@@ -446,7 +439,6 @@ def manageprofile():		#manage profile
 					chinfo_name.resizable(False,False)
 					chinfo_name.title(' ')
 					tk.Label(chinfo_name,text=('Change your display name'),font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,sticky=tk.W)
-					#tk.Label(chinfo_name,text=(''),font=fnt,justify=tk.LEFT).grid(column=1,row=1,padx=10,sticky=tk.W)
 					
 					tk.Label(chinfo_name,text='Current name',font=fnt).grid(row=5,column=0,sticky=tk.E,padx=10,pady=10)
 					tk.Label(chinfo_name,text=fnamelist[uname_inp],font=fnt).grid(row=5,column=1,sticky=tk.W,padx=10,pady=10)
@@ -455,9 +447,7 @@ def manageprofile():		#manage profile
 					en1=tk.Entry(chinfo_name,font=fnt)
 					en1.grid(row=6,column=1,sticky=tk.W,padx=10,pady=10)
 
-					#img10=tk.PhotoImage(file='monoico/icon-134.png')
 					btn3=tk.Button(chinfo_name,text='Make changes',font=fntit,command=chname)
-					#btn3.image=img10
 					btn3.grid(row=10,column=1,padx=10,pady=10,sticky=tk.W)
 					chinfo_name.bind('<Return>',lambda event:chname())
 
@@ -534,9 +524,7 @@ def manageprofile():		#manage profile
 					en3=tk.Entry(chinfo_contacts,font=fnt)
 					en3.grid(row=8,column=1,sticky=tk.EW,padx=10,pady=10)
 
-					#img10=tk.PhotoImage(file='monoico/icon-134.png')
 					btn3=tk.Button(chinfo_contacts,text='Make changes',font=fntit,command=chcontacts)
-					#btn3.image=img10
 					btn3.grid(row=15,column=1,padx=10,pady=10,sticky=tk.W)
 
 					chinfo_contacts.bind('<Return>',lambda event:chcontacts())
@@ -669,17 +657,14 @@ def manageprofile():		#manage profile
 	tk.Grid.columnconfigure(f4,0,weight=1)
 	tk.Grid.columnconfigure(f4,1,weight=1)
 
-	#tk.Grid.rowconfigure(f4,3,weight=1)
 	tk.Label(f4,text='Username',font=fnt).grid(column=0,row=3,padx=10,pady=10,sticky=tk.E)
 	login_uname=tk.Entry(f4,font=fnt)
 	login_uname.grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
 
-	#tk.Grid.rowconfigure(f4,4,weight=1)
 	tk.Label(f4,text='Password',font=fnt).grid(column=0,row=4,padx=10,pady=10,sticky=tk.E)
 	login_passwd=tk.Entry(f4,show='*',font=fnt)
 	login_passwd.grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
 
-	#tk.Grid.rowconfigure(f4,5,weight=1)
 	img1=tk.PhotoImage(file='icons/login.png')
 	logsubmit=tk.Button(f4,text='Login...',image=img1,command=onlogin)
 	logsubmit.grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)

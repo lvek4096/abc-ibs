@@ -9,8 +9,8 @@ def about():	#System information
 	import ctypes
 
 	#Build number
-	build='244 [RC 1]'
-	build_date='2022-08-18'	
+	build='248'
+	build_date='2022-09-05'	
 
 	#Enables DPI scaling on supported Windows versions
 	if pf.system()=='Windows':

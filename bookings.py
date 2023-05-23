@@ -297,7 +297,6 @@ def bus():
 	f1.grid(row=0,column=0)
 
 	tk.Label(f1,text='BUS BOOKING',font=h1fnt,fg='blue').grid(column=1,row=0,padx=10,pady=10)
-	#Separator(f1,orient='horizontal').grid(row=1,column=1,sticky=tk.EW)
 
 	#FRAME 2
 	f2=tk.Frame(window)
@@ -321,13 +320,13 @@ def bus():
 
 	tk.Label(f2,text='From',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
 	l=tk.StringVar()
-	start=ttk.Combobox(f2,textvariable=l,font=fnt,width=19)
+	start=ttk.Combobox(f2,textvariable=l,font=fnt,width=19,state='readonly')
 	start.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
 	start['values']=locations
 
 	tk.Label(f2,text='To',font=fnt).grid(column=0,row=9,sticky=tk.E,padx=10,pady=10)
 	m=tk.StringVar()
-	end=ttk.Combobox(f2,textvariable=m,font=fnt,width=19)
+	end=ttk.Combobox(f2,textvariable=m,font=fnt,width=19,state='readonly')
 	end.grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
 	end['values']=locations
 
@@ -638,12 +637,8 @@ def taxi():
 							cvv_no=tk.Entry(f4,font=fnt)
 							cvv_no.grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
 
-							#tk.Label(f4,text='Make payment',font=fnt).grid(column=0,row=10,sticky=tk.E,padx=10,pady=10)
-							#subimg=tk.PhotoImage(file='monoico/icon-394.png')
 							btn=tk.Button(f4,font=fntit,text='Pay',command=make_payment,fg='green');btn.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
-							#btn.image=subimg
 
-							#tk.Label(f4,text='Return to previous page',font=fnt).grid(column=0,row=15,sticky=tk.E,padx=10,pady=10)
 							retimg=tk.PhotoImage(file='icons/return.png')
 							btn4=tk.Button(f4,font=fnt,image=retimg,command=pay_win.destroy)
 							btn4.grid(column=0,row=15,padx=10,pady=10,sticky=tk.SW)
@@ -668,7 +663,6 @@ def taxi():
 
 	tk.Label(f1,text='TAXI BOOKING',font=h1fnt,bg='yellow').grid(column=1,row=0,padx=10,pady=10)
 
-	#Separator(f1,orient='horizontal').grid(row=1,column=1,sticky=tk.EW)
 	
 	#FRAME 2
 	f2=tk.Frame(window)
@@ -686,13 +680,13 @@ def taxi():
 
 	tk.Label(f2,text='From',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
 	l=tk.StringVar()
-	start=ttk.Combobox(f2,textvariable=l,font=fnt,width=19)
+	start=ttk.Combobox(f2,textvariable=l,font=fnt,width=19,state='readonly')
 	start.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
 	start['values']=locations
 
 	tk.Label(f2,text='To',font=fnt).grid(column=0,row=9,sticky=tk.E,padx=10,pady=10)
 	m=tk.StringVar()
-	end=ttk.Combobox(f2,textvariable=m,font=fnt,width=19)
+	end=ttk.Combobox(f2,textvariable=m,font=fnt,width=19,state='readonly')
 	end.grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
 	end['values']=locations
 

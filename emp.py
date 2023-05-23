@@ -1,3 +1,5 @@
+#!/bin/python3
+
 def emp_main():
 	#import statements
 
@@ -85,12 +87,12 @@ def emp_main():
 			def admins():
 				manage.manageadmin()
 			
-			def chrootpasswd():
+			def passwd():
 				passwd_win=tk.Toplevel()
 				passwd_win.resizable(False,False)
 				passwd_win.title(' ')
 
-				def chpasswd():
+				def change_admin_passwd():
 					if not npass.get()=='' and not npass.get().isspace():
 				
 						confirm=messagebox.askyesno('','Do you wish to change the administrator password for '+a[emp_uname_inp]+' ?',parent=passwd_win)
@@ -118,9 +120,7 @@ def emp_main():
 				npass=tk.Entry(passwd_win,font=fnt,show='*')
 				npass.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
 
-				#img13=tk.PhotoImage(file='monoico/icon-694.png')
-				subbtn=tk.Button(passwd_win,text='Make changes',font=fntit,command=chpasswd)
-				#subbtn.image=img13
+				subbtn=tk.Button(passwd_win,text='Make changes',font=fntit,command=change_admin_passwd)
 				subbtn.grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)	
 			
 			tk.Grid.columnconfigure(root,0,weight=1)
@@ -130,7 +130,7 @@ def emp_main():
 			user=tk.Menu(menubar,tearoff=0)
 			menubar.add_cascade(label='User',menu=user,font=menufnt)
 
-			user.add_command(label='Change the administrator password...',command=chrootpasswd,font=menufnt,underline=0)
+			user.add_command(label='Change the administrator password...',command=passwd,font=menufnt,underline=0)
 			user.add_separator()
 			user.add_command(label='Logout',command=logout,font=menufnt,underline=0)
 			user.add_command(label='Logout and Exit',command=root.destroy,font=menufnt,underline=11)
@@ -171,7 +171,6 @@ def emp_main():
 			tk.Grid.columnconfigure(f2,2,weight=1)
 			tk.Grid.columnconfigure(f2,3,weight=1)
 
-			#tk.Grid.rowconfigure(f2,2,weight=1)
 			tk.Label(f2,text='You can:',font=fntit).grid(column=1,row=2,sticky=tk.W,padx=10,pady=10)
 
 			tk.Grid.rowconfigure(f2,5,weight=1)
@@ -226,12 +225,6 @@ def emp_main():
 
 			def logout():
 				main_menu.destroy()
-				'''
-				if pf.system()=='Windows' and int(pf.release()) < 10:
-					os.system('python emp.py')
-				else:
-					os.system('python3 emp.py')
-				'''
 				emp_main()
 
 			def managetaxibkgs():
@@ -327,17 +320,11 @@ def emp_main():
 
 			tk.Grid.rowconfigure(f2,7,weight=1)
 			
-			#img13=tk.PhotoImage(file='icons/taxi.png')
 			btn5=tk.Button(f2,text='Manage taxi bookings',font=fntit,command=managetaxibkgs)
 			btn5.grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
-			#btn5.image=img13
-			#tk.Label(f2,text='Manage taxi bookings.',font=fnt).grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
 			
-			#img14=tk.PhotoImage(file='icons/bus.png')
 			btn6=tk.Button(f2,text='Manage bus bookings',font=fntit,command=managebusbkgs)
 			btn6.grid(column=3,row=7,padx=10,pady=10,sticky=tk.W)
-			#btn6.image=img14
-			#tk.Label(f2,text='Manage bus bookings.',font=fnt).grid(column=3,row=7,padx=10,pady=10,sticky=tk.W)
 
 			tk.Grid.rowconfigure(f2,10,weight=1)
 

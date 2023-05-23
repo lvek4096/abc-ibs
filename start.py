@@ -1,3 +1,5 @@
+#!/bin/python3
+
 #import statements
 #Imports libraries
 import tkinter as tk
