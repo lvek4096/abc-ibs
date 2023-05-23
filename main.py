@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/usr/bin/env python3
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
@@ -125,8 +125,8 @@ def init():		#Initialisation script
 
 def about():	#About page
 	#Build number
-	build='311 [V3]'
-	build_timestamp='2023-04-13 00:31:43'	
+	build='312 [V3]'
+	build_timestamp='2023-05-17 22:53:42'	
 	credits_txt='''
 Developed by
 Amadeus Software
