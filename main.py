@@ -49,7 +49,7 @@ def init():		#Initialisation script
 				con=ms.connect(host='localhost',user='root',password='123456')
 				messagebox.showerror('Error','Incorrect hostname or credentials provided.\nFalling back to default credentials.')
 			except:
-				messagebox.showerror('Error','DBMS not found on localhost or remote system.\nThe program will terminate.')
+				messagebox.showerror('Error','RDBMS not found on localhost.\nThe program will terminate.')
 				quit()
 
 		if con.is_connected():
@@ -125,8 +125,8 @@ def init():		#Initialisation script
 
 def about():	#About page
 	#Build number
-	build='310 [V3]'
-	build_timestamp='2023-04-13 00:23:26'	
+	build='311 [V3]'
+	build_timestamp='2023-04-13 00:31:43'	
 	credits_txt='''
 Developed by
 Amadeus Software
