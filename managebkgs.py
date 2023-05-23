@@ -5,14 +5,15 @@ def bus():
 	import ctypes
 	from tkinter import ttk
 	from tkinter import messagebox
-	import random as rd
-	
-	try:
-		ctypes.windll.shcore.SetProcessDpiAwareness(True)
-	except:
-		pass
 
-	con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
+	#Enables DPI scaling on supported versions of Windows
+	if pf.system()=='Windows':	
+		try:
+			ctypes.windll.shcore.SetProcessDpiAwareness(True)
+		except:
+			pass
+
+	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
 	cur=con.cursor()
 
 	fnt=('IBM Plex Mono',12)
@@ -49,7 +50,7 @@ def bus():
 					entry.configure(fg='red',font=fntit)	#colors and italicises header
 
 	def viewone():
-		def getadmninfo():
+		def getbusbkginfo():
 			cur.execute('select bkgid from bus_bkgs')
 			a=cur.fetchall()
 			for i in a:
@@ -90,7 +91,7 @@ def bus():
 			else:
 				messagebox.showerror('Error','Please enter the booking.',parent=viewone_win)
 		viewone_win=tk.Toplevel()
-		viewone_win.title('')
+		viewone_win.title(' ')
 		viewone_win.resizable(False,False)
 		
 		frame1=tk.Frame(viewone_win)
@@ -122,14 +123,15 @@ def bus():
 		bkgid['values']=b
 		
 		#img11=tk.PhotoImage(file='monoico/icon-582.png')
-		submit=tk.Button(frame1,font=fntit,text='Submit',command=getadmninfo)
+		submit=tk.Button(frame1,font=fntit,text='Submit',command=getbusbkginfo)
 		submit.grid(row=5,column=2,padx=10,pady=10)
 		#submit.image=img11
+		viewone_win.bind('<Return>',lambda event:getbusbkginfo())
 
 	def delone():
 		delone_win=tk.Toplevel()
 		delone_win.resizable(False,False)
-		delone_win.title('')
+		delone_win.title(' ')
 		#cur.execute('select admin_uname,admin_name from admin')
 		#a=cur.fetchall()
 		#b=dict(a)
@@ -152,7 +154,7 @@ def bus():
 			else:
 				messagebox.showerror('','Please enter the booking ID.',parent=delone_win)
 			
-		img14=tk.PhotoImage(file='icons/ban_user.png')
+		img14=tk.PhotoImage(file='icons/delete_bkgs.png')
 		img=tk.Label(delone_win,image=img14,font=h1fnt)
 		img.grid(column=0,row=0,padx=10,pady=10)
 		img.image=img14
@@ -176,6 +178,7 @@ def bus():
 		delbtn=tk.Button(delone_win,text='Delete',font=fntit,command=deletebkg,fg='red')
 		#delbtn.image=img13
 		delbtn.grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
+		delone_win.bind('<Return>',lambda event:deletebkg())
 
 	tk.Grid.columnconfigure(managebusbkgs,0,weight=1)
 
@@ -243,14 +246,15 @@ def taxi():
 	import ctypes
 	from tkinter import ttk
 	from tkinter import messagebox
-	import random as rd
 	
-	try:
-		ctypes.windll.shcore.SetProcessDpiAwareness(True)
-	except:
-		pass
+	#Enables DPI scaling on supported versions of Windows
+	if pf.system()=='Windows':
+		try:
+			ctypes.windll.shcore.SetProcessDpiAwareness(True)
+		except:
+			pass
 
-	con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
+	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
 	cur=con.cursor()
 
 	fnt=('IBM Plex Mono',12)
@@ -287,7 +291,7 @@ def taxi():
 					entry.configure(fg='red',font=fntit)	#colors and italicises header
 
 	def viewone():
-		def getadmninfo():
+		def gettaxibkginfo():
 			cur.execute('select bkgid from taxi_bkgs')
 			a=cur.fetchall()
 			for i in a:
@@ -327,7 +331,7 @@ def taxi():
 			else:
 				messagebox.showerror('Error','Please enter the booking.',parent=viewone_win)
 		viewone_win=tk.Toplevel()
-		viewone_win.title('')
+		viewone_win.title(' ')
 		viewone_win.resizable(False,False)
 		
 		frame1=tk.Frame(viewone_win)
@@ -359,14 +363,15 @@ def taxi():
 		bkgid['values']=b
 		
 		#img11=tk.PhotoImage(file='monoico/icon-582.png')
-		submit=tk.Button(frame1,font=fntit,text='Submit',command=getadmninfo)
+		submit=tk.Button(frame1,font=fntit,text='Submit',command=gettaxibkginfo)
 		submit.grid(row=5,column=2,padx=10,pady=10)
 		#submit.image=img11
+		viewone_win.bind('<Return>',lambda event:gettaxibkginfo())
 
 	def delone():
 		delone_win=tk.Toplevel()
 		delone_win.resizable(False,False)
-		delone_win.title('')
+		delone_win.title(' ')
 		#cur.execute('select admin_uname,admin_name from admin')
 		#a=cur.fetchall()
 		#b=dict(a)
@@ -389,7 +394,7 @@ def taxi():
 			else:
 				messagebox.showerror('','Please enter the booking ID.',parent=delone_win)
 			
-		img14=tk.PhotoImage(file='icons/ban_user.png')
+		img14=tk.PhotoImage(file='icons/delete_bkgs.png')
 		img=tk.Label(delone_win,image=img14,font=h1fnt)
 		img.grid(column=0,row=0,padx=10,pady=10)
 		img.image=img14
@@ -413,6 +418,7 @@ def taxi():
 		delbtn=tk.Button(delone_win,text='Delete',font=fntit,command=deletebkg,fg='red')
 		#delbtn.image=img13
 		delbtn.grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
+		delone_win.bind('<Return>',lambda event:deletebkg())
 
 	tk.Grid.columnconfigure(managetaxibkgs,0,weight=1)
 
@@ -473,12 +479,4 @@ def taxi():
 
 	tk.Grid.rowconfigure(f2,16,weight=1)
 	
-	'''
-	img9=tk.PhotoImage(file='monoico/icon-714.png')
-	btn1=tk.Button(f2,text='exit',image=img9,font=fnt,command=home)
-	btn1.grid(column=0,row=16,padx=10,pady=10,sticky=tk.E)
-	btn1.image=img9
-
-	tk.Label(f2,text='Return home.',font=fnt).grid(column=1,row=16,padx=10,pady=10,sticky=tk.W)
-	'''
 	managetaxibkgs.mainloop()

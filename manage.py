@@ -7,12 +7,14 @@ def manageadmin():	#Manage admins
 	from tkinter import messagebox
 	import random as rd
 	
-	try:
-		ctypes.windll.shcore.SetProcessDpiAwareness(True)
-	except:
-		pass
+	#Enables DPI scaling on supported versions of Windows
+	if pf.system()=='Windows':
+		try:
+			ctypes.windll.shcore.SetProcessDpiAwareness(True)
+		except:
+			pass
 
-	con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
+	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
 	cur=con.cursor()
 
 	fnt=('IBM Plex Mono',12)
@@ -21,8 +23,6 @@ def manageadmin():	#Manage admins
 
 	manageadminwin=tk.Toplevel()
 	manageadminwin.title('Administrator Manager')
-	#w,h=manageempwin.winfo_screenwidth(),manageempwin.winfo_screenheight()
-	#manageempwin.geometry(str(w)+'x'+str(h))
 
 	def viewall():
 		viewall_win=tk.Toplevel()
@@ -86,7 +86,7 @@ def manageadmin():	#Manage admins
 			else:
 				messagebox.showerror('Error','Please enter the administrator username.',parent=viewone_win)
 		viewone_win=tk.Toplevel()
-		viewone_win.title('')
+		viewone_win.title(' ')
 		viewone_win.resizable(False,False)
 		
 		frame1=tk.Frame(viewone_win)
@@ -120,12 +120,13 @@ def manageadmin():	#Manage admins
 		#img11=tk.PhotoImage(file='monoico/icon-582.png')
 		submit=tk.Button(frame1,font=fntit,text='Submit',command=getadmninfo)
 		submit.grid(row=5,column=2,padx=10,pady=10)
+		viewone_win.bind('<Return>',lambda event:getadmninfo())
 		#submit.image=img11
 
 	def delone():
 		delone_win=tk.Toplevel()
 		delone_win.resizable(False,False)
-		delone_win.title('')
+		delone_win.title(' ')
 		cur.execute('select admin_uname,admin_name from admin')
 		a=cur.fetchall()
 		b=dict(a)
@@ -147,7 +148,6 @@ def manageadmin():	#Manage admins
 					messagebox.showerror('Error','Username \''+uname.get()+'\' does not exist.',parent=delone_win)
 			else:
 				messagebox.showerror('','Please enter the administrator username.',parent=delone_win)
-		
 		
 		
 		img14=tk.PhotoImage(file='icons/ban_user.png')
@@ -174,11 +174,12 @@ def manageadmin():	#Manage admins
 		delbtn=tk.Button(delone_win,text='Delete',font=fntit,command=deleteadmin,fg='red')
 		#delbtn.image=img13
 		delbtn.grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
+		delone_win.bind('<Return>',lambda event:deleteadmin())
 
 	def passwd():
 		passwd_win=tk.Toplevel()
 		passwd_win.resizable(False,False)
-		passwd_win.title('')
+		passwd_win.title(' ')
 
 		cur.execute('select admin_uname,admin_name from admin')
 		a=cur.fetchall()
@@ -230,11 +231,12 @@ def manageadmin():	#Manage admins
 		subbtn=tk.Button(passwd_win,text='Make changes',font=fntit,command=chpasswd)
 		#subbtn.image=img13
 		subbtn.grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
+		passwd_win.bind('<Return>',lambda event:chpasswd())
 
 	def add():
 		add_win=tk.Toplevel()
 		add_win.resizable(False,False)
-		add_win.title('')
+		add_win.title(' ')
 
 		def add_admin():
 			uname_inp=uname.get().lower()
@@ -292,12 +294,7 @@ def manageadmin():	#Manage admins
 		subbtn.grid(column=1,row=12,padx=10,pady=10,sticky=tk.W)
 		#subbtn.image=subimg
 
-		'''
-		exitimg=tk.PhotoImage(file='monoico/icon-66.png')
-		exitbtn=tk.Button(add_win,font=fnt,text='Exit',image=exitimg,command=add_win.destroy)
-		exitbtn.grid(column=0,row=15,padx=10,pady=10,sticky=tk.SW)
-		exitbtn.image=exitimg
-		'''
+		add_win.bind('<Return>',lambda event:add_admin())
 
 	tk.Grid.columnconfigure(manageadminwin,0,weight=1)
 
@@ -380,12 +377,14 @@ def manageemp():	#Manage agents (employees)
 	from tkinter import messagebox
 	import random as rd
 
-	try:
-		ctypes.windll.shcore.SetProcessDpiAwareness(True)
-	except:
-		pass
+	#Enables DPI scaling on supported versions of Windows
+	if pf.system()=='Windows':
+		try:
+			ctypes.windll.shcore.SetProcessDpiAwareness(True)
+		except:
+			pass
 
-	con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
+	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
 	cur=con.cursor()
 
 	fnt=('IBM Plex Mono',12)
@@ -459,7 +458,7 @@ def manageemp():	#Manage agents (employees)
 			else:
 				messagebox.showerror('Error','Please enter the employee username.',parent=viewone_win)
 		viewone_win=tk.Toplevel()
-		viewone_win.title('')
+		viewone_win.title(' ')
 		viewone_win.resizable(False,False)
 		
 		frame1=tk.Frame(viewone_win)
@@ -494,11 +493,12 @@ def manageemp():	#Manage agents (employees)
 		submit=tk.Button(frame1,font=fntit,text='Submit',command=getempinfo)
 		submit.grid(row=5,column=2,padx=10,pady=10)
 		#submit.image=img11
+		viewone_win.bind('<Return>',lambda event:getempinfo())
 
 	def delone():
 		delone_win=tk.Toplevel()
 		delone_win.resizable(False,False)
-		delone_win.title('')
+		delone_win.title(' ')
 		cur.execute('select emp_uname,emp_name from employees')
 		a=cur.fetchall()
 		b=dict(a)
@@ -520,8 +520,6 @@ def manageemp():	#Manage agents (employees)
 					messagebox.showerror('Error','Username \''+uname.get()+'\' does not exist.',parent=delone_win)
 			else:
 				messagebox.showerror('','Please enter the employee username.',parent=delone_win)
-		
-		
 		
 		img14=tk.PhotoImage(file='icons/ban_user.png')
 		img=tk.Label(delone_win,image=img14,font=h1fnt)
@@ -547,11 +545,12 @@ def manageemp():	#Manage agents (employees)
 		delbtn=tk.Button(delone_win,text='Delete',font=fntit,command=deleteemp,fg='red')
 		#delbtn.image=img13
 		delbtn.grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
+		delone_win.bind('<Return>',lambda event:deleteemp())
 
 	def passwd():
 		passwd_win=tk.Toplevel()
 		passwd_win.resizable(False,False)
-		passwd_win.title('')
+		passwd_win.title(' ')
 
 		cur.execute('select emp_uname,emp_name from employees')
 		a=cur.fetchall()
@@ -603,11 +602,12 @@ def manageemp():	#Manage agents (employees)
 		subbtn=tk.Button(passwd_win,text='Make changes',font=fntit,command=chpasswd)
 		#subbtn.image=img13
 		subbtn.grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
+		passwd_win.bind('<Return>',lambda event:chpasswd())
 
 	def add():
 		add_win=tk.Toplevel()
 		add_win.resizable(False,False)
-		add_win.title('')
+		add_win.title(' ')
 
 		def add_emp():
 			uname_inp=uname.get().lower()
@@ -665,12 +665,7 @@ def manageemp():	#Manage agents (employees)
 		subbtn.grid(column=1,row=12,padx=10,pady=10,sticky=tk.W)
 		#subbtn.image=subimg
 
-		'''
-		exitimg=tk.PhotoImage(file='monoico/icon-66.png')
-		exitbtn=tk.Button(add_win,font=fnt,text='Exit',image=exitimg,command=add_win.destroy)
-		exitbtn.grid(column=0,row=15,padx=10,pady=10,sticky=tk.SW)
-		exitbtn.image=exitimg
-		'''
+		add_win.bind('<Return>',lambda event:add_emp())
 
 
 	tk.Grid.columnconfigure(manageempwin,0,weight=1)
@@ -754,12 +749,14 @@ def manageusers():	#Manage users
 	from tkinter import messagebox
 	import random as rd
 
-	try:
-		ctypes.windll.shcore.SetProcessDpiAwareness(True)
-	except:
-		pass
+	#Enables DPI scaling on supported versions of Windows
+	if pf.system()=='Windows':
+		try:
+			ctypes.windll.shcore.SetProcessDpiAwareness(True)
+		except:
+			pass
 
-	con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
+	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
 	cur=con.cursor()
 
 	fnt=('IBM Plex Mono',12)
@@ -835,7 +832,7 @@ def manageusers():	#Manage users
 			else:
 				messagebox.showerror('Error','Please enter the username.',parent=viewone_win)
 		viewone_win=tk.Toplevel()
-		viewone_win.title('')
+		viewone_win.title(' ')
 		viewone_win.resizable(False,False)
 		
 		frame1=tk.Frame(viewone_win)
@@ -870,11 +867,12 @@ def manageusers():	#Manage users
 		submit=tk.Button(frame1,font=fntit,text='Submit',command=getuserinfo)
 		submit.grid(row=5,column=2,padx=10,pady=10)
 		#submit.image=img11
+		viewone_win.bind('<Return>',lambda event:getuserinfo())
 
 	def delone():
 		delone_win=tk.Toplevel()
 		delone_win.resizable(False,False)
-		delone_win.title('')
+		delone_win.title(' ')
 
 		def deleteuser():
 			#cur.execute('select uname,fname from users')
@@ -923,11 +921,12 @@ def manageusers():	#Manage users
 		delbtn=tk.Button(delone_win,text='Delete',font=fntit,command=deleteuser,fg='red')
 		#delbtn.image=img13
 		delbtn.grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
+		delone_win.bind('<Return>',lambda event:deleteuser())
 
 	def passwd():
 		passwd_win=tk.Toplevel()
 		passwd_win.resizable(False,False)
-		passwd_win.title('')
+		passwd_win.title(' ')
 
 		def chpasswd():
 			if (not uname.get()=='' and not uname.get().isspace()) and (not npass.get()=='' and not npass.get().isspace()):
@@ -976,9 +975,10 @@ def manageusers():	#Manage users
 		subbtn=tk.Button(passwd_win,text='Make changes',font=fntit,command=chpasswd)
 		#subbtn.image=img13
 		subbtn.grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
+		passwd_win.bind('<Return>',lambda event:chpasswd())
 
 	def register():
-		uuid='U'+str(rd.randint(1000,9999))
+		uuid='U'+str(rd.randint(10000,99999))
 		
 		def reguser():
 			
@@ -1017,10 +1017,15 @@ def manageusers():	#Manage users
 				messagebox.showerror('Error','Please do not leave any fields blank.',parent=regwin)
 		
 		regwin=tk.Toplevel()
-		regwin.title('Register')
+		regwin.title(' ')
 		regwin.resizable(False, False)
 
-		tk.Label(regwin,text='Register',font=h1fnt).grid(column=0,row=0,padx=10,pady=10,columnspan=2,sticky=tk.EW)
+		img15=tk.PhotoImage(file='icons/adduser.png')
+		img=tk.Label(regwin,image=img15,font=h1fnt)
+		img.grid(column=0,row=0,padx=10,pady=10,sticky=tk.E)
+		img.image=img15
+
+		tk.Label(regwin,text='Add user...',font=h1fnt).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
 		
 		tk.Label(regwin,text='ID',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
 		tk.Label(regwin,text=uuid,font=fnt).grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
@@ -1053,6 +1058,7 @@ def manageusers():	#Manage users
 		regsubmit=tk.Button(regwin,text='Register',command=reguser,font=fntit)
 		regsubmit.grid(column=1,row=14,padx=10,pady=10,sticky=tk.W)
 		#regsubmit.image=regsubimg
+		regwin.bind('<Return>',lambda event:reguser())
 
 	
 	tk.Grid.columnconfigure(manageuserwin,0,weight=1)
@@ -1091,7 +1097,7 @@ def manageusers():	#Manage users
 
 	tk.Grid.rowconfigure(f2,5,weight=1)
 
-	img8=tk.PhotoImage(file='icons/people.png')
+	img8=tk.PhotoImage(file='icons/preview.png')
 	tbviewbtn=tk.Button(f2,text='view all',image=img8,font=fnt,command=viewall)
 	tbviewbtn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
 	tbviewbtn.image=img8
@@ -1142,13 +1148,15 @@ def managedb():		#Manage db
 	from tkinter import messagebox
 	from tkinter import scrolledtext
 
-	try:
-		ctypes.windll.shcore.SetProcessDpiAwareness(True)
-	except:
-		pass
+	#Enables DPI scaling on supported versions of Windows
+	if pf.system()=='Windows':
+		try:
+			ctypes.windll.shcore.SetProcessDpiAwareness(True)
+		except:
+			pass
 
 	#mysql connection
-	con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
+	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
 	cur=con.cursor()
 
 	fnt=('IBM Plex Mono',12)
@@ -1235,7 +1243,7 @@ def managedb():		#Manage db
 	def help():
 		helpwin=tk.Toplevel()
 		helpwin.resizable(False,False)
-		helpwin.title('')
+		helpwin.title(' ')
 
 		img14=tk.PhotoImage(file='icons/help.png')
 		img=tk.Label(helpwin,image=img14)
@@ -1336,3 +1344,5 @@ database along with its contents.'''
 	drptbbtn.image=img11
 	tk.Label(f2,text='Drop the table.',font=fnt,fg='red').grid(column=3,row=8,padx=10,pady=10,sticky=tk.W)
 	tk.Message(f2,text='WARNING:\nThis will drop the table chosen\nand its contents permanently.',font=fnt,fg='white',bg='red').grid(column=3,row=9,padx=10,sticky=tk.NW)
+
+	dbmainwin.bind('<Return>',lambda event:showtb())

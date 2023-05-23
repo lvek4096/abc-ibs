@@ -6,19 +6,21 @@ def bookings():		#make bookings
 	from tkinter import messagebox
 	import os
 	import ctypes
+	import platform as pf
 
 	import bookings
 	import sysinfo
 
 	#mysql connection
-	con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
+	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
 	cur=con.cursor()
 
-	#Enables DPI scaling on Win10+
-	try:
-		ctypes.windll.shcore.SetProcessDpiAwareness(True)
-	except:
-		pass
+	#Enables DPI scaling on supported Windows versions
+	if pf.system()=='Windows':
+		try:
+			ctypes.windll.shcore.SetProcessDpiAwareness(True)
+		except:
+			pass
 		
 	#init GUI
 	logwin=tk.Tk()
@@ -80,11 +82,13 @@ def bookings():		#make bookings
 
 			cur.execute('select uname,fname from users')
 			a=dict(cur.fetchall())
+			cur.execute('select uname,uuid from users')
+			uuidlist=dict(cur.fetchall())
 
 			tk.Grid.rowconfigure(f1,0,weight=1)
 			tk.Label(f1,text='Welcome, '+a[uname_inp],font=h1fnt,fg='white',bg='#283593').grid(column=0,row=0)
-
-			Separator(f1,orient='horizontal').grid(column=0,row=1,sticky=tk.EW,padx=10,pady=10)
+			tk.Label(f1,text=('ID: '+uuidlist[uname_inp]),font=('IBM Plex Sans',12),fg='black',bg='#00e676').grid(column=0,row=1,padx=10)
+			Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10)
 
 			#FRAME 2
 			tk.Grid.rowconfigure(main_menu,1,weight=1)
@@ -141,17 +145,21 @@ def bookings():		#make bookings
 		cur.execute('select uname,fname from users')
 		fnamelist=dict(cur.fetchall())
 
-		if uname_inp not in op.keys():
-			messagebox.showerror('Error','Username \''+uname_inp+'\' does not exist.')
-		else:
-			if not passwd_inp == op[uname_inp]:
-				messagebox.showerror('Error','Invalid password entered for '+fnamelist[uname_inp]+'.')
+		if (not uname_inp=='' and not uname_inp.isspace()) and (not passwd_inp=='' and not passwd_inp.isspace()):
+			if uname_inp not in op.keys():
+				messagebox.showerror('Error','Username \''+uname_inp+'\' does not exist.')
 			else:
-				logwin.destroy()
-				main()
+				if not passwd_inp == op[uname_inp]:
+					messagebox.showerror('Error','Invalid password entered for '+fnamelist[uname_inp]+'.')
+				else:
+					logwin.destroy()
+					main()
+		else:
+			messagebox.showerror('Error','Please do not leave any fields blank.')
+
 
 	def register():
-		uuid='U'+str(rd.randint(1000,9999))
+		uuid='U'+str(rd.randint(10000,99999))
 		
 		def reguser():
 			
@@ -224,10 +232,11 @@ def bookings():		#make bookings
 		regsubmit=tk.Button(regwin,text='Register',command=reguser,font=fntit)
 		regsubmit.grid(column=1,row=14,padx=10,pady=10,sticky=tk.W)
 		#regsubmit.image=regsubimg
+		regwin.bind('<Return>',lambda event:reguser())
 		
-	def changepass():
+	def profile():
 		logwin.destroy()
-		managebkgs()
+		manageprofile()
 
 	#Window
 	tk.Grid.columnconfigure(logwin,0,weight=1)
@@ -275,12 +284,13 @@ def bookings():		#make bookings
 	reg.grid(column=1,row=12,padx=10,pady=10,sticky=tk.W)
 
 	#tk.Grid.rowconfigure(f2,11,weight=2)
-	manage=tk.Button(f2,text='Manage your profile...',font=fntit,command=changepass)
+	manage=tk.Button(f2,text='Manage your profile...',font=fntit,command=profile)
 	manage.grid(column=1,row=11,padx=10,pady=10,columnspan=2,sticky=tk.W)
 
+	logwin.bind('<Return>',lambda event:login())
 	logwin.mainloop()
 
-def managebkgs():		#manage profile
+def manageprofile():		#manage profile
 	import tkinter as tk
 	from tkinter import messagebox
 	import mysql.connector as ms
@@ -289,14 +299,15 @@ def managebkgs():		#manage profile
 	import platform as pf
 	import ctypes
 
-	con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
+	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
 	cur=con.cursor()
 
-	#Enables DPI scaling on Win10+
-	try:
-		ctypes.windll.shcore.SetProcessDpiAwareness(True)
-	except:
-		pass
+	#Enables DPI scaling on supported Windows versions
+	if pf.system()=='Windows':
+		try:
+			ctypes.windll.shcore.SetProcessDpiAwareness(True)
+		except:
+			pass
 
 	#init GUI
 	logwin=tk.Tk()
@@ -353,23 +364,23 @@ def managebkgs():		#manage profile
 				tk.Label(delwin,text='Delete User',font=h1fnt).grid(column=0,row=0,padx=10,pady=10)
 				#tk.Label(delwin,text='Enter the username which you wish to delete',font=fnt).grid(column=0,row=1,padx=10,pady=10)
 
-				tk.Label(delwin,text='Please enter your password.',font=fnt).grid(column=0,row=4,sticky=tk.W,padx=10,pady=10)
+				tk.Label(delwin,text='Please enter the password.',font=fnt).grid(column=0,row=4,sticky=tk.W,padx=10,pady=10)
 				del_passwd=tk.Entry(delwin,show='*',font=fnt);del_passwd.grid(column=0,row=5,sticky=tk.EW,padx=10,pady=10)
 
 				#delsubimg=tk.PhotoImage(file='icons/ban_user.png')
 				delsubmit=tk.Button(delwin,text='Delete User',command=deluser,font=fntit,fg='red');delsubmit.grid(column=0,row=6,padx=10,pady=10)
 				#delsubmit.image=delsubimg
-
-				delwin.mainloop()
+				delwin.bind('<Return>',lambda event:deluser())
+				
 
 			def passwd():
-				def changepass():
+				def chpasswd():
 					cur.execute('select uname,passwd from users')
 					b=cur.fetchall()
 					upass=dict(b)
 					op=old_pass.get()
 					np=new_pass.get()
-					if not np=='' and not np.isspace():
+					if (not np=='' and not np.isspace()) and (not op=='' and not op.isspace()):
 						if op == upass[uname_inp]:
 							confirm=messagebox.askyesno('','Really change your password?',parent=passwin)
 							if confirm==True:
@@ -382,9 +393,9 @@ def managebkgs():		#manage profile
 							else:
 								pass
 						else:
-							messagebox.showerror('Error','Invalid password entered.',parent=passwin)
+							messagebox.showerror('Error','Invalid old password entered.',parent=passwin)
 					else:
-						messagebox.showerror('Error','Please enter the new password.',parent=passwin)
+						messagebox.showerror('Error','Please do not leave any fields blank.',parent=passwin)
 
 				passwin=tk.Toplevel()
 				passwin.title('Change Password')
@@ -399,10 +410,10 @@ def managebkgs():		#manage profile
 				new_pass=tk.Entry(passwin,show='*',font=fnt);new_pass.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
 				
 				#passsubimg=tk.PhotoImage(file='monoico/icon-86.png')
-				passsubmit=tk.Button(passwin,text='Change password',command=changepass,font=fntit)
+				passsubmit=tk.Button(passwin,text='Change password',command=chpasswd,font=fntit)
 				passsubmit.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
+				passwin.bind('<Return>',lambda event:chpasswd())
 				
-				passwin.mainloop()
 
 			def logout():
 				manage_userswin.destroy()
@@ -411,7 +422,7 @@ def managebkgs():		#manage profile
 			def info():
 				chinfo_home=tk.Toplevel()
 				chinfo_home.resizable(False,False)
-				chinfo_home.title('')
+				chinfo_home.title(' ')
 				tk.Label(chinfo_home,text=('Change your\npersonal information'),font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,sticky=tk.W)
 				
 				def name():
@@ -433,7 +444,7 @@ def managebkgs():		#manage profile
 							messagebox.showerror('','No new name has been specified.',parent=chinfo_name)
 					chinfo_name=tk.Toplevel()
 					chinfo_name.resizable(False,False)
-					chinfo_name.title('')
+					chinfo_name.title(' ')
 					tk.Label(chinfo_name,text=('Change your display name'),font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,sticky=tk.W)
 					#tk.Label(chinfo_name,text=(''),font=fnt,justify=tk.LEFT).grid(column=1,row=1,padx=10,sticky=tk.W)
 					
@@ -448,7 +459,8 @@ def managebkgs():		#manage profile
 					btn3=tk.Button(chinfo_name,text='Make changes',font=fntit,command=chname)
 					#btn3.image=img10
 					btn3.grid(row=10,column=1,padx=10,pady=10,sticky=tk.W)
-				
+					chinfo_name.bind('<Return>',lambda event:chname())
+
 				def contacts():
 					def chcontacts():
 						new_email=en2.get()
@@ -505,7 +517,7 @@ def managebkgs():		#manage profile
 
 					chinfo_contacts=tk.Toplevel()
 					chinfo_contacts.resizable(False,False)
-					chinfo_contacts.title('')
+					chinfo_contacts.title(' ')
 					tk.Label(chinfo_contacts,text=('Change your contact details'),font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,sticky=tk.W)
 					tk.Label(chinfo_contacts,text='If you do not wish to change a\nparticular contact, then leave the\ncorresponding field blank.',font=fnt,justify=tk.LEFT).grid(row=2,column=1,sticky=tk.W,padx=10,pady=10)
 					tk.Label(chinfo_contacts,text='Current\nelectronic mail address',font=fnt,justify=tk.RIGHT).grid(row=5,column=0,sticky=tk.E,padx=10,pady=10)
@@ -526,6 +538,8 @@ def managebkgs():		#manage profile
 					btn3=tk.Button(chinfo_contacts,text='Make changes',font=fntit,command=chcontacts)
 					#btn3.image=img10
 					btn3.grid(row=15,column=1,padx=10,pady=10,sticky=tk.W)
+
+					chinfo_contacts.bind('<Return>',lambda event:chcontacts())
 
 				img1=tk.PhotoImage(file='icons/user.png')
 				btn1=tk.Button(chinfo_home,text='Name',image=img1,command=name)
@@ -621,13 +635,16 @@ def managebkgs():		#manage profile
 		cur.execute('select uname,fname from users')
 		fnamelist=dict(cur.fetchall())
 
-		if uname_inp not in op.keys():
-			messagebox.showerror('Error','Username \''+uname_inp+'\' does not exist.')
-		else:
-			if not passwd_inp == op[uname_inp]:
-				messagebox.showerror('Error','Invalid password entered for '+fnamelist[uname_inp]+'.')
+		if (not uname_inp=='' and not uname_inp.isspace()) and (not passwd_inp=='' and not passwd_inp.isspace()):
+			if uname_inp not in op.keys():
+				messagebox.showerror('Error','Username \''+uname_inp+'\' does not exist.')
 			else:
-				manage()
+				if not passwd_inp == op[uname_inp]:
+					messagebox.showerror('Error','Invalid password entered for '+fnamelist[uname_inp]+'.')
+				else:
+					manage()
+		else:
+			messagebox.showerror('Error','Please do not leave any fields blank.')
 
 	tk.Grid.columnconfigure(logwin,0,weight=1)
 
@@ -673,5 +690,5 @@ def managebkgs():		#manage profile
 	bkgbtn=tk.Button(f4,text='Booking',image=img6,font=fnt,command=main_login)
 	bkgbtn.grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
 
-
+	logwin.bind('<Return>',lambda event:onlogin())
 	logwin.mainloop()

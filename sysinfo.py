@@ -1,67 +1,39 @@
 def about():	#System information
+	
+	#import statements
 	import platform as pf
 	import tkinter as tk
 	from tkinter.ttk import Separator
 	import mysql.connector as ms
 	from tkinter import scrolledtext
 	import ctypes
-	build='226 (RC 1)'	
 
-	#Enables DPI scaling on Win10+
-	try:
-		ctypes.windll.shcore.SetProcessDpiAwareness(True)
-	except:
-		pass
+	#Build number
+	build='244 [RC 1]'
+	build_date='2022-08-18'	
 
-	disclaimer='''CAUTION
-This software is currently
-in Release Candidate (RC) stage.
-Features will be more or less complete; 
-however some bugs may still be present, 
-and certain features may break 
-or not work properly.
-Proceed to use this software with 
-caution.
+	#Enables DPI scaling on supported Windows versions
+	if pf.system()=='Windows':
+		try:
+			ctypes.windll.shcore.SetProcessDpiAwareness(True)
+		except:
+			pass
 
-MISE EN GARDE
-Ce logiciel est actuellement
-au stade Release Candidate (RC).
-Les fonctionnalités seront plus ou
-moins complet; cependant certains
-des bugs peuvent encore être 
-présents,et certaines 
-fonctionnalités peuvent casser 
-ou ne pas fonctionner correctement.
-Continuer à utiliser ce logiciel avec 
-précaution.
-
-PRECAUCIÓN
-Este software está actualmente
-en la etapa Release Candidate (RC).
-Las características serán más o
-menos completo; sin embargo algunos
-los errores pueden estar todavía 
-presentes, y ciertas características 
-pueden romperse o no funcionar 
-correctamente.
-Proceder a utilizar este software
-con cuidado.
-
-TRANSLATIONS BY GOOGLE TRANSLATE
-
+	disclaimer='''
 Icons:
 
 - Material Icons
 https://fonts.google.com/icons
+
+- Card icons
+https://brand.mastercard.com/brandcenter/artwork.html
+https://www.merchantsignage.visa.com/brand_guidelines
+https://www.americanexpress.com/en-gb/business/merchant/supplies/details/?pid=WEBLOGO1&linknav=merchant-supplies-nav
+https://www.discover.com/company/images/newsroom/media-downloads/
 '''
 
 	#mysql connection
-	con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
-
-	if con.is_connected()==True:
-		dbstatus='Connected to database.'
-	else:
-		dbstatus='Not connected to database.'
+	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
 
 	#Fonts
 	fnt=('IBM Plex Mono',12)
@@ -69,13 +41,14 @@ https://fonts.google.com/icons
 	h1fnt=('IBM Plex Sans',24)
 
 	about=tk.Toplevel()
-	abttitle='About this program on '+pf.system()
+	abttitle=' '
 	about.resizable(False, False)
 	about.title(abttitle)
 	
+	
 	#Labels
 	tk.Label(about,text='About',font=h1fnt).grid(column=1,row=0)
-	tk.Label(about,text=('Build '+build),font=fnt).grid(column=1,row=1)
+	tk.Label(about,text=('Build '+build+'\n ('+build_date+')'),font=fnt).grid(column=1,row=1)
 	
 	disc=scrolledtext.ScrolledText(about,font=fntit,height=6,width=40)
 	disc.grid(column=1,row=2,sticky=tk.EW,padx=10,pady=10)
@@ -86,7 +59,7 @@ https://fonts.google.com/icons
 
 	tk.Label(about,text=('Python',pf.python_version()),font=fnt).grid(column=1,row=6)
 	tk.Label(about,text=('Tkinter',tk.TkVersion),font=fnt).grid(column=1,row=7)
-	tk.Label(about,text=('MySQL',ms.__version__),font=fnt).grid(column=1,row=8)
+	tk.Label(about,text=('MySQL',con.get_server_info()),font=fnt).grid(column=1,row=8)
 	
 	Separator(about,orient='horizontal').grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
 
@@ -110,10 +83,13 @@ https://fonts.google.com/icons
 	#Additional distribution info - Linux ONLY
 	#Checking for platform.freedesktop_os_release() support - ONLY in Python 3.10 and newer
 	py=pf.python_version_tuple()
-	if int(py[0]) >= 3 and int(py[1]) >= 10:
-		if pf.system()=='Linux':
+
+	if pf.system()=='Linux':
+		try:
 			linux=pf.freedesktop_os_release()
 			tk.Label(about,text=(linux['NAME']+' '+linux['VERSION']),font=fnt).grid(column=1,row=13)
+		except:
+			pass
 	else:
 		pass
 
@@ -124,17 +100,10 @@ https://fonts.google.com/icons
 	
 	Separator(about,orient='horizontal').grid(column=1,row=16,sticky=tk.EW,padx=10,pady=10)
 	
-	def showdbinfo():		#Database status
-		def hidedbinfo():
-			dbinfo.grid_forget()
-			showdb.configure(text='Show database information',command=showdbinfo)
 
-		dbinfo=tk.Label(about,text=('MySQL '+con.get_server_info()+'\n'+dbstatus+'\nDatabase: '+con.database),font=fnt)
-		dbinfo.grid(column=1,row=18)
-		
-		showdb.configure(text='Hide database information',command=hidedbinfo)
-
-	showdb=tk.Button(about,text='Show database information',font=fnt,command=showdbinfo);showdb.grid(column=1,row=17)
+	dbinfo=tk.Label(about,text='Connected to database \''+con.database+'\'',font=fnt)
+	dbinfo.grid(column=1,row=18)
+	
 	
 	Separator(about,orient='horizontal').grid(column=1,row=24,sticky=tk.EW,padx=10,pady=10)
 	

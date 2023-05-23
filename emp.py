@@ -17,16 +17,17 @@ def emp_main():
 	import bookings
 	import init
 
-	#Enables DPI awareness on Win10+
-	try:
-		ctypes.windll.shcore.SetProcessDpiAwareness(True)
-	except:
-		pass
+	#Enables DPI scaling on supported Windows versions
+	if pf.system()=='Windows':
+		try:
+			ctypes.windll.shcore.SetProcessDpiAwareness(True)
+		except:
+			pass
 
 	#Definitions
 
 	#mysql connection
-	con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
+	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
 	cur=con.cursor()
 
 	init.initdb()
@@ -52,6 +53,7 @@ def emp_main():
 	def login():	#action on login
 
 		def admin():	#Admin menu
+
 			root=tk.Tk()
 			root.title('Admin menu')
 
@@ -63,12 +65,6 @@ def emp_main():
 
 			def logout():
 				root.destroy()
-				'''
-				if pf.system()=='Windows' and int(pf.release()) < 10:
-					os.system('python emp.py')
-				else:
-					os.system('python3 emp.py')
-				'''
 				emp_main()
 
 			def showdb():
@@ -92,7 +88,7 @@ def emp_main():
 			def chrootpasswd():
 				passwd_win=tk.Toplevel()
 				passwd_win.resizable(False,False)
-				passwd_win.title('')
+				passwd_win.title(' ')
 
 				def chpasswd():
 					if not npass.get()=='' and not npass.get().isspace():
@@ -156,10 +152,13 @@ def emp_main():
 			cur.execute('select admin_uname,admin_name from admin')
 			a=dict(cur.fetchall())
 
+			cur.execute('select admin_uname,admin_id from admin')
+			uuidlist=dict(cur.fetchall())
 			tk.Grid.rowconfigure(f1,0,weight=1)
 			tk.Label(f1,text='Welcome, '+a[emp_uname_inp],font=h1fnt,justify=tk.CENTER,fg='white',bg='#283593').grid(column=0,row=0,padx=10,pady=10)
-			
-			Separator(f1,orient='horizontal').grid(column=0,row=1,sticky=tk.EW,padx=10,pady=10)
+			tk.Label(f1,text=('ID: '+uuidlist[emp_uname_inp]),font=('IBM Plex Sans',12),fg='black',bg='#00e676').grid(column=0,row=1,padx=10)
+
+			Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10)
 			
 			#FRAME 2
 			tk.Grid.rowconfigure(root,1,weight=1)
@@ -214,15 +213,6 @@ def emp_main():
 			root.mainloop()
 
 		def empbookings():		#Agent booking menu
-			
-			if pf.system()=='Windows' and int(pf.release()) >= 10:
-				ctypes.windll.shcore.SetProcessDpiAwareness(True)
-
-			#Fonts
-			fnt=('IBM Plex Mono',12)
-			fntit=('IBM Plex Mono',12,'italic')
-			h1fnt=('IBM Plex Sans',24)
-			menufnt=('IBM Plex Mono',12)
 
 			#functions
 			def book_taxi():	#Opens taxi booking window.
@@ -296,14 +286,18 @@ def emp_main():
 			cur.execute('select emp_uname,emp_name from employees')
 			b=dict(cur.fetchall())
 
+			cur.execute('select emp_uname,emp_id from employees')
+			uuidlist=dict(cur.fetchall())
+
 			if emptype_inp=='Agent':
 				txt='Welcome, '+b[emp_uname_inp]
+				tk.Label(f1,text=('ID: '+uuidlist[emp_uname_inp]),font=('IBM Plex Sans',12),fg='black',bg='#00e676').grid(column=0,row=1,padx=10)
 			elif emptype_inp=='Administrator':
 				txt='Make and manage bookings'
 			
 			tk.Label(f1,text=txt,fg='white',bg='#283593',font=h1fnt,justify=tk.CENTER).grid(column=0,row=0,padx=10,pady=10)
 
-			Separator(f1,orient='horizontal').grid(column=0,row=1,sticky=tk.EW,padx=10,pady=10)
+			Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10)
 			#FRAME 2
 			tk.Grid.rowconfigure(main_menu,1,weight=1)
 			f2=tk.Frame(main_menu)
@@ -355,39 +349,59 @@ def emp_main():
 		emptype_inp=n.get()
 		emp_passwd_inp=emp_passwd.get()
 		
-		#Checking for inputs validity
+		#Checking for validity in inputs
 		if emptype_inp == 'Agent':
 			
-			cur.execute('select emp_uname,emp_passwd from employees')
+			cur.execute('select emp_uname,emp_passwd from employees')		#list of employee usernames and passwords
 			e=dict(cur.fetchall())
 
-			cur.execute('select emp_uname,emp_name from employees')
+			cur.execute('select emp_uname,emp_name from employees')			#list of employee usernames and names
 			f=dict(cur.fetchall())
+
 			if not emp_uname_inp=='' or emp_uname_inp.isspace():
 				if emp_uname_inp in e.keys():
 					if emp_passwd_inp==e[emp_uname_inp]:
 						emplogwin.destroy()
 						empbookings()
 					else:
-						messagebox.showerror('Error','Invalid password for\nemployee '+f[emp_uname_inp]+'.')
+						messagebox.showerror('Error','Invalid password for employee '+f[emp_uname_inp]+'.')
 				else:
 					messagebox.showerror('Error','Employee '+emp_uname_inp+' does not exist.')
 			else:
 				messagebox.showerror('Error','Do not leave any fields empty.')
+		
 		elif emptype_inp == 'Administrator':
 		
-			cur.execute('select admin_uname,admin_passwd from admin')
+			cur.execute('select admin_uname,admin_passwd from admin')	#list of admin usernames and passwords
 			a=dict(cur.fetchall())
-			if emp_uname_inp in a.keys():
-				if emp_passwd_inp==a[emp_uname_inp]:
-					emplogwin.destroy()
-					admin()
+
+			cur.execute('select admin_uname,admin_name from admin')		#list of admin usernames and names
+			b=dict(cur.fetchall())
+
+			if not emp_uname_inp=='' or emp_uname_inp.isspace():
+				if emp_uname_inp in a.keys():
+					if emp_passwd_inp==a[emp_uname_inp]:
+						emplogwin.destroy()
+						admin()
+					else:
+						messagebox.showerror('Error','Invalid password for administrator '+b[emp_uname_inp]+'.')
 				else:
-					messagebox.showerror('Error','Invalid password for\nadministrator '+emp_uname_inp+'.')
+					messagebox.showerror('Error','Administrator '+emp_uname_inp+' does not exist.')
 			else:
-				messagebox.showerror('Error','Administrator '+emp_uname_inp+' does not exist.')
+				messagebox.showerror('Error','Do not leave any fields empty.')
 		else:
 			messagebox.showerror('Error','Please select login type.')
+	
+	def about_this_program():
+		sysinfo.about()
+
+	menubar=tk.Menu(emplogwin)
+
+	more=tk.Menu(menubar,tearoff=0)
+	menubar.add_cascade(label='Info',menu=more,font=menufnt)
+	more.add_command(label='About this program...',command=about_this_program,font=menufnt,underline=0)
+	emplogwin.config(menu=menubar)
+		
 	tk.Grid.columnconfigure(emplogwin,0,weight=1)
 
 	#FRAME 1
@@ -431,6 +445,8 @@ def emp_main():
 	img1=tk.PhotoImage(file='icons/login.png')
 	logsubmit=tk.Button(f2,text='Login',image=img1,command=login)
 	logsubmit.grid(column=1,row=8,padx=10,pady=10,sticky=tk.W)
+
+	emplogwin.bind('<Return>',lambda event:login())
 
 	emplogwin.mainloop()
 

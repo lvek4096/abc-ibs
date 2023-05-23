@@ -3,12 +3,13 @@
 import tkinter as tk
 import mysql.connector as ms
 from tkinter.ttk import Separator
-import platform as pf
 import ctypes
+import platform as pf
 
 #Imports other Python scripts
 import user
 import init
+import sysinfo
 
 #definitions
 
@@ -17,10 +18,11 @@ fnt=('IBM Plex Mono',12,'bold italic')
 fntit=('IBM Plex Mono',12,'italic')
 h1fnt=('IBM Plex Sans',24)
 hfnt=('IBM Plex Sans',36,'bold')
+menufnt=('IBM Plex Mono',11)
 
 #MySQL connection
 
-con=ms.connect(host='localhost',user='john',password='123456')
+con=ms.connect(host='localhost',user='root',password='123456')
 cur=con.cursor()
 
 #Initalises database
@@ -33,13 +35,17 @@ def make_booking():		#to make booking
 
 def manage_user():		#to manage user
 	welcome.destroy()
-	user.managebkgs()
+	user.manageprofile()
 
-#Enables DPI scaling on Win10+
-try:
-	ctypes.windll.shcore.SetProcessDpiAwareness(True)
-except:
-	pass
+def about_this_program():
+	sysinfo.about()
+
+#Enables DPI scaling on supported Windows versions
+if pf.system()=='Windows':
+	try:
+		ctypes.windll.shcore.SetProcessDpiAwareness(True)
+	except:
+		pass
 	
 #main window
 welcome=tk.Tk()
@@ -51,6 +57,13 @@ try:
 except:
 	w,h=welcome.winfo_screenwidth(),welcome.winfo_screenheight()
 	welcome.geometry(str(w)+'x'+str(h))
+
+menubar=tk.Menu(welcome)
+
+more=tk.Menu(menubar,tearoff=0)
+menubar.add_cascade(label='Info',menu=more,font=menufnt)
+more.add_command(label='About this program...',command=about_this_program,font=menufnt,underline=0)
+welcome.config(menu=menubar)
 
 tk.Grid.columnconfigure(welcome,0,weight=1)
 
@@ -98,4 +111,5 @@ passbtn.grid(column=0,row=7,padx=10,pady=10,sticky=tk.E)
 tk.Label(f2,text='Exit',font=fnt,fg='red').grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
 
 tk.Grid.rowconfigure(f2,8,weight=1)	
+
 welcome.mainloop()
