@@ -29,11 +29,15 @@ def manage_admin():	#Manage adminsctypes
 	#Creating Toplevel window
 	manageadminwin=tk.Toplevel()
 	manageadminwin.title('Administrator Manager')
+	icon=tk.PhotoImage(file='img/icon.png')
+	manageadminwin.iconphoto(False,icon)
 
 	def viewall():	#Show all Administrators
 		viewall_win=tk.Toplevel()
 		viewall_win.title('All administrators')
 		viewall_win.resizable(False,False)
+		icon=tk.PhotoImage(file='img/icon.png')
+		viewall_win.iconphoto(False,icon)
 		
 		header=('Admin ID','Admin Username','Admin Name','Admin Password')
 
@@ -87,6 +91,8 @@ def manage_admin():	#Manage adminsctypes
 		viewone_win=tk.Toplevel()
 		viewone_win.title('View admin details')
 		viewone_win.resizable(False,False)
+		icon=tk.PhotoImage(file='img/icon.png')
+		viewone_win.iconphoto(False,icon)
 		
 		#Dividing window into frames
 		frame1=tk.Frame(viewone_win)
@@ -129,6 +135,8 @@ def manage_admin():	#Manage adminsctypes
 		delone_win=tk.Toplevel()
 		delone_win.resizable(False,False)
 		delone_win.title('Delete adminstrator')
+		icon=tk.PhotoImage(file='img/icon.png')
+		delone_win.iconphoto(False,icon)
 		
 		#Creates list of admins and respective full names.
 		cur.execute('select admin_uname,admin_name from admin')
@@ -185,6 +193,8 @@ def manage_admin():	#Manage adminsctypes
 		passwd_win=tk.Toplevel()
 		passwd_win.resizable(False,False)
 		passwd_win.title('Change password for administrator')
+		icon=tk.PhotoImage(file='img/icon.png')
+		passwd_win.iconphoto(False,icon)
 
 		cur.execute('select admin_uname,admin_name from admin')
 		a=cur.fetchall()
@@ -239,9 +249,11 @@ def manage_admin():	#Manage adminsctypes
 
 	def add():	#Register a new administrator.
 		
-		add_win=tk.Toplevel()
-		add_win.resizable(False,False)
-		add_win.title('Add administrator')
+		reg_win=tk.Toplevel()
+		reg_win.resizable(False,False)
+		reg_win.title('Add administrator')
+		icon=tk.PhotoImage(file='img/icon.png')
+		reg_win.iconphoto(False,icon)
 
 		def add_admin():	#Adds admin in DB
 			uname_inp=uname.get().lower()
@@ -260,44 +272,44 @@ def manage_admin():	#Manage adminsctypes
 					val=(id,uname_inp,fname_inp,passwd_inp)
 					cur.execute(sql,val)
 					con.commit()
-					messagebox.showinfo('','Administrator '+fname_inp+' registered successfully.',parent=add_win)
-					add_win.destroy()
+					messagebox.showinfo('','Administrator '+fname_inp+' registered successfully.',parent=reg_win)
+					reg_win.destroy()
 				else:
-					messagebox.showerror('Error','Username \''+uname_inp+'\'\nalready exists.',parent=add_win)			
+					messagebox.showerror('Error','Username \''+uname_inp+'\'\nalready exists.',parent=reg_win)			
 			else:
-				messagebox.showerror('Error','Please do not leave any fields blank.',parent=add_win)
+				messagebox.showerror('Error','Please do not leave any fields blank.',parent=reg_win)
 		
 		id='A'+str(rd.randint(1000,9999))
 
 		img14=tk.PhotoImage(file='icons/adduser.png')
-		img=tk.Label(add_win,image=img14,font=h1fnt)
+		img=tk.Label(reg_win,image=img14,font=h1fnt)
 		img.grid(column=0,row=0,padx=10,pady=10)
 		img.image=img14
 
-		tk.Label(add_win,text='Register administrator...',font=h1fnt).grid(column=1,row=0,sticky=tk.W,padx=10,pady=10)
+		tk.Label(reg_win,text='Register administrator...',font=h1fnt).grid(column=1,row=0,sticky=tk.W,padx=10,pady=10)
 
-		tk.Label(add_win,text='UID',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
-		bkgid=tk.Label(add_win,text=id,font=fnt)
+		tk.Label(reg_win,text='UID',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
+		bkgid=tk.Label(reg_win,text=id,font=fnt)
 		bkgid.grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
 
 		#Input fields
-		tk.Label(add_win,text='Full Name',font=fnt).grid(column=0,row=4,sticky=tk.E,padx=10,pady=10)
-		fname=tk.Entry(add_win,font=fnt)
+		tk.Label(reg_win,text='Full Name',font=fnt).grid(column=0,row=4,sticky=tk.E,padx=10,pady=10)
+		fname=tk.Entry(reg_win,font=fnt)
 		fname.grid(column=1,row=4,sticky=tk.EW,padx=10,pady=10)
 
-		tk.Label(add_win,text='Username',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
-		uname=tk.Entry(add_win,font=fnt)
+		tk.Label(reg_win,text='Username',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
+		uname=tk.Entry(reg_win,font=fnt)
 		uname.grid(column=1,row=5,sticky=tk.EW,padx=10,pady=10)
 
-		tk.Label(add_win,text='Password',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
-		passwd=tk.Entry(add_win,font=fnt,show='*')
+		tk.Label(reg_win,text='Password',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
+		passwd=tk.Entry(reg_win,font=fnt,show='*')
 		passwd.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
 
-		subbtn=tk.Button(add_win,font=fntit,text='Register',command=add_admin)
+		subbtn=tk.Button(reg_win,font=fntit,text='Register',command=add_admin)
 		subbtn.grid(column=1,row=12,padx=10,pady=10,sticky=tk.W)
 
 		#Binds Enter to submit function.
-		add_win.bind('<Return>',lambda event:add_admin())
+		reg_win.bind('<Return>',lambda event:add_admin())
 
 	tk.Grid.columnconfigure(manageadminwin,0,weight=1)
 
@@ -400,12 +412,16 @@ def manage_agents():	#Manage agents (employees)
 	#Creating Toplevel window
 	manage_agentwin=tk.Toplevel()
 	manage_agentwin.title('Agent Manager')
+	icon=tk.PhotoImage(file='img/icon.png')
+	manage_agentwin.iconphoto(False,icon)
 
 	def viewall():	#View all Agent
 
 		viewall_win=tk.Toplevel()
 		viewall_win.title('All Agents')
 		viewall_win.resizable(False,False)
+		icon=tk.PhotoImage(file='img/icon.png')
+		viewall_win.iconphoto(False,icon)
 		
 		#Headers for table
 		header=('Agent ID','Agent Username','Agent Name','Agent Password')
@@ -459,6 +475,8 @@ def manage_agents():	#Manage agents (employees)
 		viewone_win=tk.Toplevel()
 		viewone_win.title('View agent details')
 		viewone_win.resizable(False,False)
+		icon=tk.PhotoImage(file='img/icon.png')
+		viewone_win.iconphoto(False,icon)
 		
 		frame1=tk.Frame(viewone_win)
 		frame1.grid(row=0,column=0,padx=10,pady=10,sticky=tk.EW)
@@ -499,6 +517,8 @@ def manage_agents():	#Manage agents (employees)
 		delone_win=tk.Toplevel()
 		delone_win.resizable(False,False)
 		delone_win.title('Delete agent')
+		icon=tk.PhotoImage(file='img/icon.png')
+		delone_win.iconphoto(False,icon)
 		cur.execute('select emp_uname,emp_name from employees')
 		a=cur.fetchall()
 		agent_namelist=dict(a)
@@ -549,6 +569,8 @@ def manage_agents():	#Manage agents (employees)
 		passwd_win=tk.Toplevel()
 		passwd_win.resizable(False,False)
 		passwd_win.title('Change password for employee')
+		icon=tk.PhotoImage(file='img/icon.png')
+		passwd_win.iconphoto(False,icon)
 
 		cur.execute('select emp_uname,emp_name from employees')
 		a=cur.fetchall()
@@ -601,9 +623,11 @@ def manage_agents():	#Manage agents (employees)
 		passwd_win.bind('<Return>',lambda event:change_emp_passwd())
 
 	def add():	#Add an agent.
-		add_win=tk.Toplevel()
-		add_win.resizable(False,False)
-		add_win.title('Add agent')
+		reg_win=tk.Toplevel()
+		reg_win.resizable(False,False)
+		reg_win.title('Add agent')
+		icon=tk.PhotoImage(file='img/icon.png')
+		reg_win.iconphoto(False,icon)
 
 		def add_agent():	#Adds agent to DB.
 			uname_inp=uname.get().lower()
@@ -623,42 +647,42 @@ def manage_agents():	#Manage agents (employees)
 					val=(id,uname_inp,fname_inp,passwd_inp)
 					cur.execute(sql,val)
 					con.commit()
-					messagebox.showinfo('','Agent '+fname_inp+' registered successfully.',parent=add_win)
-					add_win.destroy()
+					messagebox.showinfo('','Agent '+fname_inp+' registered successfully.',parent=reg_win)
+					reg_win.destroy()
 				else:
-					messagebox.showerror('Error','Username \''+uname_inp+'\'\nalready exists.',parent=add_win)
+					messagebox.showerror('Error','Username \''+uname_inp+'\'\nalready exists.',parent=reg_win)
 			else:
-				messagebox.showerror('Error','Please do not leave any fields blank.',parent=add_win)
+				messagebox.showerror('Error','Please do not leave any fields blank.',parent=reg_win)
 		
 		id='E'+str(rd.randint(1000,9999))
 
 		img14=tk.PhotoImage(file='icons/adduser.png')
-		img=tk.Label(add_win,image=img14,font=h1fnt)
+		img=tk.Label(reg_win,image=img14,font=h1fnt)
 		img.grid(column=0,row=0,padx=10,pady=10)
 		img.image=img14
 
-		tk.Label(add_win,text='Register agent...',font=h1fnt).grid(column=1,row=0,sticky=tk.W,padx=10,pady=10)
+		tk.Label(reg_win,text='Register agent...',font=h1fnt).grid(column=1,row=0,sticky=tk.W,padx=10,pady=10)
 
-		tk.Label(add_win,text='UID',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
-		bkgid=tk.Label(add_win,text=id,font=fnt)
+		tk.Label(reg_win,text='UID',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
+		bkgid=tk.Label(reg_win,text=id,font=fnt)
 		bkgid.grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
 
-		tk.Label(add_win,text='Full Name',font=fnt).grid(column=0,row=4,sticky=tk.E,padx=10,pady=10)
-		fname=tk.Entry(add_win,font=fnt)
+		tk.Label(reg_win,text='Full Name',font=fnt).grid(column=0,row=4,sticky=tk.E,padx=10,pady=10)
+		fname=tk.Entry(reg_win,font=fnt)
 		fname.grid(column=1,row=4,sticky=tk.EW,padx=10,pady=10)
 
-		tk.Label(add_win,text='Username',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
-		uname=tk.Entry(add_win,font=fnt)
+		tk.Label(reg_win,text='Username',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
+		uname=tk.Entry(reg_win,font=fnt)
 		uname.grid(column=1,row=5,sticky=tk.EW,padx=10,pady=10)
 
-		tk.Label(add_win,text='Password',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
-		passwd=tk.Entry(add_win,font=fnt,show='*')
+		tk.Label(reg_win,text='Password',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
+		passwd=tk.Entry(reg_win,font=fnt,show='*')
 		passwd.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
 
-		subbtn=tk.Button(add_win,font=fntit,text='Register',command=add_agent)
+		subbtn=tk.Button(reg_win,font=fntit,text='Register',command=add_agent)
 		subbtn.grid(column=1,row=12,padx=10,pady=10,sticky=tk.W)
 
-		add_win.bind('<Return>',lambda event:add_agent())
+		reg_win.bind('<Return>',lambda event:add_agent())
 
 
 	tk.Grid.columnconfigure(manage_agentwin,0,weight=1)
@@ -760,12 +784,17 @@ def manage_users():	#Manage users
 
 	manageuserwin=tk.Toplevel()
 	manageuserwin.title('User Manager')
+	icon=tk.PhotoImage(file='img/icon.png')
+	manageuserwin.iconphoto(False,icon)
 
 
 	def viewall():		#View all users
 		viewall_win=tk.Toplevel()
 		viewall_win.title('All users')
 		viewall_win.resizable(False,False)
+		icon=tk.PhotoImage(file='img/icon.png')
+		viewall_win.iconphoto(False,icon)
+
 		
 		header=('User ID','Full Name','Electronic Mail','Number','Username','Password')
 
@@ -822,6 +851,8 @@ def manage_users():	#Manage users
 		viewone_win=tk.Toplevel()
 		viewone_win.title('View user details')
 		viewone_win.resizable(False,False)
+		icon=tk.PhotoImage(file='img/icon.png')
+		viewone_win.iconphoto(False,icon)
 		
 		frame1=tk.Frame(viewone_win)
 		frame1.grid(row=0,column=0,padx=10,pady=10,sticky=tk.EW)
@@ -861,6 +892,9 @@ def manage_users():	#Manage users
 		delone_win=tk.Toplevel()
 		delone_win.resizable(False,False)
 		delone_win.title('Delete user')
+		icon=tk.PhotoImage(file='img/icon.png')
+		delone_win.iconphoto(False,icon)
+
 		cur.execute('select uname,fname from users')
 		a=cur.fetchall()
 		user_namelist=dict(a)
@@ -913,6 +947,9 @@ def manage_users():	#Manage users
 		passwd_win=tk.Toplevel()
 		passwd_win.resizable(False,False)
 		passwd_win.title('Change password for user')
+		icon=tk.PhotoImage(file='img/icon.png')
+		passwd_win.iconphoto(False,icon)
+
 
 		def ch_user_passwd():	#changes password in db
 			if (not uname.get()=='' and not uname.get().isspace()) and (not npass.get()=='' and not npass.get().isspace()):
@@ -986,59 +1023,62 @@ def manage_users():	#Manage users
 							cur.execute(regsql,regval)
 							con.commit()
 
-							messagebox.showinfo('','The new user '+reg_fname_inp+'\nhas been successfully registered.',parent=regwin)
-							regwin.destroy()
+							messagebox.showinfo('','The new user '+reg_fname_inp+'\nhas been successfully registered.',parent=reg_win)
+							reg_win.destroy()
 						else:
-							messagebox.showerror('Error','Invalid phone number entered.',parent=regwin)
+							messagebox.showerror('Error','Invalid phone number entered.',parent=reg_win)
 					else:
-						messagebox.showerror('Error','Invalid electronic mail ID entered.',parent=regwin)		
+						messagebox.showerror('Error','Invalid electronic mail ID entered.',parent=reg_win)		
 				else:
 
-					messagebox.showerror('Error','Username '+reg_uname_inp+'\nalready exists.',parent=regwin)
+					messagebox.showerror('Error','Username '+reg_uname_inp+'\nalready exists.',parent=reg_win)
 			else:
-				messagebox.showerror('Error','Please do not leave any fields blank.',parent=regwin)
+				messagebox.showerror('Error','Please do not leave any fields blank.',parent=reg_win)
 		
-		regwin=tk.Toplevel()
-		regwin.title('Add user')
-		regwin.resizable(False, False)
+		reg_win=tk.Toplevel()
+		reg_win.title('Add user')
+		reg_win.resizable(False, False)
+		icon=tk.PhotoImage(file='img/icon.png')
+		reg_win.iconphoto(False,icon)
+
 
 		img15=tk.PhotoImage(file='icons/adduser.png')
-		img=tk.Label(regwin,image=img15,font=h1fnt)
+		img=tk.Label(reg_win,image=img15,font=h1fnt)
 		img.grid(column=0,row=0,padx=10,pady=10,sticky=tk.E)
 		img.image=img15
 
-		tk.Label(regwin,text='Add user...',font=h1fnt).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
+		tk.Label(reg_win,text='Add user...',font=h1fnt).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
 		
-		tk.Label(regwin,text='ID',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
-		tk.Label(regwin,text=uuid,font=fnt).grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
+		tk.Label(reg_win,text='ID',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
+		tk.Label(reg_win,text=uuid,font=fnt).grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
 		
-		tk.Label(regwin,text='1. Personal info',font=fntit).grid(column=0,row=5,sticky=tk.W,padx=10,pady=10)
+		tk.Label(reg_win,text='1. Personal info',font=fntit).grid(column=0,row=5,sticky=tk.W,padx=10,pady=10)
 
-		tk.Label(regwin,text='Name',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
-		reg_fname=tk.Entry(regwin,font=fnt)
+		tk.Label(reg_win,text='Name',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
+		reg_fname=tk.Entry(reg_win,font=fnt)
 		reg_fname.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
 
-		tk.Label(regwin,text='Electronic mail ID',font=fnt).grid(column=0,row=7,sticky=tk.E,padx=10,pady=10)
-		reg_email=tk.Entry(regwin,font=fnt)
+		tk.Label(reg_win,text='Electronic mail ID',font=fnt).grid(column=0,row=7,sticky=tk.E,padx=10,pady=10)
+		reg_email=tk.Entry(reg_win,font=fnt)
 		reg_email.grid(column=1,row=7,sticky=tk.EW,padx=10,pady=10)
 
-		tk.Label(regwin,text='Phone number',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
-		reg_num=tk.Entry(regwin,font=fnt)
+		tk.Label(reg_win,text='Phone number',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
+		reg_num=tk.Entry(reg_win,font=fnt)
 		reg_num.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
 
-		tk.Label(regwin,text='2. Login info',font=fntit).grid(column=0,row=10,sticky=tk.W,padx=10,pady=10)
+		tk.Label(reg_win,text='2. Login info',font=fntit).grid(column=0,row=10,sticky=tk.W,padx=10,pady=10)
 
-		tk.Label(regwin,text='Username',font=fnt).grid(column=0,row=11,sticky=tk.E,padx=10,pady=10)
-		reg_uname=tk.Entry(regwin,font=fnt)
+		tk.Label(reg_win,text='Username',font=fnt).grid(column=0,row=11,sticky=tk.E,padx=10,pady=10)
+		reg_uname=tk.Entry(reg_win,font=fnt)
 		reg_uname.grid(column=1,row=11,sticky=tk.EW,padx=10,pady=10)
 
-		tk.Label(regwin,text='Password',font=fnt).grid(column=0,row=12,sticky=tk.E,padx=10,pady=10)
-		reg_passwd=tk.Entry(regwin,show='*',font=fnt)
+		tk.Label(reg_win,text='Password',font=fnt).grid(column=0,row=12,sticky=tk.E,padx=10,pady=10)
+		reg_passwd=tk.Entry(reg_win,show='*',font=fnt)
 		reg_passwd.grid(column=1,row=12,sticky=tk.EW,padx=10,pady=10)
 
-		regsubmit=tk.Button(regwin,text='Register',command=reguser,font=fntit)
+		regsubmit=tk.Button(reg_win,text='Register',command=reguser,font=fntit)
 		regsubmit.grid(column=1,row=14,padx=10,pady=10,sticky=tk.W)
-		regwin.bind('<Return>',lambda event:reguser())
+		reg_win.bind('<Return>',lambda event:reguser())
 
 	
 	tk.Grid.columnconfigure(manageuserwin,0,weight=1)
@@ -1117,7 +1157,7 @@ def manage_users():	#Manage users
 
 	tk.Grid.rowconfigure(f2,17,weight=1)
 
-def manage_db():		#Manage db
+def manage_db():	#Manage databases
 	import mysql.connector as ms
 	import tkinter as tk
 	import platform as pf
@@ -1143,6 +1183,9 @@ def manage_db():		#Manage db
 		con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
 	cur=con.cursor()
 
+	# Removes dataframe column output limit
+	pd.set_option('display.max_columns', None)
+
 	fnt=('Consolas',12)
 	fntit=('Consolas',12,'italic')
 	h1fnt=('Segoe UI',24)
@@ -1150,6 +1193,8 @@ def manage_db():		#Manage db
 
 	dbmainwin=tk.Toplevel()
 	dbmainwin.title('Database Manager')
+	icon=tk.PhotoImage(file='img/icon.png')
+	dbmainwin.iconphoto(False,icon)
 
 	cur.execute('show tables')			#creating list of available tables for dropbox
 	a=cur.fetchall()
@@ -1162,6 +1207,8 @@ def manage_db():		#Manage db
 			if table.get() in tables_list:
 				dbwin=tk.Toplevel()
 				dbwin.resizable(False,False)
+				icon=tk.PhotoImage(file='img/icon.png')
+				dbwin.iconphoto(False,icon)
 				dbwin.title(table.get()+' table')
 				sql=str('desc '+table.get())		#getting headers for table
 				cur.execute(sql)
@@ -1190,7 +1237,7 @@ def manage_db():		#Manage db
 		else:
 			messagebox.showerror('Error','Please choose a table.',parent=dbmainwin)
 
-	def droptb():	#Drop selected tablr
+	def droptb():	#Drop selected table
 		if not table.get()=='' and not table.get().isspace():
 			if table.get() in tables_list:
 				messagebox.showwarning('WARNING','The table chosen will be dropped\nfrom the database permanently.\nContinue?',parent=dbmainwin)
@@ -1208,7 +1255,7 @@ def manage_db():		#Manage db
 		else:
 			messagebox.showerror('Error','Please choose a table.',parent=dbmainwin)
 
-	def deltb():	#Delete contents of selected tables
+	def deltb():	#Delete contents of selected table
 		if not table.get()=='' and not table.get().isspace():
 			if table.get() in tables_list:
 				messagebox.showwarning('WARNING','All the contents of the table chosen will be deleted permanently.\nContinue?',parent=dbmainwin)
@@ -1259,24 +1306,35 @@ def manage_db():		#Manage db
 				export_win=tk.Toplevel()
 				export_win.resizable(False,False)
 				export_win.title('Export to CSV')
+				icon=tk.PhotoImage(file='img/icon.png')
+				export_win.iconphoto(False,icon)
 				
 				tk.Label(export_win,font=h1fnt,text='Export to CSV file...').grid(row=0,column=0,padx=10,pady=10,sticky=tk.NW)
 
 				Separator(export_win,orient='horizontal').grid(column=0,row=1,sticky=tk.EW,padx=10,pady=10)
 				
 				tk.Label(export_win,font=('Consolas',12,'bold italic'),text='Data').grid(row=2,column=0,padx=10,pady=10,sticky=tk.NW)
+				
+				if df.empty == False:
+					txt=str(df)
+				else:
+					txt='[No data available]'
 
-				tk.Label(export_win,font=fntit,text=str(df)).grid(row=3,column=0,padx=10,pady=10,sticky=tk.NW)
+				tk.Label(export_win,font=fntit,text=txt).grid(row=3,column=0,padx=10,pady=10)
 
-				Separator(export_win,orient='horizontal').grid(column=0,row=4,sticky=tk.EW,padx=10,pady=10)
+				if df.empty == False:
+					shape=('['+str(df.shape[0])+' row(s) x '+str(df.shape[1])+' column(s)]')
+					tk.Label(export_win,font=('Consolas',12,'bold italic'),text=shape).grid(row=4,column=0,padx=10,pady=10)
+				
+				Separator(export_win,orient='horizontal').grid(column=0,row=6,sticky=tk.EW,padx=10,pady=10)
 
-				tk.Label(export_win,font=fnt,text='Enter the name of the CSV file.\nThe file will be saved to the \'export\' folder.',justify=tk.LEFT).grid(row=5,column=0,padx=10,pady=10,sticky=tk.W)
+				tk.Label(export_win,font=fnt,text='Enter the name of the CSV file.\nThe file will be saved to the \'export\' folder.',justify=tk.LEFT).grid(row=9,column=0,padx=10,pady=10,sticky=tk.W)
 
 				filename=tk.Entry(export_win,font=fnt,width=40)
-				filename.grid(row=7,column=0,padx=10,pady=10,sticky=tk.W)
+				filename.grid(row=10,column=0,padx=10,pady=10,sticky=tk.W)
 
 				submit=tk.Button(export_win,font=fnt,text='Export',command=export_to_csv)
-				submit.grid(row=8,column=0,padx=10,pady=10,sticky=tk.W)
+				submit.grid(row=11,column=0,padx=10,pady=10,sticky=tk.W)
 
 				#Binds Enter key to export function
 				export_win.bind('<Return>',lambda event:export_to_csv())
@@ -1289,6 +1347,8 @@ def manage_db():		#Manage db
 		helpwin=tk.Toplevel()
 		helpwin.resizable(False,False)
 		helpwin.title('Help')
+		icon=tk.PhotoImage(file='img/icon.png')
+		helpwin.iconphoto(False,icon)
 
 		img14=tk.PhotoImage(file='icons/help.png')
 		img=tk.Label(helpwin,image=img14)

@@ -32,6 +32,8 @@ def bookings():		#make bookings
 	fntit=('Consolas',12,'italic')
 	h1fnt=('Segoe UI',24)
 	menufnt=('Consolas',11)
+	icon=tk.PhotoImage(file='img/icon.png')
+	logwin.iconphoto(False,icon)
 
 	#Maximises windows
 	try:
@@ -60,6 +62,8 @@ def bookings():		#make bookings
 
 			main_menu=tk.Tk()
 			main_menu.title('Main Menu')
+			icon=tk.PhotoImage(file='img/icon.png')
+			main_menu.iconphoto(False,icon)
 			try:
 				main_menu.state('zoomed')
 			except:
@@ -196,54 +200,56 @@ def bookings():		#make bookings
 							cur.execute(regsql,regval)
 							con.commit()
 
-							messagebox.showinfo('','The new user '+reg_fname_inp+'\nhas been successfully registered.',parent=regwin)
-							regwin.destroy()
+							messagebox.showinfo('','The new user '+reg_fname_inp+'\nhas been successfully registered.',parent=logwin)
+							logwin.destroy()
 						else:
-							messagebox.showerror('Error','Invalid phone number entered.',parent=regwin)
+							messagebox.showerror('Error','Invalid phone number entered.',parent=logwin)
 					else:
-						messagebox.showerror('Error','Invalid electronic mail ID entered.',parent=regwin)		
+						messagebox.showerror('Error','Invalid electronic mail ID entered.',parent=logwin)		
 				else:
-					messagebox.showerror('Error','Username '+reg_uname_inp+'\nalready exists.',parent=regwin)
+					messagebox.showerror('Error','Username '+reg_uname_inp+'\nalready exists.',parent=logwin)
 				
 			else:
-				messagebox.showerror('Error','Please do not leave any fields blank.',parent=regwin)
+				messagebox.showerror('Error','Please do not leave any fields blank.',parent=logwin)
 		
-		regwin=tk.Toplevel()
-		regwin.title('Register')
-		regwin.resizable(False, False)
+		logwin=tk.Toplevel()
+		logwin.title('Register')
+		logwin.resizable(False, False)
+		icon=tk.PhotoImage(file='img/icon.png')
+		logwin.iconphoto(False,icon)
 
-		tk.Label(regwin,text='Register',font=h1fnt).grid(column=0,row=0,padx=10,pady=10,columnspan=2,sticky=tk.EW)
+		tk.Label(logwin,text='Register',font=h1fnt).grid(column=0,row=0,padx=10,pady=10,columnspan=2,sticky=tk.EW)
 		
-		tk.Label(regwin,text='ID',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
-		tk.Label(regwin,text=uuid,font=fnt).grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
+		tk.Label(logwin,text='ID',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
+		tk.Label(logwin,text=uuid,font=fnt).grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
 		
-		tk.Label(regwin,text='1. Personal info',font=fntit).grid(column=0,row=5,sticky=tk.W,padx=10,pady=10)
+		tk.Label(logwin,text='1. Personal info',font=fntit).grid(column=0,row=5,sticky=tk.W,padx=10,pady=10)
 
-		tk.Label(regwin,text='Name',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
-		reg_fname=tk.Entry(regwin,font=fnt)
+		tk.Label(logwin,text='Name',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
+		reg_fname=tk.Entry(logwin,font=fnt)
 		reg_fname.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
 
-		tk.Label(regwin,text='Electronic mail ID',font=fnt).grid(column=0,row=7,sticky=tk.E,padx=10,pady=10)
-		reg_email=tk.Entry(regwin,font=fnt)
+		tk.Label(logwin,text='Electronic mail ID',font=fnt).grid(column=0,row=7,sticky=tk.E,padx=10,pady=10)
+		reg_email=tk.Entry(logwin,font=fnt)
 		reg_email.grid(column=1,row=7,sticky=tk.EW,padx=10,pady=10)
 
-		tk.Label(regwin,text='Phone number',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
-		reg_num=tk.Entry(regwin,font=fnt)
+		tk.Label(logwin,text='Phone number',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
+		reg_num=tk.Entry(logwin,font=fnt)
 		reg_num.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
 
-		tk.Label(regwin,text='2. Login info',font=fntit).grid(column=0,row=10,sticky=tk.W,padx=10,pady=10)
+		tk.Label(logwin,text='2. Login info',font=fntit).grid(column=0,row=10,sticky=tk.W,padx=10,pady=10)
 
-		tk.Label(regwin,text='Username',font=fnt).grid(column=0,row=11,sticky=tk.E,padx=10,pady=10)
-		reg_uname=tk.Entry(regwin,font=fnt)
+		tk.Label(logwin,text='Username',font=fnt).grid(column=0,row=11,sticky=tk.E,padx=10,pady=10)
+		reg_uname=tk.Entry(logwin,font=fnt)
 		reg_uname.grid(column=1,row=11,sticky=tk.EW,padx=10,pady=10)
 
-		tk.Label(regwin,text='Password',font=fnt).grid(column=0,row=12,sticky=tk.E,padx=10,pady=10)
-		reg_passwd=tk.Entry(regwin,show='*',font=fnt)
+		tk.Label(logwin,text='Password',font=fnt).grid(column=0,row=12,sticky=tk.E,padx=10,pady=10)
+		reg_passwd=tk.Entry(logwin,show='*',font=fnt)
 		reg_passwd.grid(column=1,row=12,sticky=tk.EW,padx=10,pady=10)
 
-		regsubmit=tk.Button(regwin,text='Register',command=reguser,font=fntit)
+		regsubmit=tk.Button(logwin,text='Register',command=reguser,font=fntit)
 		regsubmit.grid(column=1,row=14,padx=10,pady=10,sticky=tk.W)
-		regwin.bind('<Return>',lambda event:reguser())
+		logwin.bind('<Return>',lambda event:reguser())
 	#Opens manage profile window
 	def manage_profile():
 		logwin.destroy()
@@ -323,6 +329,8 @@ def manage_user_profile():		#manages profile
 	#init GUI
 	logwin=tk.Tk()
 	logwin.title('Manage profile')
+	icon=tk.PhotoImage(file='img/icon.png')
+	logwin.iconphoto(False,icon)
 
 
 	try:
@@ -412,6 +420,9 @@ def manage_user_profile():		#manages profile
 				passwin=tk.Toplevel()
 				passwin.title('Change Password')
 				passwin.resizable(False,False)
+				icon=tk.PhotoImage(file='img/icon.png')
+				passwin.iconphoto(False,icon)
+
 
 				tk.Label(passwin,text='Changing password for '+fnamelist[uname_inp],font=('Segoe UI',18)).grid(column=1,row=0,padx=10,pady=10)
 
@@ -433,11 +444,14 @@ def manage_user_profile():		#manages profile
 				chinfo_home=tk.Toplevel()
 				chinfo_home.resizable(False,False)
 				chinfo_home.title('Change personal information')
+				icon=tk.PhotoImage(file='img/icon.png')
+				chinfo_home.iconphoto(False,icon)
+
 				tk.Label(chinfo_home,text=('Change your\npersonal information'),font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,sticky=tk.W)
 				
-				def name():		#Change full name
+				def name():		#Change full (display) name
 
-					def chname():		#Changes name in DB
+					def chname():		#Changes full name in DB
 						new_name=en1.get()
 
 						if not new_name=='' and not new_name.isspace():
@@ -455,7 +469,10 @@ def manage_user_profile():		#manages profile
 					chinfo_name=tk.Toplevel()
 					chinfo_name.resizable(False,False)
 					chinfo_name.title('Change display name...')
-					tk.Label(chinfo_name,text=('Change your display name'),font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,sticky=tk.W)
+					icon=tk.PhotoImage(file='img/icon.png')
+					chinfo_name.iconphoto(False,icon)
+
+					tk.Label(chinfo_name,text=('Change your display (full) name'),font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,sticky=tk.W)
 					
 					tk.Label(chinfo_name,text='Current name',font=fnt).grid(row=5,column=0,sticky=tk.E,padx=10,pady=10)
 					tk.Label(chinfo_name,text=fnamelist[uname_inp],font=fnt).grid(row=5,column=1,sticky=tk.W,padx=10,pady=10)
@@ -475,8 +492,8 @@ def manage_user_profile():		#manages profile
 						new_email=en2.get()
 						new_num=en3.get()
 					
-						def conf():
-							tk.Label(chinfo_contacts,text='Please log out for\nany changes to take effect.',font=fnt,justify=tk.LEFT).grid(row=10,column=1,sticky=tk.W,padx=10,pady=10)
+						def changes_confirmed():
+							# tk.Label(chinfo_contacts,text='Please log out for\nany changes to take effect.',font=fnt,justify=tk.LEFT).grid(row=10,column=1,sticky=tk.W,padx=10,pady=10)
 							chinfo_contacts.destroy()
 							
 						if (not new_num=='' and not new_num.isspace()) or (not new_email=='' and not new_email.isspace()):
@@ -486,10 +503,10 @@ def manage_user_profile():		#manages profile
 									val=(new_email,uname_inp)
 									cur.execute(sql,val)
 									con.commit()
-									messagebox.showinfo('','Electronic mail address changed successfully to '+new_email+'',parent=chinfo_contacts)
-									conf()							
+									messagebox.showinfo('','Electronic mail address changed successfully to '+new_email+'.',parent=chinfo_contacts)
+									changes_confirmed()							
 								else:
-									messagebox.showerror('Error','Invalid electronic mail entered',parent=chinfo_contacts)
+									messagebox.showerror('Error','Invalid electronic mail entered.',parent=chinfo_contacts)
 							elif new_email=='' or new_email.isspace():
 								if len(new_num)==10:
 									sql='update users set num=%s where uname like %s' 
@@ -497,9 +514,9 @@ def manage_user_profile():		#manages profile
 									cur.execute(sql,val)
 									con.commit()
 									messagebox.showinfo('','Phone number changed successfully to '+new_num+'.',parent=chinfo_contacts)
-									conf()						
+									changes_confirmed()						
 								else:
-									messagebox.showerror('Error','Invalid phone number entered',parent=chinfo_contacts)
+									messagebox.showerror('Error','Invalid phone number entered.',parent=chinfo_contacts)
 							elif (not new_num=='' and not new_num.isspace()) and (not new_email=='' and not new_email.isspace()):
 								if ('@' in new_email and '.' in new_email) and (len(new_num)==10):
 									sql='update users set email=%s where uname like %s' 
@@ -512,9 +529,9 @@ def manage_user_profile():		#manages profile
 									cur.execute(sql,val)
 									con.commit()
 									messagebox.showinfo('','Electronic mail address and phone number changed successfully to '+new_email+' and '+new_num+', respectively.',parent=chinfo_contacts)
-									conf()							
+									changes_confirmed()							
 								else:
-									messagebox.showerror('Error','Invalid electronic mail or phone number entered',parent=chinfo_contacts)
+									messagebox.showerror('Error','Invalid electronic mail or phone number entered.',parent=chinfo_contacts)
 						else:
 							messagebox.showerror('Error','Please fill at least one field.',parent=chinfo_contacts)
 
@@ -526,6 +543,9 @@ def manage_user_profile():		#manages profile
 
 					chinfo_contacts=tk.Toplevel()
 					chinfo_contacts.resizable(False,False)
+					icon=tk.PhotoImage(file='img/icon.png')
+					chinfo_contacts.iconphoto(False,icon)
+
 					chinfo_contacts.title('Change contact details...')
 					tk.Label(chinfo_contacts,text=('Change your contact details'),font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,sticky=tk.W)
 					tk.Label(chinfo_contacts,text='If you do not wish to change a\nparticular contact, then leave the\ncorresponding field blank.',font=fnt,justify=tk.LEFT).grid(row=2,column=1,sticky=tk.W,padx=10,pady=10)
@@ -553,7 +573,7 @@ def manage_user_profile():		#manages profile
 				btn1=tk.Button(chinfo_home,text='Name',image=img1,command=name)
 				btn1.image=img1
 				btn1.grid(column=0,row=3,padx=10,pady=10,sticky=tk.E)
-				tk.Label(chinfo_home,text='Change your display name',font=fnt,justify=tk.LEFT).grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
+				tk.Label(chinfo_home,text='Change your display (full) name',font=fnt,justify=tk.LEFT).grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
 
 				img2=tk.PhotoImage(file='icons/contacts-2.png')
 				btn2=tk.Button(chinfo_home,text='Contact',image=img2,command=contacts)
@@ -573,6 +593,9 @@ def manage_user_profile():		#manages profile
 
 			manage_userswin=tk.Tk()
 			manage_userswin.title('Manage profile')
+			icon=tk.PhotoImage(file='img/icon.png')
+			manage_userswin.iconphoto(False,icon)
+
 			try:
 				manage_userswin.state('zoomed')
 			except:

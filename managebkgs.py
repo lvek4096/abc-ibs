@@ -24,13 +24,17 @@ def bus():	#manage bus bookings
 	h1fnt=('Segoe UI',24)
 
 	managebusbkgs=tk.Toplevel()
-	managebusbkgs.title('Bus Bookings Manager')
+	managebusbkgs.title('Manage bus bookings')
+	icon=tk.PhotoImage(file='img/icon.png')
+	managebusbkgs.iconphoto(False,icon)
 
 
 	def viewall():	#View all bookings
 		viewall_win=tk.Toplevel()
 		viewall_win.title('All bus bookings')
 		viewall_win.resizable(False,False)
+		icon=tk.PhotoImage(file='img/icon.png')
+		viewall_win.iconphoto(False,icon)
 		
 		header=('Booking ID','Timestamp','Number of Passengers','Origin','Destination','Date','Time','Bus Type')
 
@@ -88,6 +92,8 @@ def bus():	#manage bus bookings
 		viewone_win=tk.Toplevel()
 		viewone_win.title('View bus booking')
 		viewone_win.resizable(False,False)
+		icon=tk.PhotoImage(file='img/icon.png')
+		viewone_win.iconphoto(False,icon)
 		
 		frame1=tk.Frame(viewone_win)
 		frame1.grid(row=0,column=0,padx=10,pady=10,sticky=tk.EW)
@@ -125,6 +131,8 @@ def bus():	#manage bus bookings
 		delone_win=tk.Toplevel()
 		delone_win.resizable(False,False)
 		delone_win.title('Delete bus booking')
+		icon=tk.PhotoImage(file='img/icon.png')
+		delone_win.iconphoto(False,icon)
 
 		cur.execute('select bkgid,pay_id from payment_details')
 		e=dict(cur.fetchall())
@@ -141,7 +149,7 @@ def bus():	#manage bus bookings
 						sql2='delete from payment_details where bkgid=%s'
 						cur.execute(sql2,val)
 						con.commit()
-						messagebox.showinfo('','Booking '+bkgid.get()+' deleted;\nTransaction '+e[bkgid.get()]+' cancelled',parent=delone_win)
+						messagebox.showinfo('','Booking '+bkgid.get()+' deleted;\nTransaction '+e[bkgid.get()]+' cancelled.',parent=delone_win)
 						delone_win.destroy()
 					else:
 						messagebox.showinfo('','Booking '+bkgid.get()+' not deleted.\nThe database has not been modified.',parent=delone_win)
@@ -164,7 +172,7 @@ def bus():	#manage bus bookings
 			bus_bkgid_list.append(str(i[0]))
 
 		tk.Label(delone_win,text='Select the booking to be deleted.',font=fntit).grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
-		tk.Label(delone_win,text='NOTE: The corresponding transaction will\nalso be deleted.',font=('Consolas',12,'bold italic'),justify=tk.LEFT).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
+		tk.Label(delone_win,text='NOTE: The corresponding transaction will\nalso be cancelled.',font=('Consolas',12,'bold italic'),justify=tk.LEFT).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
 
 		n=tk.StringVar()
 		bkgid=ttk.Combobox(delone_win,textvariable=n,font=fnt,width=19)
@@ -258,12 +266,16 @@ def taxi():	#Manage taxi bookings
 	h1fnt=('Segoe UI',24)
 
 	managetaxibkgs=tk.Toplevel()
-	managetaxibkgs.title('Taxi Bookings Manager')
+	managetaxibkgs.title('Manage taxi bookings')
+	icon=tk.PhotoImage(file='img/icon.png')
+	managetaxibkgs.iconphoto(False,icon)
 
 	def viewall():  #View all bookings
 		viewall_win=tk.Toplevel()
 		viewall_win.title('All taxi bookings')
 		viewall_win.resizable(False,False)
+		icon=tk.PhotoImage(file='img/icon.png')
+		viewall_win.iconphoto(False,icon)
 		
 		header=('Booking ID','Timestamp','Origin','Destination','Date','Time','Taxi Type')
 
@@ -318,6 +330,8 @@ def taxi():	#Manage taxi bookings
 		viewone_win=tk.Toplevel()
 		viewone_win.title('View taxi booking')
 		viewone_win.resizable(False,False)
+		icon=tk.PhotoImage(file='img/icon.png')
+		viewone_win.iconphoto(False,icon)
 		
 		frame1=tk.Frame(viewone_win)
 		frame1.grid(row=0,column=0,padx=10,pady=10,sticky=tk.EW)
@@ -355,6 +369,8 @@ def taxi():	#Manage taxi bookings
 		delone_win=tk.Toplevel()
 		delone_win.resizable(False,False)
 		delone_win.title('Delete taxi booking')
+		icon=tk.PhotoImage(file='img/icon.png')
+		delone_win.iconphoto(False,icon)
 
 		cur.execute('select bkgid,pay_id from payment_details')
 		e=dict(cur.fetchall())
@@ -371,7 +387,7 @@ def taxi():	#Manage taxi bookings
 						sql2='delete from payment_details where bkgid=%s'
 						cur.execute(sql2,val)
 						con.commit()
-						messagebox.showinfo('','Booking '+bkgid.get()+' deleted;\nTransaction '+e[bkgid.get()]+' cancelled',parent=delone_win)
+						messagebox.showinfo('','Booking '+bkgid.get()+' deleted;\nTransaction '+e[bkgid.get()]+' cancelled.',parent=delone_win)
 						delone_win.destroy()
 					else:
 						messagebox.showinfo('','Booking '+bkgid.get()+' not deleted.\nThe database has not been modified.',parent=delone_win)
@@ -394,7 +410,7 @@ def taxi():	#Manage taxi bookings
 			taxi_bkgid_list.append(str(i[0]))
 
 		tk.Label(delone_win,text='Select the booking to be deleted.',font=fntit).grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
-		tk.Label(delone_win,text='NOTE: The corresponding transaction will\nalso be deleted.',font=('Consolas',12,'bold italic'),justify=tk.LEFT).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
+		tk.Label(delone_win,text='NOTE: The corresponding transaction will\nalso be cancelled.',font=('Consolas',12,'bold italic'),justify=tk.LEFT).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
 
 		n=tk.StringVar()
 		bkgid=ttk.Combobox(delone_win,textvariable=n,font=fnt,width=19)
@@ -491,11 +507,15 @@ def payments():	#Manage payment details
 
 	managepayments=tk.Toplevel()
 	managepayments.title('Transaction Manager')
+	icon=tk.PhotoImage(file='img/icon.png')
+	managepayments.iconphoto(False,icon)
 
 	def viewall():  #View all transactions
 		viewall_win=tk.Toplevel()
 		viewall_win.title('All transactions')
 		viewall_win.resizable(False,False)
+		icon=tk.PhotoImage(file='img/icon.png')
+		viewall_win.iconphoto(False,icon)
 		
 		header=('Payment ID','Timestamp','Booking ID','Amount ($)','Payment Type','Card Number','Card Name','CVV','Expiry Month','Expiry Year')
 
@@ -554,6 +574,8 @@ def payments():	#Manage payment details
 		viewone_win=tk.Toplevel()
 		viewone_win.title('View transaction details')
 		viewone_win.resizable(False,False)
+		icon=tk.PhotoImage(file='img/icon.png')
+		viewone_win.iconphoto(False,icon)
 		
 		frame1=tk.Frame(viewone_win)
 		frame1.grid(row=0,column=0,padx=10,pady=10,sticky=tk.EW)
@@ -591,6 +613,8 @@ def payments():	#Manage payment details
 		delone_win=tk.Toplevel()
 		delone_win.resizable(False,False)
 		delone_win.title('Cancel transaction')
+		icon=tk.PhotoImage(file='img/icon.png')
+		delone_win.iconphoto(False,icon)
 		
 		cur.execute('select pay_id,bkgid from payment_details')
 		e=dict(cur.fetchall())

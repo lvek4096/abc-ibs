@@ -57,6 +57,9 @@ if pf.system()=='Windows':
 #main window
 welcome=tk.Tk()
 welcome.title('Start Page')
+icon=tk.PhotoImage(file='img/icon.png')
+welcome.iconphoto(False,icon)
+
 
 #maximises window
 try:

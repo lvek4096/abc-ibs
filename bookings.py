@@ -40,6 +40,8 @@ def bus():
 	#Main Window parameters
 	window.title('Bus Booking')
 	window.resizable(False, False)
+	icon=tk.PhotoImage(file='img/icon.png')
+	window.iconphoto(False,icon)
 
 	def payment():	#Payment window
 
@@ -209,6 +211,8 @@ def bus():
 							img=tk.Label(f3,image=img1,font=h1fnt)
 							img.grid(column=0,row=0,padx=10,pady=10)
 							img.image=img1
+							icon=tk.PhotoImage(file='img/icon.png')
+							pay_win.iconphoto(False,icon)
 
 							tk.Label(f3,text='Payment',font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
 
@@ -395,6 +399,8 @@ def taxi():
 	#Main Window parameters
 	window.title('Taxi Booking')
 	window.resizable(False, False)
+	icon=tk.PhotoImage(file='img/icon.png')
+	window.iconphoto(False,icon)
 
 	def payment():	#Payment function
 		
@@ -566,6 +572,8 @@ def taxi():
 							img=tk.Label(f3,image=img1,font=h1fnt)
 							img.grid(column=0,row=0,padx=10,pady=10)
 							img.image=img1
+							icon=tk.PhotoImage(file='img/icon.png')
+							pay_win.iconphoto(False,icon)
 
 							tk.Label(f3,text='Payment',font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
 

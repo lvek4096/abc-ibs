@@ -9,8 +9,8 @@ def about():	#System information
 	import ctypes
 
 	#Build number
-	build='285 [V2]'
-	build_date='2023-01-21'	
+	build='292 [V2]'
+	build_date='2023-04-02'	
 
 	credits_txt='''
 Developed by
@@ -40,6 +40,9 @@ for ABC Lines
 	abttitle='About this program'
 	about.resizable(False, False)
 	about.title(abttitle)
+	icon=tk.PhotoImage(file='img/icon.png')
+	about.iconphoto(False,icon)
+
 	
 	
 	#Labels

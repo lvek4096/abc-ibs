@@ -46,6 +46,8 @@ def emp_main():
 	#main window
 	emp_login_win=tk.Tk()
 	emp_login_win.title('Employee login')
+	icon=tk.PhotoImage(file='img/icon.png')
+	emp_login_win.iconphoto(False,icon)
 
 	#maximises window
 	try:
@@ -61,6 +63,8 @@ def emp_main():
 
 			root=tk.Tk()
 			root.title('Admin menu')
+			icon=tk.PhotoImage(file='img/icon.png')
+			root.iconphoto(False,icon)
 
 			try:
 				root.state('zoomed')
@@ -98,6 +102,9 @@ def emp_main():
 				passwd_win=tk.Toplevel()
 				passwd_win.resizable(False,False)
 				passwd_win.title('Change administrator password')
+				icon=tk.PhotoImage(file='img/icon.png')
+				passwd_win.iconphoto(False,icon)
+
 
 				def change_admin_passwd():
 					if not npass.get()=='' and not npass.get().isspace():
@@ -265,10 +272,13 @@ def emp_main():
 
 			if emptype_inp=='Agent':
 				main_menu=tk.Tk()
+				main_menu.title('Agent Portal')
 			elif emptype_inp=='Administrator':
 				main_menu=tk.Toplevel()
+				main_menu.title('Booking Portal')
 			
-			main_menu.title('Booking Portal')
+			icon=tk.PhotoImage(file='img/icon.png')
+			main_menu.iconphoto(False,icon)
 
 			if emptype_inp=='Agent':
 				try:
