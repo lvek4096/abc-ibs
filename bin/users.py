@@ -1,4 +1,3 @@
-from curses.ascii import isspace
 import tkinter as tk
 import mysql.connector as ms
 
@@ -122,16 +121,11 @@ def login():
 		manage_userswin=tk.Tk()
 		manage_userswin.title('Manage User')
 		manage_userswin.resizable(False, False)
-		tk.Label(manage_userswin,text=('Welcome, '+uname_inp),font=h1fnt).grid(column=1,row=0)
-		tk.Label(manage_userswin,text=('ID: '+uuidlist[uname_inp]),font=('IBM Plex Sans',12)).grid(column=1,row=1)
+		tk.Label(manage_userswin,text=('Welcome, '+uname_inp),font=h1fnt).grid(column=1,row=0,padx=10,sticky=tk.W)
+		tk.Label(manage_userswin,text=('ID: '+uuidlist[uname_inp]),font=('IBM Plex Sans',12)).grid(column=1,row=1,padx=10,sticky=tk.W)
 
-		tk.Label(manage_userswin,text=('You can:'),font=fntit).grid(column=1,row=2)
-		tk.Label(manage_userswin,text=('or:'),font=fntit).grid(column=3,row=2)
+		tk.Label(manage_userswin,text=('You can:'),font=fntit).grid(column=1,row=2,padx=10,pady=10,sticky=tk.W)
 		
-		img6=tk.PhotoImage(file='monoico/icon-693.png')
-		bkgbtn=tk.Button(manage_userswin,text='Make a booking',image=img6,font=fnt,command=booking)
-		bkgbtn.grid(column=2,row=5,padx=10,pady=10)
-		tk.Label(manage_userswin,text='Make a booking',font=fnt,fg='green').grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
 		
 		img4=tk.PhotoImage(file='monoico/icon-79.png')
 		passbtn=tk.Button(manage_userswin,text='Change Password',image=img4,command=passwd)
@@ -140,18 +134,25 @@ def login():
 
 		img3=tk.PhotoImage(file='monoico/icon-722.png')
 		delusrbtn=tk.Button(manage_userswin,text='Remove User',image=img3,command=delete)
-		delusrbtn.grid(column=0,row=6,padx=10,pady=10)
-		tk.Label(manage_userswin,text='Delete your profile',font=fnt,fg='red').grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
+		delusrbtn.grid(column=2,row=5,padx=10,pady=10)
+		tk.Label(manage_userswin,text='Delete your profile',font=fnt,fg='red').grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
 		
+		tk.Label(manage_userswin,text=('or:'),font=fntit).grid(column=1,row=9,padx=10,sticky=tk.W)
+
+		img6=tk.PhotoImage(file='monoico/icon-693.png')
+		bkgbtn=tk.Button(manage_userswin,text='Make a booking',image=img6,font=fnt,command=booking)
+		bkgbtn.grid(column=0,row=10,padx=10,pady=10)
+		tk.Label(manage_userswin,text='Make a booking',font=fnt,fg='green').grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
+
 		img7=tk.PhotoImage(file='monoico/icon-670.png')
 		logoutbtn=tk.Button(manage_userswin,text='Logout',font=fnt,image=img7,command=logout)
-		logoutbtn.grid(column=2,row=6,padx=10,pady=10)
-		tk.Label(manage_userswin,text='Logout',font=fnt).grid(column=3,row=6,padx=10,pady=10,sticky=tk.W)
+		logoutbtn.grid(column=0,row=11,padx=10,pady=10)
+		tk.Label(manage_userswin,text='Logout',font=fnt).grid(column=1,row=11,padx=10,pady=10,sticky=tk.W)
 
 		img8=tk.PhotoImage(file='monoico/icon-66.png')
 		exitbtn=tk.Button(manage_userswin,text='Logout and exit',font=fnt,image=img8,command=manage_userswin.destroy)
-		exitbtn.grid(column=2,row=7,padx=10,pady=10)
-		tk.Label(manage_userswin,text='Logout and exit',font=fnt,fg='red').grid(column=3,row=7,padx=10,pady=10,sticky=tk.W)
+		exitbtn.grid(column=2,row=11,padx=10,pady=10)
+		tk.Label(manage_userswin,text='Logout and exit',font=fnt,fg='red').grid(column=3,row=11,padx=10,pady=10,sticky=tk.W)
 		
 		manage_userswin.mainloop()
 

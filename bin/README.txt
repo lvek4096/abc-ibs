@@ -1,11 +1,9 @@
-THIS PROGRAM IS CURRENTLY UNDER A DEVELOPMENT FREEZE.
-
 ============
 Taxi Booking
 ============
 
 A. About
-This program helps one to easily book taxis.
+This program allows for the easy booking of taxis and buses.
 It is written fully in Python.
 Modules Used:
 	- Tkinter (GUI)

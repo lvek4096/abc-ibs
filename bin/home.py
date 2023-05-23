@@ -1,9 +1,11 @@
 import platform as pf
+from re import X
 import tkinter as tk
 import os
 import mysql.connector as ms
 from tkinter import scrolledtext
-build='65'		#Program build
+from tkinter import messagebox
+build='100 (Public Beta III)\n'		#Program build
 
 disclaimer='''WARNING
 This is pre-release software.
@@ -29,7 +31,14 @@ no funcionar completamente.
 Proceda a usar este software 
 bajo su propio riesgo.
 
-TRANSLATIONS BY GOOGLE TRANSLATE'''
+TRANSLATIONS BY GOOGLE TRANSLATE
+
+Icons:
+- Ubuntu Yaru icons
+https://github.com/ubuntu/yaru
+
+- Fontawesome
+https://fontawesome.com/icons'''
 
 #mysql connection
 con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
@@ -57,8 +66,28 @@ def book_bus():		#Opens bus booking window
 	os.system('python3 bus.py')
 
 def about():	#System information
+	def ee():
+		q_win=tk.Toplevel()
+		q_win.resizable(False,False)
+		q_win.title('')
+		def anspy():
+			messagebox.showinfo('Correct Answer','The image shows Python code.\n"print()" is used in Python to print; and text with # are comments.',parent=q_win)
+
+		def ansc():
+			messagebox.showerror('Wrong Answer','The image shows Python, not C code.\n"print()" is used in Python to print; and text with # are comments;\nIn C, "#include<.h>" imports modules like "import" in Python.',parent=q_win)
+		img=tk.PhotoImage(file='img/py.png')
+		a=tk.Label(q_win,image=img)
+		a.pack(fill='x')
+		a.image=img
+
+		tk.Label(q_win,text='Q. Is the above code written in Python or C ?',font=fntit).pack()
+
+		tk.Button(q_win,text='Python code',command=anspy,font=fnt).pack()
+
+		tk.Button(q_win,text='C code',command=ansc,font=fnt).pack()
+	
 	about=tk.Toplevel()
-	abttitle='About this '+pf.system()+' system'
+	abttitle='About this program on '+pf.system()
 	about.resizable(False, False)
 	about.title(abttitle)
 	
@@ -108,8 +137,8 @@ def about():	#System information
 
 	tk.Label(about,text='-------------------------------',font=fnt).grid(column=1,row=14)
 	
-	#CPU type - i386 (32-bit); AMD64/x86_64 (64-bit) etc.
-	tk.Label(about,text=(pf.machine()+' system'),font=fnt).grid(column=1,row=15)
+	#Hostname and CPU type (e.g.i386 (32-bit); AMD64/x86_64 (64-bit) etc.)
+	tk.Label(about,text=(pf.node()+'\n'+pf.machine()+' system'),font=fnt).grid(column=1,row=15)
 	
 	tk.Label(about,text='-------------------------------',font=fnt).grid(column=1,row=16)
 	
@@ -136,6 +165,11 @@ def about():	#System information
 	cls.grid(column=1,row=25,padx=10,pady=10)
 	cls.image=img1
 
+	img2=tk.PhotoImage(file='monoico/icon-80.png')
+	q=tk.Button(about,font=fnt,text='EE',image=img2,command=ee)
+	q.grid(column=1,row=26,padx=10,pady=10)
+	q.image=img2
+
 def logout():	#Logs out and returns to the start page.
 	main_menu.destroy()
 	os.system('python3 start.py')
@@ -144,30 +178,31 @@ main_menu=tk.Tk()
 main_menu.title('Main Menu')
 main_menu.resizable(False, False)
 
-tk.Label(main_menu,text=('Main menu'),font=h1fnt).grid(column=1,row=0)
+tk.Label(main_menu,text=('Welcome'),font=h1fnt).grid(column=1,row=0,padx=10,sticky=tk.W)
 
-tk.Label(main_menu,text=('You can:'),font=fntit).grid(column=1,row=2)
-tk.Label(main_menu,text=('or:'),font=fntit).grid(column=3,row=2)
+tk.Label(main_menu,text=('You can:'),font=fntit).grid(column=1,row=2,padx=10,sticky=tk.W)
 		
 img6=tk.PhotoImage(file='monoico/icon-827.png')
 bkgbtn=tk.Button(main_menu,text='Book taxi',image=img6,font=fnt,command=book_taxi)
 bkgbtn.grid(column=0,row=5,padx=10,pady=10)
-tk.Label(main_menu,text='Book a taxi',font=fnt,bg='yellow').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
+tk.Label(main_menu,text='Book a taxi.',font=fnt,bg='yellow').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 		
 img4=tk.PhotoImage(file='monoico/icon-828.png')
 passbtn=tk.Button(main_menu,text='Book Bus',image=img4,command=book_bus)
-passbtn.grid(column=0,row=6,padx=10,pady=10)
-tk.Label(main_menu,text='Book a bus',font=fnt,fg='blue').grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
+passbtn.grid(column=2,row=5,padx=10,pady=10)
+tk.Label(main_menu,text='Book a bus.',font=fnt,fg='blue').grid(column=3,row=5,padx=5,pady=10,sticky=tk.W)
+
+tk.Label(main_menu,text=('or:'),font=fntit).grid(column=1,row=9,padx=10,sticky=tk.W)
 
 img7=tk.PhotoImage(file='monoico/icon-670.png')
 logoutbtn=tk.Button(main_menu,text='Logout',font=fnt,image=img7,command=logout)
-logoutbtn.grid(column=2,row=5,padx=10,pady=10)
-tk.Label(main_menu,text='Logout',font=fnt).grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
+logoutbtn.grid(column=0,row=10,padx=10,pady=10)
+tk.Label(main_menu,text='Logout',font=fnt).grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
 
 img8=tk.PhotoImage(file='monoico/icon-66.png')
 exitbtn=tk.Button(main_menu,text='Logout and exit',font=fnt,image=img8,command=main_menu.destroy)
-exitbtn.grid(column=2,row=6,padx=10,pady=10)
-tk.Label(main_menu,text='Logout and exit',font=fnt,fg='red').grid(column=3,row=6,padx=10,pady=10,sticky=tk.W)
+exitbtn.grid(column=2,row=10,padx=10,pady=10)
+tk.Label(main_menu,text='Logout and exit',font=fnt,fg='red').grid(column=3,row=10,padx=10,pady=10,sticky=tk.W)
 
 tk.Label(main_menu,text=('Know more about\nthis program'),font=fntit,fg='green',justify=tk.LEFT).grid(column=3,row=11,padx=10,pady=10)
 img0=tk.PhotoImage(file='monoico/icon-78.png')

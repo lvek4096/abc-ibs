@@ -1,11 +1,9 @@
-from curses.ascii import isspace
 import tkinter as tk
 import random as rd
 import mysql.connector as ms
 import platform as pf
 from tkinter import messagebox
 import os
-
 
 #mysql connection
 con=ms.connect(host='localhost',user='john',password='123456',database='taxi')

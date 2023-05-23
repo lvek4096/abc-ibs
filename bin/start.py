@@ -1,7 +1,7 @@
+#import statements
 import tkinter as tk
 import os
 import mysql.connector as ms
-from tkinter import scrolledtext
 
 #definitions
 fnt=('IBM Plex Mono',12)
@@ -11,41 +11,29 @@ hfnt=('IBM Plex Sans',36,'bold')
 
 con=ms.connect(host='localhost',user='john',password='123456')
 cur=con.cursor()
-if con.is_connected()==True:
-	dbstatus='Connected to database.'
-else:
-	dbstatus='Not connected to database.'
-#initial creation of db and tables if not existing in system.
-cur.execute('create database if not exists taxi')
-cur.execute('use taxi')
-cur.execute('create table if not exists taxi_bkgs(bkgid int primary key,start varchar(50),end varchar(50),jdate date,jtime time,taxitype varchar(50))')
-cur.execute('create table if not exists bus_bkgs(bkgid int primary key,start varchar(50),end varchar(50),jdate date,jtime time,bustype varchar(50))')
-cur.execute('create table if not exists users(uuid varchar(5) primary key,uname varchar(50),passwd varchar(50))')
-con.commit()
+
 #functions	
 def make_booking():
 	welcome.destroy()
-	os.system('python3 login.py')
+	os.system('python3 userlogin.py')
 
 def manage_user():
 	welcome.destroy()
 	os.system('python3 users.py')
-	#messagebox.showwarning('','This feature is under construction.\nIf you don\'t like seeing\nsuch messages,\nplease stop using beta software.\nThank you!')
-
+	
+#main window
 welcome=tk.Tk()
 welcome.title('')
 welcome.resizable(False, False)
-#logbtn=tk.Button(welcome,text='Login',font=fnt,command=open_login)
-#logbtn.pack()
 
-tk.Label(welcome,text='Welcome',font=hfnt).grid(column=1,row=0,padx=10,pady=10)
+tk.Label(welcome,text='Welcome',font=hfnt).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
 
 img6=tk.PhotoImage(file='monoico/icon-13.png')
 bkgbtn=tk.Button(welcome,text='Booking',image=img6,font=fnt,command=make_booking)
 bkgbtn.grid(column=0,row=5,padx=10,pady=10)
 tk.Label(welcome,text='Make a booking...',font=fnt,fg='green').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 		
-img4=tk.PhotoImage(file='monoico/icon-675.png')
+img4=tk.PhotoImage(file='monoico/icon-514.png')
 passbtn=tk.Button(welcome,text='Profile',image=img4,command=manage_user)
 passbtn.grid(column=0,row=6,padx=10,pady=10)
 tk.Label(welcome,text='Manage user profile...',font=fnt).grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
