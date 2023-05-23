@@ -137,6 +137,7 @@ def main():
 						cur.execute(sql,val)
 						con.commit()
 						messagebox.showinfo('','User '+uname.get()+' deleted.',parent=delone_win)
+						delone_win.destroy()
 					else:
 						messagebox.showinfo('','User '+uname.get()+' not deleted.\nThe database has not been modified.',parent=delone_win)
 				else:
@@ -144,8 +145,6 @@ def main():
 			else:
 				messagebox.showerror('','Please enter the username.',parent=delone_win)
 		
-		
-			img14=tk.PhotoImage(file='monoico/icon-79.png')
 		
 		img14=tk.PhotoImage(file='icons/ban_user.png')
 		img=tk.Label(delone_win,image=img14,font=h1fnt)
@@ -188,6 +187,7 @@ def main():
 						cur.execute(sql,val)
 						con.commit()
 						messagebox.showinfo('','Password for '+uname.get()+'\nchanged.',parent=passwd_win)
+						passwd_win.destroy()
 					else:
 						messagebox.showinfo('','Password for '+uname.get()+' has not been changed..\nThe databasehas not\nbeen modified.',parent=passwd_win)
 				else:
@@ -252,7 +252,7 @@ def main():
 							con.commit()
 
 							messagebox.showinfo('','The new user '+reg_uname_inp+'\nhas been successfully registered.',parent=regwin)
-
+							regwin.destroy()
 						else:
 							messagebox.showerror('Error','Invalid phone number entered.',parent=regwin)
 					else:
@@ -308,9 +308,6 @@ def main():
 		regclose.image=regcloseimg
 		'''
 
-	def home():
-		manageuserwin.destroy()
-		os.system('python3 admin.py')
 	
 	tk.Grid.columnconfigure(manageuserwin,0,weight=1)
 

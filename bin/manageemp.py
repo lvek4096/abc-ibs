@@ -134,6 +134,7 @@ def main():
 						cur.execute(sql,val)
 						con.commit()
 						messagebox.showinfo('','Employee '+b[uname.get()]+' deleted.',parent=delone_win)
+						delone_win.destroy()
 					else:
 						messagebox.showinfo('','Employee '+b[uname.get()]+' not deleted.\nThe database has not been modified.',parent=delone_win)
 				else:
@@ -187,6 +188,7 @@ def main():
 						cur.execute(sql,val)
 						con.commit()
 						messagebox.showinfo('','Password for '+b[uname.get()]+'\nchanged.',parent=passwd_win)
+						passwd_win.destroy()
 					else:
 						messagebox.showinfo('','Password for '+b[uname.get()]+' has not been changed..\nThe databasehas not\nbeen modified.',parent=passwd_win)
 				else:
@@ -248,6 +250,7 @@ def main():
 					cur.execute(sql,val)
 					con.commit()
 					messagebox.showinfo('','Employee '+fname_inp+' registered successfully.',parent=add_win)
+					add_win.destroy()
 				else:
 					messagebox.showerror('Error','Username \''+uname_inp+'\'\nalready exists.',parent=add_win)
 			else:
@@ -290,9 +293,6 @@ def main():
 		exitbtn.image=exitimg
 		'''
 
-	def home():
-		manageempwin.destroy()
-		os.system('python3 admin.py')
 
 	tk.Grid.columnconfigure(manageempwin,0,weight=1)
 

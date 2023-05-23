@@ -134,6 +134,7 @@ def main():
 						cur.execute(sql,val)
 						con.commit()
 						messagebox.showinfo('','Administrator '+b[uname.get()]+' deleted.',parent=delone_win)
+						delone_win.destroy()
 					else:
 						messagebox.showinfo('','Administrator '+b[uname.get()]+' not deleted.\nThe database has not been modified.',parent=delone_win)
 				else:
@@ -187,6 +188,7 @@ def main():
 						cur.execute(sql,val)
 						con.commit()
 						messagebox.showinfo('','Password for '+b[uname.get()]+'\nchanged.',parent=passwd_win)
+						passwd_win.destroy()
 					else:
 						messagebox.showinfo('','Password for '+b[uname.get()]+' has not been changed..\nThe databasehas not\nbeen modified.',parent=passwd_win)
 				else:
@@ -248,12 +250,13 @@ def main():
 					cur.execute(sql,val)
 					con.commit()
 					messagebox.showinfo('','Administrator '+fname_inp+' registered successfully.',parent=add_win)
+					add_win.destroy()
 				else:
 					messagebox.showerror('Error','Username \''+uname_inp+'\'\nalready exists.',parent=add_win)
 			else:
 				messagebox.showerror('Error','Do not leave any fields blank.',parent=add_win)
 		
-		id='E'+str(rd.randint(1000,9999))
+		id='A'+str(rd.randint(1000,9999))
 
 		img14=tk.PhotoImage(file='icons/adduser.png')
 		img=tk.Label(add_win,image=img14,font=h1fnt)
@@ -289,10 +292,6 @@ def main():
 		exitbtn.grid(column=0,row=15,padx=10,pady=10,sticky=tk.SW)
 		exitbtn.image=exitimg
 		'''
-
-	def home():
-		manageadminwin.destroy()
-		os.system('python3 admin.py')
 
 	tk.Grid.columnconfigure(manageadminwin,0,weight=1)
 

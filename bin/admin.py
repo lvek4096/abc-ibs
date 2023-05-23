@@ -49,6 +49,7 @@ def main():
 	def admins():
 		manageadmin.main()
 
+	'''
 	def chrootpasswd():
 		passwd_win=tk.Toplevel()
 		passwd_win.resizable(False,False)
@@ -85,7 +86,7 @@ def main():
 		subbtn=tk.Button(passwd_win,text='Make changes',font=fntit,command=chpasswd)
 		#subbtn.image=img13
 		subbtn.grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)	
-	
+	'''
 	tk.Grid.columnconfigure(root,0,weight=1)
 
 	menubar=tk.Menu(root)
@@ -93,8 +94,8 @@ def main():
 	user=tk.Menu(menubar,tearoff=0)
 	menubar.add_cascade(label='User',menu=user,font=menufnt)
 
-	user.add_command(label='Change the administrator password...',command=chrootpasswd,font=menufnt,underline=0)
-	user.add_separator()
+	#user.add_command(label='Change the administrator password...',command=chrootpasswd,font=menufnt,underline=0)
+	#user.add_separator()
 	user.add_command(label='Logout',command=logout,font=menufnt,underline=0)
 	user.add_command(label='Logout and Exit',command=root.destroy,font=menufnt,underline=11)
 
@@ -106,14 +107,14 @@ def main():
 
 	#FRAME 1
 	tk.Grid.rowconfigure(root,0,weight=1)
-	f1=tk.Frame(root)
+	f1=tk.Frame(root,bg='#283593')
 	f1.grid(row=0,column=0,sticky=tk.NSEW)
 
 	#frame 1 grid
 	tk.Grid.columnconfigure(f1,0,weight=1)
 
 	tk.Grid.rowconfigure(f1,0,weight=1)
-	tk.Label(f1,text='Welcome',font=h1fnt,justify=tk.CENTER).grid(column=0,row=0,padx=10,pady=10)
+	tk.Label(f1,text='Welcome',font=h1fnt,justify=tk.CENTER,fg='white',bg='#283593').grid(column=0,row=0,padx=10,pady=10)
 	
 	Separator(f1,orient='horizontal').grid(column=0,row=1,sticky=tk.EW,padx=10,pady=10)
 	
@@ -129,7 +130,7 @@ def main():
 	tk.Grid.columnconfigure(f2,3,weight=1)
 
 	#tk.Grid.rowconfigure(f2,2,weight=1)
-	tk.Label(f2,text='You can:',font=fntit).grid(column=1,row=2,sticky=tk.W,padx=10)
+	tk.Label(f2,text='You can:',font=fntit).grid(column=1,row=2,sticky=tk.W,padx=10,pady=10)
 
 	tk.Grid.rowconfigure(f2,5,weight=1)
 	img6=tk.PhotoImage(file='icons/dataset.png')

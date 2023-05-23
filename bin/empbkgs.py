@@ -50,13 +50,13 @@ def main():
 
 	#FRAME 1
 	tk.Grid.rowconfigure(main_menu,0,weight=1)
-	f1=tk.Frame(main_menu)
+	f1=tk.Frame(main_menu,bg='#283593')
 	f1.grid(row=0,column=0,sticky=tk.NSEW)
 
 	tk.Grid.columnconfigure(f1,0,weight=1)
 
 	tk.Grid.rowconfigure(f1,0,weight=1)
-	tk.Label(f1,text=('Employee Booking Menu'),font=h1fnt,justify=tk.CENTER).grid(column=0,row=0,padx=10,pady=10)
+	tk.Label(f1,text='Employee Booking Menu',fg='white',bg='#283593',font=h1fnt,justify=tk.CENTER).grid(column=0,row=0,padx=10,pady=10)
 
 	Separator(f1,orient='horizontal').grid(column=0,row=1,sticky=tk.EW,padx=10,pady=10)
 	#FRAME 2
@@ -69,7 +69,7 @@ def main():
 	tk.Grid.columnconfigure(f2,2,weight=1)
 	tk.Grid.columnconfigure(f2,3,weight=1)
 
-	tk.Label(f2,text=('You can:'),font=fntit).grid(column=1,row=2,padx=10,sticky=tk.W)
+	tk.Label(f2,text=('You can:'),font=fntit).grid(column=1,row=2,padx=10,pady=10,sticky=tk.W)
 
 	tk.Grid.rowconfigure(f2,5,weight=1)
 	img6=tk.PhotoImage(file='icons/bus.png')

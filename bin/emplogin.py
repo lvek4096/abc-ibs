@@ -61,15 +61,15 @@ tk.Grid.columnconfigure(emplogwin,0,weight=1)
 
 #FRAME 1
 tk.Grid.rowconfigure(emplogwin,0,weight=1)
-f1=tk.Frame(emplogwin)
+f1=tk.Frame(emplogwin,bg='#283593')
 f1.grid(row=0,column=0,sticky=tk.NSEW)
 
 #frame 1 grid
 tk.Grid.columnconfigure(f1,0,weight=1)
 
 tk.Grid.rowconfigure(f1,0,weight=1)
-tk.Label(f1,text='Employee login',font=h1fnt,justify=tk.CENTER).grid(column=0,row=0)
-ttk.Separator(f1,orient='horizontal').grid(row=1,column=0,sticky=tk.EW)
+tk.Label(f1,text='Employee login',font=h1fnt,justify=tk.CENTER,fg='white',bg='#283593').grid(column=0,row=0)
+ttk.Separator(f1,orient='horizontal').grid(row=1,column=0,sticky=tk.EW,padx=10,pady=10)
 
 #FRAME 2
 tk.Grid.rowconfigure(emplogwin,1,weight=1)

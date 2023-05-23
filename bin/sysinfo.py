@@ -4,31 +4,41 @@ def about():	#System information
 	from tkinter.ttk import Separator
 	import mysql.connector as ms
 	from tkinter import scrolledtext
-	build='198 (Beta IV)'	
+	build='200 (RC 1)'	
 
-	disclaimer='''WARNING
-This is pre-release software.
-Bugs may exist and features may 
-break or not work completely.
-Proceed to use this software 
-at your own risk.
+	disclaimer='''CAUTION
+This software is currently
+in Release Candidate (RC) stage.
+Features will be more or less complete; 
+however some bugs may still be present, 
+and certain features may break 
+or not work properly.
+Proceed to use this software with 
+caution.
 
-ATTENTION
-Il s'agit d'un logiciel de pré-version.
-Des bogues peuvent exister et des 
-fonctionnalités peuventcasser ou 
-ne pas fonctionner complètement.
-Continuez à utiliser ce 
-logiciel à vos risques et périls.
+MISE EN GARDE
+Ce logiciel est actuellement
+au stade Release Candidate (RC).
+Les fonctionnalités seront plus ou
+moins complet; cependant certains
+des bugs peuvent encore être 
+présents,et certaines 
+fonctionnalités peuvent casser 
+ou ne pas fonctionner correctement.
+Continuer à utiliser ce logiciel avec 
+précaution.
 
-ADVERTENCIA
-Este es un software de versión 
-preliminar.
-Pueden existir errores y las 
-características puedenromper o 
-no funcionar completamente.
-Proceda a usar este software 
-bajo su propio riesgo.
+PRECAUCIÓN
+Este software está actualmente
+en la etapa Release Candidate (RC).
+Las características serán más o
+menos completo; sin embargo algunos
+los errores pueden estar todavía 
+presentes, y ciertas características 
+pueden romperse o no funcionar 
+correctamente.
+Proceder a utilizar este software
+con cuidado.
 
 TRANSLATIONS BY GOOGLE TRANSLATE
 

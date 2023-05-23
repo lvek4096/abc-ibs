@@ -5,7 +5,7 @@ from tkinter.ttk import Separator
 from tkinter import messagebox
 import os
 
-import home as hm
+import home
 
 #mysql connection
 con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
@@ -37,7 +37,7 @@ def login():
 			messagebox.showerror('Error','Invalid password entered for '+fnamelist[uname_inp]+'.')
 		else:
 			logwin.destroy()
-			hm.main()
+			home.main()
 
 def register():
 	uuid='U'+str(rd.randint(1000,9999))
@@ -67,7 +67,7 @@ def register():
 						con.commit()
 
 						messagebox.showinfo('','The new user '+reg_fname_inp+'\nhas been successfully registered.',parent=regwin)
-
+						regwin.destroy()
 					else:
 						messagebox.showerror('Error','Invalid phone number entered.',parent=regwin)
 				else:
@@ -125,22 +125,22 @@ def register():
 
 def changepass():
 	logwin.destroy()
-	os.system('python3 manageusr.py')
+	os.system('python3 profile.py')
 
 #Window
 tk.Grid.columnconfigure(logwin,0,weight=1)
 
 #FRAME 1
 tk.Grid.rowconfigure(logwin,0,weight=1)
-f1=tk.Frame(logwin)
+f1=tk.Frame(logwin,bg='#283593')
 f1.grid(row=0,column=0,sticky=tk.NSEW)
 
 #frame 1 grid
 tk.Grid.columnconfigure(f1,0,weight=1)
 
 tk.Grid.rowconfigure(f1,0,weight=1)
-tk.Label(f1,text='Login',font=h1fnt).grid(column=0,row=0)
-Separator(f1,orient='horizontal').grid(row=1,column=0,sticky=tk.EW)
+tk.Label(f1,text='Login',font=h1fnt,fg='white',bg='#283593').grid(column=0,row=0)
+Separator(f1,orient='horizontal').grid(row=1,column=0,sticky=tk.EW,padx=10,pady=10)
 
 #FRAME 2
 tk.Grid.rowconfigure(logwin,1,weight=1)
@@ -167,12 +167,13 @@ logsubmit=tk.Button(f2,text='Login...',image=img1,command=login)
 logsubmit.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
 
 tk.Grid.rowconfigure(f2,12,weight=2)
+tk.Label(f2,text='New here?\nClick here to register.',font=fntit,justify=tk.RIGHT,fg='#283593').grid(column=0,row=12,padx=10,pady=10,sticky=tk.E)
 img2=tk.PhotoImage(file='icons/adduser.png')
 reg=tk.Button(f2,text='Register',image=img2,command=register)
 reg.grid(column=1,row=12,padx=10,pady=10,sticky=tk.W)
 
 #tk.Grid.rowconfigure(f2,11,weight=2)
-manage=tk.Button(f2,text='Change password...',font=fntit,command=changepass)
+manage=tk.Button(f2,text='Manage your profile...',font=fntit,command=changepass)
 manage.grid(column=1,row=11,padx=10,pady=10,columnspan=2,sticky=tk.W)
 
 logwin.mainloop()

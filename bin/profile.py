@@ -39,11 +39,14 @@ def onlogin():
 					if p == upass[uname_inp]:
 						confirm=messagebox.askyesno('','Really delete your user profile?',parent=delwin)
 						if confirm==True:
-							messagebox.showinfo('','Username '+uname_inp+' deleted.',parent=delwin)
 							sql="delete from users where uname =%s"
 							val=(uname_inp,)
 							cur.execute(sql,val)
 							con.commit()
+							messagebox.showinfo('','Username '+uname_inp+' deleted.\nYou will be returned to the start page.',parent=delwin)
+							delwin.destroy()
+							manage_userswin.destroy()
+							os.system('python3 start.py')
 						else:
 							pass
 					else:
@@ -61,13 +64,14 @@ def onlogin():
 			del_passwd=tk.Entry(delwin,show='*',font=fnt);del_passwd.grid(column=0,row=5,sticky=tk.EW,padx=10,pady=10)
 
 			#delsubimg=tk.PhotoImage(file='icons/ban_user.png')
-			delsubmit=tk.Button(delwin,text='Delete User',command=deluser,font=fntit);delsubmit.grid(column=0,row=6,padx=10,pady=10)
+			delsubmit=tk.Button(delwin,text='Delete User',command=deluser,font=fntit,fg='red');delsubmit.grid(column=0,row=6,padx=10,pady=10)
 			#delsubmit.image=delsubimg
-	
+			'''
 			delcloseimg=tk.PhotoImage(file='monoico/icon-66.png')
 			delclose=tk.Button(delwin,text='Close',image=delcloseimg,command=delwin.destroy)
 			delclose.grid(column=0,row=9,sticky=tk.SW,padx=10,pady=10)
 			delclose.image=delcloseimg
+			'''
 			delwin.mainloop()
 
 		def passwd():
@@ -86,6 +90,7 @@ def onlogin():
 							cur.execute(sql,val)
 							con.commit()
 							messagebox.showinfo('','Password updated.',parent=passwin)
+							passwin.destroy()
 						else:
 							pass
 					else:
@@ -109,11 +114,12 @@ def onlogin():
 			passsubmit=tk.Button(passwin,text='Change password',command=changepass,font=fntit)
 			passsubmit.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
 			
+			'''
 			delcloseimg=tk.PhotoImage(file='icons/close.png')
 			delclose=tk.Button(passwin,text='Close',image=delcloseimg,command=passwin.destroy)
 			delclose.grid(column=0,row=11,sticky=tk.W,padx=10,pady=10)
 			delclose.image=delcloseimg
-
+			'''
 			passwin.mainloop()
 
 		def logout():
@@ -259,7 +265,7 @@ def onlogin():
 		logwin.destroy()
 
 		manage_userswin=tk.Tk()
-		manage_userswin.title('Manage your profile')
+		manage_userswin.title('Manage profile')
 		w,h=manage_userswin.winfo_screenwidth(),manage_userswin.winfo_screenheight()
 		manage_userswin.geometry(str(w)+'x'+str(h))
 		
@@ -267,15 +273,15 @@ def onlogin():
 		
 		#FRAME 1
 		tk.Grid.rowconfigure(manage_userswin,0,weight=1)
-		f1=tk.Frame(manage_userswin)
+		f1=tk.Frame(manage_userswin,bg='#283593')
 		f1.grid(row=0,column=0,sticky=tk.NSEW)
 
 		#frame 1 grid
 		tk.Grid.columnconfigure(f1,0,weight=1)
 		
 		tk.Grid.rowconfigure(f1,0,weight=1)
-		tk.Label(f1,text=('Welcome, '+fnamelist[uname_inp]),font=h1fnt).grid(column=0,row=0,padx=10,sticky=tk.EW)
-		tk.Label(f1,text=('ID: '+uuidlist[uname_inp]),font=('IBM Plex Sans',12)).grid(column=0,row=1,padx=10,sticky=tk.EW)
+		tk.Label(f1,text=('Welcome, '+fnamelist[uname_inp]),font=h1fnt,fg='white',bg='#283593').grid(column=0,row=0,padx=10,sticky=tk.EW)
+		tk.Label(f1,text=('ID: '+uuidlist[uname_inp]),font=('IBM Plex Sans',12),fg='black',bg='#00e676').grid(column=0,row=1,padx=10)
 		Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 		#FRAME 2
 		tk.Grid.rowconfigure(manage_userswin,1,weight=1)
@@ -348,15 +354,15 @@ tk.Grid.columnconfigure(logwin,0,weight=1)
 
 #FRAME 3
 tk.Grid.rowconfigure(logwin,0,weight=1)
-f3=tk.Frame(logwin)
+f3=tk.Frame(logwin,bg='#283593')
 f3.grid(row=0,column=0,sticky=tk.NSEW)
 
 #frame 3 grid
 tk.Grid.columnconfigure(f3,0,weight=1)
 
 tk.Grid.rowconfigure(f3,0,weight=1)
-tk.Label(logwin,text='Login',font=h1fnt).grid(column=0,row=0)
-Separator(f3,orient='horizontal').grid(row=1,column=0,sticky=tk.EW)
+tk.Label(logwin,text='Login',font=h1fnt,fg='white',bg='#283593').grid(column=0,row=0)
+Separator(f3,orient='horizontal').grid(row=1,column=0,sticky=tk.EW,padx=10,pady=10)
 
 #FRAME 4
 tk.Grid.rowconfigure(logwin,1,weight=1)
@@ -373,7 +379,7 @@ login_uname=tk.Entry(f4,font=fnt)
 login_uname.grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
 
 #tk.Grid.rowconfigure(f4,4,weight=1)
-tk.Label(f4,text='Password',font=fnt,justify=tk.CENTER).grid(column=0,row=4,padx=10,pady=10,sticky=tk.E)
+tk.Label(f4,text='Password',font=fnt).grid(column=0,row=4,padx=10,pady=10,sticky=tk.E)
 login_passwd=tk.Entry(f4,show='*',font=fnt)
 login_passwd.grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
 
@@ -383,7 +389,10 @@ logsubmit=tk.Button(f4,text='Login...',image=img1,command=onlogin)
 logsubmit.grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 
 tk.Grid.rowconfigure(f4,6,weight=1)
-reg=tk.Button(f4,text='Login or register...',font=fntit,command=main_login)
-reg.grid(column=1,row=6,padx=10,pady=1,sticky=tk.W)
+tk.Label(f4,text='Want to make bookings?\nClick here to continue.',font=fntit,justify=tk.RIGHT,bg='#00e676').grid(column=0,row=6,padx=10,pady=10,sticky=tk.E)
+img6=tk.PhotoImage(file='icons/booking.png')
+bkgbtn=tk.Button(f4,text='Booking',image=img6,font=fnt,command=main_login)
+bkgbtn.grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
+
 
 logwin.mainloop()

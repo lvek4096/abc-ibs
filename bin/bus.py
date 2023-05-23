@@ -105,7 +105,7 @@ def main():
 		if d_res==True:
 			x=datetime.strptime(y,format)
 
-			if x > ts:
+			if x >= ts:
 				isNotPast=True
 			else:
 				isNotPast=False
