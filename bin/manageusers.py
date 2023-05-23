@@ -14,9 +14,9 @@ def main():
 	h1fnt=('IBM Plex Sans',24)
 
 	manageuserwin=tk.Toplevel()
-	manageuserwin.title('Manage users')
-	w,h=manageuserwin.winfo_screenwidth(),manageuserwin.winfo_screenheight()
-	manageuserwin.geometry(str(w)+'x'+str(h))
+	manageuserwin.title('User Manager')
+	#w,h=manageuserwin.winfo_screenwidth(),manageuserwin.winfo_screenheight()
+	#manageuserwin.geometry(str(w)+'x'+str(h))
 
 	def viewall():
 		viewall_win=tk.Toplevel()
@@ -43,7 +43,7 @@ def main():
 					entry.configure(fg='red',font=fntit)	#colors and italicises header
 
 	def viewone():
-		def getempinfo():
+		def getuserinfo():
 			cur.execute('select uname from users')
 			a=cur.fetchall()
 			b=[]
@@ -100,7 +100,7 @@ def main():
 		for i in a:
 			b.append(i[0])
 
-		img14=tk.PhotoImage(file='monoico/icon-716.png')
+		img14=tk.PhotoImage(file='icons/searchusr.png')
 		img=tk.Label(frame1,image=img14,font=h1fnt)
 		img.grid(column=0,row=0,padx=10,pady=10)
 		img.image=img14
@@ -113,17 +113,17 @@ def main():
 		uname.grid(row=5,column=1,padx=10,pady=10,sticky=tk.EW)
 		uname['values']=b
 		
-		img11=tk.PhotoImage(file='monoico/icon-582.png')
-		submit=tk.Button(frame1,font=fnt,image=img11,command=getempinfo)
+		#img11=tk.PhotoImage(file='monoico/icon-582.png')
+		submit=tk.Button(frame1,font=fntit,text='Submit',command=getuserinfo)
 		submit.grid(row=5,column=2,padx=10,pady=10)
-		submit.image=img11
+		#submit.image=img11
 
 	def delone():
 		delone_win=tk.Toplevel()
 		delone_win.resizable(False,False)
 		delone_win.title('')
 
-		def deleteemp():
+		def deleteuser():
 			#cur.execute('select uname,fname from users')
 			#a=dict(cur.fetchall())
 			
@@ -147,7 +147,7 @@ def main():
 		
 			img14=tk.PhotoImage(file='monoico/icon-79.png')
 		
-		img14=tk.PhotoImage(file='monoico/icon-76.png')
+		img14=tk.PhotoImage(file='icons/ban_user.png')
 		img=tk.Label(delone_win,image=img14,font=h1fnt)
 		img.grid(column=0,row=0,padx=10,pady=10)
 		img.image=img14
@@ -167,9 +167,9 @@ def main():
 		uname.grid(column=1,row=5,sticky=tk.EW,padx=10,pady=10)
 		uname['values']=c
 
-		img13=tk.PhotoImage(file='monoico/icon-694.png')
-		delbtn=tk.Button(delone_win,text='del',image=img13,font=fnt,command=deleteemp)
-		delbtn.image=img13
+		#img13=tk.PhotoImage(file='monoico/icon-694.png')
+		delbtn=tk.Button(delone_win,text='Delete',font=fntit,command=deleteuser,fg='red')
+		#delbtn.image=img13
 		delbtn.grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
 
 	def passwd():
@@ -195,7 +195,7 @@ def main():
 			else:
 				messagebox.showerror('','Do not leave any fields blank.',parent=passwd_win)
 		
-		img14=tk.PhotoImage(file='monoico/icon-79.png')
+		img14=tk.PhotoImage(file='icons/passwd.png')
 		img=tk.Label(passwd_win,image=img14,font=h1fnt)
 		img.grid(column=0,row=0,padx=10,pady=10)
 		img.image=img14
@@ -219,9 +219,9 @@ def main():
 		npass=tk.Entry(passwd_win,font=fnt,show='*')
 		npass.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
 
-		img13=tk.PhotoImage(file='monoico/icon-694.png')
-		subbtn=tk.Button(passwd_win,text='submit',image=img13,font=fnt,command=chpasswd)
-		subbtn.image=img13
+		#img13=tk.PhotoImage(file='monoico/icon-694.png')
+		subbtn=tk.Button(passwd_win,text='Make changes',font=fntit,command=chpasswd)
+		#subbtn.image=img13
 		subbtn.grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
 
 	def register():
@@ -296,16 +296,22 @@ def main():
 		reg_passwd=tk.Entry(regwin,show='*',font=fnt)
 		reg_passwd.grid(column=1,row=12,sticky=tk.EW,padx=10,pady=10)
 
-		regsubimg=tk.PhotoImage(file='monoico/icon-67.png')	
-		regsubmit=tk.Button(regwin,image=regsubimg,command=reguser)
+		#regsubimg=tk.PhotoImage(file='monoico/icon-67.png')	
+		regsubmit=tk.Button(regwin,text='Register',command=reguser,font=fntit)
 		regsubmit.grid(column=1,row=14,padx=10,pady=10,sticky=tk.W)
-		regsubmit.image=regsubimg
+		#regsubmit.image=regsubimg
 		
+		'''
 		regcloseimg=tk.PhotoImage(file='monoico/icon-66.png')
 		regclose=tk.Button(regwin,text='Close',image=regcloseimg,command=regwin.destroy)
 		regclose.grid(column=0,row=15,sticky=tk.SW,padx=10,pady=10)
 		regclose.image=regcloseimg
+		'''
 
+	def home():
+		manageuserwin.destroy()
+		os.system('python3 admin.py')
+	
 	tk.Grid.columnconfigure(manageuserwin,0,weight=1)
 
 	#FRAME 1
@@ -318,11 +324,14 @@ def main():
 	tk.Grid.columnconfigure(f1,1,weight=1)
 
 	tk.Grid.rowconfigure(f1,0,weight=1)
-	img6=tk.PhotoImage(file='monoico/icon-675.png')
+	img6=tk.PhotoImage(file='icons/people.png')
 	tk.Label(f1,image=img6).grid(column=0,row=0,sticky=tk.E,padx=10,pady=10)
-	tk.Label(f1,text=('Manage the users...'),font=h1fnt).grid(column=1,row=0,sticky=tk.W,padx=10,pady=10)
-	#tk.Grid.rowconfigure(f1,1,weight=1)
+	himg=tk.Label(f1,text=('Manage the users...'),font=h1fnt)
+	himg.grid(column=1,row=0,sticky=tk.W,padx=10,pady=10)
+	himg.image=img6
 	tk.Label(f1,text=('Connected to database: '+con.database),font=('IBM Plex Sans',12),justify=tk.LEFT,fg='green').grid(column=1,row=1,sticky=tk.W,padx=10,pady=10)
+
+	ttk.Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 
 	#FRAME 2
 	tk.Grid.rowconfigure(manageuserwin,1,weight=1)
@@ -335,48 +344,56 @@ def main():
 	tk.Grid.columnconfigure(f2,2,weight=1)
 	tk.Grid.columnconfigure(f2,3,weight=1)
 
-	tk.Grid.rowconfigure(f2,3,weight=1)
 	tk.Label(f2,text='You can:',font=fntit,justify=tk.LEFT).grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
 
-	#tk.Grid.rowconfigure(f2,5,weight=1)
-	img8=tk.PhotoImage(file='monoico/icon-675.png')
+	tk.Grid.rowconfigure(f2,5,weight=1)
+
+	img8=tk.PhotoImage(file='icons/people.png')
 	tbviewbtn=tk.Button(f2,text='view all',image=img8,font=fnt,command=viewall)
 	tbviewbtn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
+	tbviewbtn.image=img8
 	tk.Label(f2,text='View all user details.',font=fnt,fg='blue').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 
-	img10=tk.PhotoImage(file='monoico/icon-716.png')
+	img10=tk.PhotoImage(file='icons/searchusr.png')
 	viewbtn=tk.Button(f2,text='viewone',image=img10,font=fnt,command=viewone)
 	viewbtn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
+	viewbtn.imageg=img10
 	tk.Label(f2,text='View a single user\'s details.',font=fnt).grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
 
-	#tk.Grid.rowconfigure(f2,6,weight=1)
-	img7=tk.PhotoImage(file='monoico/icon-67.png')
+	tk.Grid.rowconfigure(f2,6,weight=1)
+
+	img7=tk.PhotoImage(file='icons/adduser.png')
 	tbviewbtn=tk.Button(f2,text='add',image=img7,font=fnt,command=register)
 	tbviewbtn.grid(column=0,row=6,padx=10,pady=10,sticky=tk.E)
+	tbviewbtn.image=img7
 	tk.Label(f2,text='Add a user.',font=fnt,fg='green').grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
 
-	img11=tk.PhotoImage(file='monoico/icon-79.png')
+	img11=tk.PhotoImage(file='icons/passwd.png')
 	passbtn=tk.Button(f2,text='passwd',image=img11,font=fnt,command=passwd)
 	passbtn.grid(column=2,row=6,padx=10,pady=10,sticky=tk.E)
+	passbtn.image=img11
 	tk.Label(f2,text='Change the password for a user.',font=fnt).grid(column=3,row=6,padx=10,pady=10,sticky=tk.W)
 
-	#tk.Grid.rowconfigure(f2,7,weight=1)
-	img12=tk.PhotoImage(file='monoico/icon-76.png')
+	tk.Grid.rowconfigure(f2,7,weight=1)
+	img12=tk.PhotoImage(file='icons/ban_user.png')
 	delbtn=tk.Button(f2,text='del',image=img12,font=fnt,command=delone)
 	delbtn.grid(column=0,row=7,padx=10,pady=10,sticky=tk.E)
+	delbtn.image=img12
 	tk.Label(f2,text='Delete a user.',font=fnt,fg='red').grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
-	#tk.Grid.rowconfigure(f2,8,weight=1)
+
+	tk.Grid.rowconfigure(f2,8,weight=1)
 	tk.Message(f2,text='WARNING: This will delete\na user\'s profile\nfrom the system permanently.',width=500,font=fnt,fg='white',bg='red').grid(column=1,row=8,padx=10,pady=10,sticky=tk.NW)
 
-	def home():
-		manageuserwin.destroy()
-		os.system('python3 admin.py')
-	tk.Grid.rowconfigure(f2,15,weight=1)
-	tk.Label(f2,text='or:',font=fntit,justify=tk.LEFT).grid(column=1,row=15,sticky=tk.W,padx=10,pady=10)
+	#tk.Label(f2,text='or:',font=fntit,justify=tk.LEFT).grid(column=1,row=15,sticky=tk.W,padx=10,pady=10)
 
 	tk.Grid.rowconfigure(f2,16,weight=1)
-	img9=tk.PhotoImage(file='monoico/icon-714.png')
-	bkgbtn=tk.Button(f2,text='exit',image=img9,font=fnt,command=home)
-	bkgbtn.grid(column=0,row=16,padx=10,pady=10,sticky=tk.E)
+	'''
+	img9=tk.PhotoImage(file='icons/close.png')
+	btn1=tk.Button(f2,text='exit',image=img9,font=fnt,command=home)
+	btn1.grid(column=0,row=16,padx=10,pady=10,sticky=tk.E)
+	btn1.image=img9
 	tk.Label(f2,text='Return home.',font=fnt).grid(column=1,row=16,padx=10,pady=10,sticky=tk.W)
+	'''
+
+	tk.Grid.rowconfigure(f2,17,weight=1)
 

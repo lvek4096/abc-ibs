@@ -1,7 +1,7 @@
 import tkinter as tk
 import random as rd
 import mysql.connector as ms
-import platform as pf
+from tkinter.ttk import Separator
 from tkinter import messagebox
 import os
 
@@ -111,15 +111,17 @@ def register():
 	reg_passwd=tk.Entry(regwin,show='*',font=fnt)
 	reg_passwd.grid(column=1,row=12,sticky=tk.EW,padx=10,pady=10)
 
-	regsubimg=tk.PhotoImage(file='monoico/icon-67.png')	
-	regsubmit=tk.Button(regwin,image=regsubimg,command=reguser)
+	#regsubimg=tk.PhotoImage(file='icons/adduser.png')	
+	regsubmit=tk.Button(regwin,text='Register',command=reguser,font=fntit)
 	regsubmit.grid(column=1,row=14,padx=10,pady=10,sticky=tk.W)
-	regsubmit.image=regsubimg
+	#regsubmit.image=regsubimg
 	
-	regcloseimg=tk.PhotoImage(file='monoico/icon-66.png')
+	'''
+	regcloseimg=tk.PhotoImage(file='icons/close.png')
 	regclose=tk.Button(regwin,text='Close',image=regcloseimg,command=regwin.destroy)
 	regclose.grid(column=0,row=15,sticky=tk.SW,padx=10,pady=10)
 	regclose.image=regcloseimg
+	'''
 
 def changepass():
 	logwin.destroy()
@@ -138,6 +140,7 @@ tk.Grid.columnconfigure(f1,0,weight=1)
 
 tk.Grid.rowconfigure(f1,0,weight=1)
 tk.Label(f1,text='Login',font=h1fnt).grid(column=0,row=0)
+Separator(f1,orient='horizontal').grid(row=1,column=0,sticky=tk.EW)
 
 #FRAME 2
 tk.Grid.rowconfigure(logwin,1,weight=1)
@@ -159,12 +162,12 @@ login_passwd=tk.Entry(f2,show='*',font=fnt)
 login_passwd.grid(column=1,row=4,sticky=tk.W,padx=10,pady=10)
 
 #tk.Grid.rowconfigure(f2,10,weight=2)
-img1=tk.PhotoImage(file='monoico/icon-669.png')
+img1=tk.PhotoImage(file='icons/login.png')
 logsubmit=tk.Button(f2,text='Login...',image=img1,command=login)
 logsubmit.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
 
 tk.Grid.rowconfigure(f2,12,weight=2)
-img2=tk.PhotoImage(file='monoico/icon-67.png')
+img2=tk.PhotoImage(file='icons/adduser.png')
 reg=tk.Button(f2,text='Register',image=img2,command=register)
 reg.grid(column=1,row=12,padx=10,pady=10,sticky=tk.W)
 

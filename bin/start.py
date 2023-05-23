@@ -2,6 +2,7 @@
 import tkinter as tk
 import os
 import mysql.connector as ms
+from tkinter.ttk import Separator
 
 #definitions
 fnt=('IBM Plex Mono',12)
@@ -40,7 +41,7 @@ tk.Grid.columnconfigure(f1,0,weight=1)
 tk.Grid.rowconfigure(f1,0,weight=1)
 
 tk.Label(f1,text='Welcome',font=hfnt).grid(column=0,row=0,padx=10,pady=10,sticky=tk.EW)
-
+Separator(f1,orient='horizontal').grid(column=0,row=1,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 #FRAME 2
 
 tk.Grid.rowconfigure(welcome,1,weight=1)
@@ -53,19 +54,19 @@ tk.Grid.columnconfigure(f2,0,weight=1)
 tk.Grid.columnconfigure(f2,1,weight=1)
 
 #tk.Grid.rowconfigure(f2,5,weight=1)
-img6=tk.PhotoImage(file='monoico/icon-13.png')
+img6=tk.PhotoImage(file='icons/booking.png')
 bkgbtn=tk.Button(f2,text='Booking',image=img6,font=fnt,command=make_booking,justify=tk.CENTER)
 bkgbtn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
 tk.Label(f2,text='Make a booking...',font=fnt,fg='green').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 
 #tk.Grid.rowconfigure(f2,6,weight=1)	
-img4=tk.PhotoImage(file='monoico/icon-514.png')
+img4=tk.PhotoImage(file='icons/manage_accts.png')
 passbtn=tk.Button(f2,text='Profile',image=img4,command=manage_user,justify=tk.CENTER)
 passbtn.grid(column=0,row=6,padx=10,pady=10,sticky=tk.E)
 tk.Label(f2,text='Manage user profile...',font=fnt).grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
 
 #tk.Grid.rowconfigure(f2,7,weight=1)	
-img5=tk.PhotoImage(file='monoico/icon-66.png')
+img5=tk.PhotoImage(file='icons/close.png')
 passbtn=tk.Button(f2,text='Exit',image=img5,command=welcome.destroy,justify=tk.CENTER)
 passbtn.grid(column=0,row=7,padx=10,pady=10,sticky=tk.E)
 tk.Label(f2,text='Exit',font=fnt,fg='red').grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)

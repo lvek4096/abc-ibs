@@ -5,8 +5,10 @@ Bugs
 2. Passwords, card details unencrypted.
 
 
+
 Others
 ======
 
 1. Document code
 2. Prepare project file.
+3. Theming.

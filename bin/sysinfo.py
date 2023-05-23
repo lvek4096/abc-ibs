@@ -1,9 +1,10 @@
 def about():	#System information
 	import platform as pf
 	import tkinter as tk
+	from tkinter.ttk import Separator
 	import mysql.connector as ms
 	from tkinter import scrolledtext
-	build='172'	
+	build='198 (Beta IV)'	
 
 	disclaimer='''WARNING
 This is pre-release software.
@@ -32,11 +33,10 @@ bajo su propio riesgo.
 TRANSLATIONS BY GOOGLE TRANSLATE
 
 Icons:
-- Ubuntu Yaru icons
-https://github.com/ubuntu/yaru
 
-- Fontawesome
-https://fontawesome.com/icons'''
+- Material Icons
+https://fonts.google.com/icons
+'''
 
 	#mysql connection
 	con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
@@ -66,17 +66,17 @@ https://fontawesome.com/icons'''
 	disc.insert(tk.INSERT,disclaimer)
 	disc.configure(state='disabled')
 	
-	tk.Label(about,text='-------------------------------',font=fnt).grid(column=1,row=5)
-	
+	Separator(about,orient='horizontal').grid(column=1,row=5,sticky=tk.EW,padx=10,pady=10)
+
 	tk.Label(about,text=('Python',pf.python_version()),font=fnt).grid(column=1,row=6)
 	tk.Label(about,text=('Tkinter',tk.TkVersion),font=fnt).grid(column=1,row=7)
 	tk.Label(about,text=('MySQL',ms.__version__),font=fnt).grid(column=1,row=8)
 	
-	tk.Label(about,text='-------------------------------',font=fnt).grid(column=1,row=9)
+	Separator(about,orient='horizontal').grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
 
 	if pf.system()=='Windows':
 		src=tk.PhotoImage(file='img/oldwin.png')
-	elif pf.system()=='Darwin':
+	elif pf.system()=='Darwin':		#Darwin - macOS kernel
 		src=tk.PhotoImage(file='img/oldmac.png')	
 	elif pf.system()=='Linux':
 		src=tk.PhotoImage(file='img/linux.png')
@@ -91,7 +91,7 @@ https://fontawesome.com/icons'''
 	else:
 		tk.Label(about,text=(pf.system(),pf.release()),font=fnt).grid(column=1,row=12)
 	
-	#Additional Linux distribution info - Linux ONLY
+	#Additional distribution info - Linux ONLY
 	#Checking for platform.freedesktop_os_release() support - ONLY in Python 3.10 and newer
 	py=pf.python_version_tuple()
 	if int(py[0]) >= 3 and int(py[1]) >= 10:
@@ -101,14 +101,14 @@ https://fontawesome.com/icons'''
 	else:
 		pass
 
-	tk.Label(about,text='-------------------------------',font=fnt).grid(column=1,row=14)
+	Separator(about,orient='horizontal').grid(column=1,row=14,sticky=tk.EW,padx=10,pady=10)
 	
 	#Hostname and CPU type (e.g.i386 (32-bit); AMD64/x86_64 (64-bit) etc.)
 	tk.Label(about,text=(pf.node()+'\n'+pf.machine()+' system'),font=fnt).grid(column=1,row=15)
 	
-	tk.Label(about,text='-------------------------------',font=fnt).grid(column=1,row=16)
+	Separator(about,orient='horizontal').grid(column=1,row=16,sticky=tk.EW,padx=10,pady=10)
 	
-	def showdbinfo():
+	def showdbinfo():		#Database status
 		def hidedbinfo():
 			dbinfo.grid_forget()
 			showdb.configure(text='Show database information',command=showdbinfo)
@@ -120,13 +120,13 @@ https://fontawesome.com/icons'''
 
 	showdb=tk.Button(about,text='Show database information',font=fnt,command=showdbinfo);showdb.grid(column=1,row=17)
 	
-	tk.Label(about,text='-------------------------------',font=fnt).grid(column=1,row=24)
+	Separator(about,orient='horizontal').grid(column=1,row=24,sticky=tk.EW,padx=10,pady=10)
+	
 	#Closes the window
-
 	def close():
 		about.destroy()
 
-	img1=tk.PhotoImage(file='monoico/icon-66.png')
+	img1=tk.PhotoImage(file='icons/close.png')
 	cls=tk.Button(about,font=fnt,text='Close',image=img1,command=close)
 	cls.grid(column=1,row=25,padx=10,pady=10)
 	cls.image=img1

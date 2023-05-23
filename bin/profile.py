@@ -1,10 +1,10 @@
 import tkinter as tk
 from tkinter import messagebox
 import mysql.connector as ms
-from tkinter import messagebox
+from tkinter.ttk import Separator
 import os
-import home
 
+import home
 
 con=ms.connect(host='localhost',user='john',password='123456',database='taxi')
 cur=con.cursor()
@@ -25,6 +25,10 @@ def main_login():
 
 def onlogin():
 	def manage():
+		def booking():
+			manage_userswin.destroy()
+			home.main()
+
 		def delete():
 			def deluser():
 				cur.execute('select uname,passwd from users')
@@ -56,9 +60,9 @@ def onlogin():
 			tk.Label(delwin,text='Please enter your password.',font=fnt).grid(column=0,row=4,sticky=tk.W,padx=10,pady=10)
 			del_passwd=tk.Entry(delwin,show='*',font=fnt);del_passwd.grid(column=0,row=5,sticky=tk.EW,padx=10,pady=10)
 
-			delsubimg=tk.PhotoImage(file='monoico/icon-722.png')
-			delsubmit=tk.Button(delwin,image=delsubimg,command=deluser);delsubmit.grid(column=0,row=6,padx=10,pady=10)
-			delsubmit.image=delsubimg
+			#delsubimg=tk.PhotoImage(file='icons/ban_user.png')
+			delsubmit=tk.Button(delwin,text='Delete User',command=deluser,font=fntit);delsubmit.grid(column=0,row=6,padx=10,pady=10)
+			#delsubmit.image=delsubimg
 	
 			delcloseimg=tk.PhotoImage(file='monoico/icon-66.png')
 			delclose=tk.Button(delwin,text='Close',image=delcloseimg,command=delwin.destroy)
@@ -101,19 +105,16 @@ def onlogin():
 			tk.Label(passwin,text='New Password',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
 			new_pass=tk.Entry(passwin,show='*',font=fnt);new_pass.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
 			
-			passsubimg=tk.PhotoImage(file='monoico/icon-86.png')
-			passsubmit=tk.Button(passwin,image=passsubimg,command=changepass);passsubmit.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
+			#passsubimg=tk.PhotoImage(file='monoico/icon-86.png')
+			passsubmit=tk.Button(passwin,text='Change password',command=changepass,font=fntit)
+			passsubmit.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
 			
-			delcloseimg=tk.PhotoImage(file='monoico/icon-66.png')
+			delcloseimg=tk.PhotoImage(file='icons/close.png')
 			delclose=tk.Button(passwin,text='Close',image=delcloseimg,command=passwin.destroy)
-			delclose.grid(column=0,row=10,sticky=tk.SW,padx=10,pady=10)
+			delclose.grid(column=0,row=11,sticky=tk.W,padx=10,pady=10)
 			delclose.image=delcloseimg
 
 			passwin.mainloop()
-
-		def booking():
-			manage_userswin.destroy()
-			home.main()
 
 		def logout():
 			manage_userswin.destroy()
@@ -155,9 +156,9 @@ def onlogin():
 				en1=tk.Entry(chinfo_name,font=fnt)
 				en1.grid(row=6,column=1,sticky=tk.W,padx=10,pady=10)
 
-				img10=tk.PhotoImage(file='monoico/icon-134.png')
-				btn3=tk.Button(chinfo_name,image=img10,command=chname)
-				btn3.image=img10
+				#img10=tk.PhotoImage(file='monoico/icon-134.png')
+				btn3=tk.Button(chinfo_name,text='Make changes',font=fntit,command=chname)
+				#btn3.image=img10
 				btn3.grid(row=10,column=1,padx=10,pady=10,sticky=tk.W)
 			
 			def contacts():
@@ -233,18 +234,18 @@ def onlogin():
 				en3=tk.Entry(chinfo_contacts,font=fnt)
 				en3.grid(row=8,column=1,sticky=tk.EW,padx=10,pady=10)
 
-				img10=tk.PhotoImage(file='monoico/icon-134.png')
-				btn3=tk.Button(chinfo_contacts,image=img10,command=chcontacts)
-				btn3.image=img10
+				#img10=tk.PhotoImage(file='monoico/icon-134.png')
+				btn3=tk.Button(chinfo_contacts,text='Make changes',font=fntit,command=chcontacts)
+				#btn3.image=img10
 				btn3.grid(row=15,column=1,padx=10,pady=10,sticky=tk.W)
 
-			img1=tk.PhotoImage(file='monoico/icon-302.png')
+			img1=tk.PhotoImage(file='icons/user.png')
 			btn1=tk.Button(chinfo_home,text='Name',image=img1,command=name)
 			btn1.image=img1
 			btn1.grid(column=0,row=3,padx=10,pady=10,sticky=tk.E)
 			tk.Label(chinfo_home,text='Change your display name',font=fnt,justify=tk.LEFT).grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
 
-			img2=tk.PhotoImage(file='monoico/icon-666.png')
+			img2=tk.PhotoImage(file='icons/contacts-2.png')
 			btn2=tk.Button(chinfo_home,text='Contact',image=img2,command=contacts)
 			btn2.image=img2
 			btn2.grid(column=0,row=6,padx=10,pady=10,sticky=tk.E)
@@ -275,7 +276,7 @@ def onlogin():
 		tk.Grid.rowconfigure(f1,0,weight=1)
 		tk.Label(f1,text=('Welcome, '+fnamelist[uname_inp]),font=h1fnt).grid(column=0,row=0,padx=10,sticky=tk.EW)
 		tk.Label(f1,text=('ID: '+uuidlist[uname_inp]),font=('IBM Plex Sans',12)).grid(column=0,row=1,padx=10,sticky=tk.EW)
-
+		Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 		#FRAME 2
 		tk.Grid.rowconfigure(manage_userswin,1,weight=1)
 		f2=tk.Frame(manage_userswin)
@@ -287,33 +288,40 @@ def onlogin():
 		tk.Grid.columnconfigure(f2,2,weight=1)
 		tk.Grid.columnconfigure(f2,3,weight=1)
 
-		tk.Grid.rowconfigure(f2,2,weight=1)
 		tk.Label(f2,text=('You can:'),font=fntit).grid(column=1,row=2,padx=10,pady=10,sticky=tk.W)
 		
-		img4=tk.PhotoImage(file='monoico/icon-79.png')
+		tk.Grid.rowconfigure(f2,5,weight=1)
+		img4=tk.PhotoImage(file='icons/passwd.png')
 		passbtn=tk.Button(f2,text='Change Password',image=img4,command=passwd)
 		passbtn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
 		tk.Label(f2,text='Change your password.',font=fnt).grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 
-		img9=tk.PhotoImage(file='monoico/icon-86.png')
+		img9=tk.PhotoImage(file='icons/user.png')
 		delusrbtn=tk.Button(f2,text='Manage Personal Info',image=img9,command=info)
 		delusrbtn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
 		tk.Label(f2,text='Change your personal information.',font=fnt,justify=tk.LEFT).grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
 
-		img3=tk.PhotoImage(file='monoico/icon-722.png')
+		tk.Grid.rowconfigure(f2,6,weight=1)
+		img3=tk.PhotoImage(file='icons/ban_user.png')
 		delusrbtn=tk.Button(f2,text='Remove User',image=img3,command=delete)
 		delusrbtn.grid(column=0,row=6,padx=10,pady=10,sticky=tk.E)
 		tk.Label(f2,text='Delete your profile.',font=fnt,fg='red').grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
 		
-		tk.Grid.rowconfigure(f2,9,weight=1)
 		tk.Label(f2,text=('or:'),font=fntit).grid(column=1,row=9,padx=10,sticky=tk.W)
 
-		img7=tk.PhotoImage(file='monoico/icon-670.png')
+		tk.Grid.rowconfigure(f2,10,weight=1)
+		img5=tk.PhotoImage(file='icons/booking.png')
+		bkgbtn=tk.Button(f2,text='Booking',font=fnt,image=img5,command=booking)
+		bkgbtn.grid(column=0,row=10,padx=10,pady=10,sticky=tk.E)
+		tk.Label(f2,text='Make bookings',font=fnt,fg='green').grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
+
+		tk.Grid.rowconfigure(f2,11,weight=1)
+		img7=tk.PhotoImage(file='icons/logout.png')
 		logoutbtn=tk.Button(f2,text='Logout',font=fnt,image=img7,command=logout)
 		logoutbtn.grid(column=0,row=11,padx=10,pady=10,sticky=tk.E)
 		tk.Label(f2,text='Logout',font=fnt).grid(column=1,row=11,padx=10,pady=10,sticky=tk.W)
 
-		img8=tk.PhotoImage(file='monoico/icon-66.png')
+		img8=tk.PhotoImage(file='icons/close.png')
 		exitbtn=tk.Button(f2,text='Logout and exit',font=fnt,image=img8,command=manage_userswin.destroy)
 		exitbtn.grid(column=2,row=11,padx=10,pady=10,sticky=tk.E)
 		tk.Label(f2,text='Logout and exit',font=fnt,fg='red').grid(column=3,row=11,padx=10,pady=10,sticky=tk.W)
@@ -348,6 +356,7 @@ tk.Grid.columnconfigure(f3,0,weight=1)
 
 tk.Grid.rowconfigure(f3,0,weight=1)
 tk.Label(logwin,text='Login',font=h1fnt).grid(column=0,row=0)
+Separator(f3,orient='horizontal').grid(row=1,column=0,sticky=tk.EW)
 
 #FRAME 4
 tk.Grid.rowconfigure(logwin,1,weight=1)
@@ -369,7 +378,7 @@ login_passwd=tk.Entry(f4,show='*',font=fnt)
 login_passwd.grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
 
 #tk.Grid.rowconfigure(f4,5,weight=1)
-img1=tk.PhotoImage(file='monoico/icon-669.png')
+img1=tk.PhotoImage(file='icons/login.png')
 logsubmit=tk.Button(f4,text='Login...',image=img1,command=onlogin)
 logsubmit.grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 
