@@ -29,7 +29,7 @@ def emp_main():
 	#Definitions
 
 	#mysql connection
-	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
+	con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456',database='taxi')
 	cur=con.cursor()
 
 	init.initdb()
@@ -143,7 +143,7 @@ def emp_main():
 
 			#FRAME 1
 			tk.Grid.rowconfigure(root,0,weight=1)
-			f1=tk.Frame(root,bg='#283593')
+			f1=tk.Frame(root,bg='#1b69bc')
 			f1.grid(row=0,column=0,sticky=tk.NSEW)
 
 			#frame 1 grid
@@ -159,16 +159,16 @@ def emp_main():
 			tk.Grid.rowconfigure(f1,2,weight=1)
 			tk.Grid.rowconfigure(f1,3,weight=1)
 			
-			logo_img=tk.PhotoImage(file='img/logo.png')
-			logo=tk.Label(f1,image=logo_img,font=h1fnt,fg='white',bg='#283593')
+			logo_img=tk.PhotoImage(file='img/logo-150px.png')
+			logo=tk.Label(f1,image=logo_img,font=h1fnt,fg='white',bg='#1b69bc')
 			logo.grid(column=0,row=0,padx=10,pady=10,sticky=tk.EW)
 			logo.image=logo_img
 			
-			tk.Label(f1,text='Welcome, '+a[emp_uname_inp],font=h1fnt,justify=tk.CENTER,fg='white',bg='#283593').grid(column=0,row=1,padx=10)
+			tk.Label(f1,text='Welcome, '+a[emp_uname_inp],font=h1fnt,justify=tk.CENTER,fg='white',bg='#1b69bc').grid(column=0,row=1,padx=10)
 			
 			tk.Label(f1,text=('User ID: '+uuidlist[emp_uname_inp]),font=('Segoe UI',12),fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
 
-			tk.Label(f1,text='Administrator\'s Toolbox',font=('Segoe UI',12),justify=tk.CENTER,fg='white',bg='#283593').grid(column=0,row=3,padx=10)
+			tk.Label(f1,text='Administrator\'s Toolbox',font=('Segoe UI',12),justify=tk.CENTER,fg='white',bg='#1b69bc').grid(column=0,row=3,padx=10)
 
 			Separator(f1,orient='horizontal').grid(column=0,row=4,sticky=tk.EW,padx=10,pady=10)
 			
@@ -281,7 +281,7 @@ def emp_main():
 
 			#FRAME 1
 			tk.Grid.rowconfigure(main_menu,0,weight=1)
-			f1=tk.Frame(main_menu,bg='#283593')
+			f1=tk.Frame(main_menu,bg='#1b69bc')
 			f1.grid(row=0,column=0,sticky=tk.NSEW)
 
 			tk.Grid.columnconfigure(f1,0,weight=1)
@@ -300,18 +300,18 @@ def emp_main():
 			if emptype_inp=='Agent':
 				tk.Grid.rowconfigure(f1,0,weight=1)
 				
-				logo_img=tk.PhotoImage(file='img/logo.png')
-				logo=tk.Label(f1,image=logo_img,font=h1fnt,fg='white',bg='#283593')
+				logo_img=tk.PhotoImage(file='img/logo-150px.png')
+				logo=tk.Label(f1,image=logo_img,font=h1fnt,fg='white',bg='#1b69bc')
 				logo.grid(column=0,row=0,padx=10,pady=10,sticky=tk.EW)
 				logo.image=logo_img
 				
 				txt='Welcome, '+b[emp_uname_inp]
 				tk.Label(f1,text=('User ID: '+uuidlist[emp_uname_inp]),font=('Segoe UI',12),fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
-				tk.Label(f1,text='Make and manage bookings',fg='white',bg='#283593',font=('Segoe UI',12),justify=tk.CENTER).grid(column=0,row=3,padx=10,pady=10)
+				tk.Label(f1,text='Make and manage bookings',fg='white',bg='#1b69bc',font=('Segoe UI',12),justify=tk.CENTER).grid(column=0,row=3,padx=10,pady=10)
 			elif emptype_inp=='Administrator':
 				txt='Make and manage bookings'
 			
-			tk.Label(f1,text=txt,fg='white',bg='#283593',font=h1fnt,justify=tk.CENTER).grid(column=0,row=1,padx=10,pady=10)
+			tk.Label(f1,text=txt,fg='white',bg='#1b69bc',font=h1fnt,justify=tk.CENTER).grid(column=0,row=1,padx=10,pady=10)
 
 			Separator(f1,orient='horizontal').grid(column=0,row=4,sticky=tk.EW,padx=10,pady=10)
 			#FRAME 2
@@ -416,7 +416,7 @@ def emp_main():
 
 	#FRAME 1
 	tk.Grid.rowconfigure(emp_login_win,0,weight=1)
-	f1=tk.Frame(emp_login_win,bg='#283593')
+	f1=tk.Frame(emp_login_win,bg='#1b69bc')
 	f1.grid(row=0,column=0,sticky=tk.NSEW)
 
 	#frame 1 grid
@@ -424,12 +424,12 @@ def emp_main():
 	tk.Grid.rowconfigure(f1,0,weight=1)
 	tk.Grid.rowconfigure(f1,1,weight=1)
 	
-	logo_img=tk.PhotoImage(file='img/logo.png')
-	logo=tk.Label(f1,image=logo_img,font=h1fnt,fg='white',bg='#283593')
+	logo_img=tk.PhotoImage(file='img/logo-150px.png')
+	logo=tk.Label(f1,image=logo_img,font=h1fnt,fg='white',bg='#1b69bc')
 	logo.grid(column=0,row=0,sticky=tk.EW,padx=10,pady=10)
 	logo.image=logo_img
 
-	tk.Label(f1,text='Employee login',font=h1fnt,fg='white',bg='#283593').grid(column=0,row=1,padx=10,pady=10,sticky=tk.EW)
+	tk.Label(f1,text='Employee login',font=h1fnt,fg='white',bg='#1b69bc').grid(column=0,row=1,padx=10,pady=10,sticky=tk.EW)
 	
 	ttk.Separator(f1,orient='horizontal').grid(row=2,column=0,sticky=tk.EW,pady=10,columnspan=2)
 

@@ -15,7 +15,7 @@ def manage_admin():	#Manage admins
 			pass
 	
 	#MySQL connection
-	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
+	con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456',database='taxi')
 	cur=con.cursor()
 
 	#Fonts
@@ -383,7 +383,7 @@ def manage_agents():	#Manage agents (employees)
 			pass
 	
 	#MySQL connection
-	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
+	con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456',database='taxi')
 	cur=con.cursor()
 
 	#Fonts for GUI
@@ -741,7 +741,7 @@ def manage_users():	#Manage users
 		except:
 			pass
 
-	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
+	con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456',database='taxi')
 	cur=con.cursor()
 
 	fnt=('Consolas',12)
@@ -1123,7 +1123,7 @@ def manage_db():		#Manage db
 			pass
 
 	#mysql connection
-	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
+	con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456',database='taxi')
 	cur=con.cursor()
 
 	fnt=('Consolas',12)

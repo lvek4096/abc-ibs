@@ -25,7 +25,7 @@ def bus():
 	ctype=['','Standard','Express','Premium']	#defines coach type
 
 	#mysql connection
-	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
+	con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456',database='taxi')
 	cur=con.cursor()
 
 	#GUI
@@ -376,7 +376,7 @@ def taxi():
 	t=datetime.now()
 
 	#mysql connection
-	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
+	con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456',database='taxi')
 	cur=con.cursor()
 	
 

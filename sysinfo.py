@@ -9,12 +9,13 @@ def about():	#System information
 	import ctypes
 
 	#Build number
-	build='257'
-	build_date='2023-01-14'	
+	build='259'
+	build_date='2023-01-17'	
 
 	credits_txt='''
 Developed by
-LIYO K. JOHN - MEGHNATH M.D. - MOHAMMED SAAD
+AMADEUS SOFTWARE SOLUTIONS
+for ABC Lines
 '''
 
 	#Enables DPI scaling on supported Windows versions
@@ -26,7 +27,7 @@ LIYO K. JOHN - MEGHNATH M.D. - MOHAMMED SAAD
 
 
 	#mysql connection
-	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
+	con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456',database='taxi')
 
 	#Fonts
 	fnt=('Consolas',12)
@@ -42,7 +43,7 @@ LIYO K. JOHN - MEGHNATH M.D. - MOHAMMED SAAD
 	tk.Label(about,text='About',font=h1fnt).grid(column=0,row=0,columnspan=3)
 	tk.Label(about,text=('Build '+build+' ('+build_date+')'),font=fnt).grid(column=0,row=1,columnspan=3)
 	
-	logo_img=tk.PhotoImage(file='img/logo150px.png')
+	logo_img=tk.PhotoImage(file='img/amadeus-48.png')
 	logo=tk.Label(about,image=logo_img)
 	logo.grid(column=0,row=2,padx=10,pady=10)
 	logo.image=logo_img
