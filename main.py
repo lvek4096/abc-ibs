@@ -15,13 +15,30 @@ from datetime import datetime,timedelta
 
 #font choice
 if pf.system()=='Windows':
-	fnt=('Cascadia Mono',12)
-	fntb=('Cascadia Mono',12,'bold')
-	fntit=('Cascadia Mono',12,'italic')
-	fntbit=('Cascadia Mono',12,'bold italic')
-	h1fnt=('Segoe UI Variable Display Semibold',24)
-	h2fnt=('Segoe UI Variable Text',12)
-	menufnt=('Cascadia Mono',11)
+	if int(pf.release()) > 7:
+		fnt=('Cascadia Mono',12)
+		fntb=('Cascadia Mono',12,'bold')
+		fntit=('Cascadia Mono',12,'italic')
+		fntbit=('Cascadia Mono',12,'bold italic')
+		h1fnt=('Segoe UI',24,'bold')
+		h2fnt=('Segoe UI',12)
+		menufnt=('Cascadia Mono',11)
+	elif int(pf.release()) == 7:
+		fnt=('Consolas',12)
+		fntb=('Consolas',12,'bold')
+		fntit=('Consolas',12,'italic')
+		fntbit=('Consolas',12,'bold italic')
+		h1fnt=('Segoe UI',24,'bold')
+		h2fnt=('Segoe UI',12)
+		menufnt=('Consolas',11)
+	else:
+		fnt=('Courier New',12)
+		fntb=('Courier New',12,'bold')
+		fntit=('Courier New',12,'italic')
+		fntbit=('Courier New',12,'bold italic')
+		h1fnt=('Tahoma',24,'bold')
+		h2fnt=('Tahoma',12)
+		menufnt=('Courier New',11)
 elif pf.system()=='Linux':
 	fnt=('Ubuntu Mono',12)
 	fntb=('Ubuntu Mono',12,'bold')
@@ -125,8 +142,8 @@ def init():		#Initialisation script
 
 def about():	#About page
 	#Build number
-	build='312 [V3]'
-	build_timestamp='2023-05-17 22:53:42'	
+	build='313 [V3]'
+	build_timestamp='2023-05-20 16:06:12'	
 	credits_txt='''
 Developed by
 Amadeus Software
