@@ -9,13 +9,14 @@ def about():	#System information
 	import ctypes
 
 	#Build number
-	build='259'
-	build_date='2023-01-17'	
+	build='262'
+	build_date='2023-01-18'	
 
 	credits_txt='''
 Developed by
-AMADEUS SOFTWARE SOLUTIONS
+Amadeus Software Solutions
 for ABC Lines
+
 '''
 
 	#Enables DPI scaling on supported Windows versions
@@ -27,7 +28,10 @@ for ABC Lines
 
 
 	#mysql connection
-	con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456',database='taxi')
+	try:
+		con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456',database='taxi')
+	except:
+		con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
 
 	#Fonts
 	fnt=('Consolas',12)
@@ -43,14 +47,14 @@ for ABC Lines
 	tk.Label(about,text='About',font=h1fnt).grid(column=0,row=0,columnspan=3)
 	tk.Label(about,text=('Build '+build+' ('+build_date+')'),font=fnt).grid(column=0,row=1,columnspan=3)
 	
-	logo_img=tk.PhotoImage(file='img/amadeus-48.png')
+	logo_img=tk.PhotoImage(file='img/amadeus.png')
 	logo=tk.Label(about,image=logo_img)
 	logo.grid(column=0,row=2,padx=10,pady=10)
 	logo.image=logo_img
 	
 
-	credits=tk.Label(about,font=('Consolas',12,'bold italic'),text=credits_txt,justify=tk.CENTER)
-	credits.grid(row=2,column=2,sticky=tk.EW,padx=10,pady=10)
+	credits=tk.Label(about,font=('Consolas',12,'bold italic'),text=credits_txt,justify=tk.LEFT)
+	credits.grid(row=2,column=2,sticky=tk.NSEW,padx=10,pady=10)
 	
 	Separator(about,orient='horizontal').grid(column=0,row=5,sticky=tk.EW,padx=10,pady=10,columnspan=3)
 	

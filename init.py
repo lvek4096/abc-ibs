@@ -1,7 +1,10 @@
 def initdb():
 	import mysql.connector as ms
 
-	con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456')
+	try:
+		con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456')
+	except:
+		con=ms.connect(host='localhost',user='root',password='123456')
 	cur=con.cursor()
 
 	#initial creation of db and tables if not existing in MySQL database'

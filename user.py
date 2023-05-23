@@ -12,7 +12,10 @@ def bookings():		#make bookings
 	import sysinfo
 
 	#mysql connection
-	con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456',database='taxi')
+	try:
+		con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456',database='taxi')
+	except:
+		con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
 	cur=con.cursor()
 
 	#Enables DPI scaling on supported Windows versions
@@ -303,7 +306,10 @@ def manage_user_profile():		#manages profile
 	import platform as pf
 	import ctypes
 
-	con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456',database='taxi')
+	try:
+		con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456',database='taxi')
+	except:
+		con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
 	cur=con.cursor()
 
 	#Enables DPI scaling on supported Windows versions

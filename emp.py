@@ -26,13 +26,16 @@ def emp_main():
 		except:
 			pass
 
-	#Definitions
+	#Initalises database
+	init.initdb()
 
 	#mysql connection
-	con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456',database='taxi')
+	try:
+		con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456',database='taxi')
+	except:
+		con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
 	cur=con.cursor()
 
-	init.initdb()
 	
 	#fonts
 	fnt=('Consolas',12)

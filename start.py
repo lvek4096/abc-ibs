@@ -22,13 +22,18 @@ h1fnt=('Segoe UI',24)
 hfnt=('Segoe UI',36,'bold')
 menufnt=('Consolas',11)
 
-#MySQL connection
-
-con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456')
-cur=con.cursor()
-
 #Initalises database
 init.initdb()
+
+#MySQL connection
+
+try:
+	con=ms.connect(host='192.168.0.175',user='ubuntu',password='123456',database='taxi')
+except:
+	con=ms.connect(host='localhost',user='root',password='123456',database='taxi')
+	
+cur=con.cursor()
+
 
 #functions	
 def make_booking():		#to make booking
