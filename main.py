@@ -20,8 +20,8 @@ if pf.system()=='Windows':
 		fntb=('Cascadia Mono',12,'bold')
 		fntit=('Cascadia Mono',12,'italic')
 		fntbit=('Cascadia Mono',12,'bold italic')
-		h1fnt=('Segoe UI',24,'bold')
-		h2fnt=('Segoe UI',12)
+		h1fnt=('Segoe UI Variable Display',24,'bold')
+		h2fnt=('Segoe UI Variable Text',12)
 		menufnt=('Cascadia Mono',11)
 	elif int(pf.release()) == 7:
 		fnt=('Consolas',12)
@@ -142,8 +142,8 @@ def init():		#Initialisation script
 
 def about():	#About page
 	#Build number
-	build='313 [V3]'
-	build_timestamp='2023-05-20 16:06:12'	
+	build='314 [V3]'
+	build_timestamp='2023-05-24 20:52:47'	
 	credits_txt='''
 Developed by
 Amadeus Software
