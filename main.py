@@ -14,37 +14,18 @@ import platform as pf
 from datetime import datetime,timedelta
 from escpos.printer import Network, Usb
 
-build='Beta 315'
-build_timestamp='2023-05-25 10:09:48'	
+build='Beta 316'
+build_timestamp='2023-05-25 11:18:51'	
 
 pr_choice=input('''
 [U] USB
 [N] Network
 
 > ''').upper()
-		
-if pr_choice=='U':
-	pr = Usb(idVendor=0x0483,idProduct=0x5720,timeout=0,in_ep=0x81,out_ep=0x03)
-elif pr_choice=='N':
-	pr = Network('192.168.1.124')
-else:
+
+if not pr_choice in ['U','N']:
 	print('Invalid choice entered. Terminating program.')
 	quit()
-
-t_print=input('''
-Test print?
-[Y] Yes
-[N] No
-
-> ''')
-	      
-if t_print=='Y':
-	pr.text("Hello World\n")
-	pr.image("img/icon-2.png")
-	pr.text('\n')
-	pr.barcode('1324354657687', 'EAN13', 64, 2, '', '')
-	pr.cut()
-
 
 
 #font choice
@@ -264,6 +245,30 @@ for ABC Lines
 	cls.grid(column=0,row=25,padx=10,pady=10,columnspan=3)
 	cls.image=img1
 
+def prt(pr_inp):
+	bar_no=str(rd.randint(1000000000000,9999999999999))
+	if pr_choice=='U':
+		pr = Usb(idVendor=0x0483,idProduct=0x5720,timeout=0,in_ep=0x81,out_ep=0x03)
+	elif pr_choice=='N':
+		pr = Network('192.168.1.124')
+
+	pr.image('img/icon-2.png')
+	pr.text(pr_inp)
+	pr.barcode(bar_no, 'EAN13')
+	pr.text('\n')
+	pr.text('Powered by Amadeus')
+	pr.text('\n')
+	pr.text('Version: '+build+' ('+build_timestamp+')')
+	pr.text('\n')
+	
+	if pf.system()=='Windows':
+		pr.text('Platform: '+pf.system()+' '+pf.version())
+	elif pf.system()=='Linux':
+		pr.text('Platform: '+pf.system()+' '+pf.release())
+	
+	pr.cut()
+
+
 def bus_booking():		#Bus booking
 	id='B'+str(rd.randint(10000,99999))
 	locations=['Blackcastle','Westerwitch','Ironlyn','Wellsummer','Meadowynne','Aldcourt','Butterhaven','Winterglass','Northcrest','Mallowdell']
@@ -361,7 +366,7 @@ def bus_booking():		#Bus booking
 										booking_summary=scrolledtext.ScrolledText(submit_message,font=fnt,width=30,height=8)
 										booking_summary.grid(column=0,row=3,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 
-										text2='Bus Booking\n-----------\n\nBooking ID: '+id+'\nBooking Timestamp: \n'+bkg_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+n.get()+'\n\nDate: '+date_inp+'\nTime: '+time_inp+'\n\nRate: $'+str(rate)+' per km\nDistance: '+str(distance)+' km\nNumber of passengers: '+str(passno)+'\n\nTotal fare: $'+str(total_fare)+'\n\nPayment\n-------\n\n'+'Payment ID: '+payment_id+'\nPaid by: '+m.get()+'\nCardholder name: '+card_name.get()+'\nCard number: XXXX-XXXX-XXXX-'+card_no.get()[-4:]+'\nCard type: '+cardtype+'\nAmount paid: $'+str(total_fare)+'\n\n------------------'+'\nPAYMENT SUCCESSFUL'+'\n------------------'
+										text2='\nBus Booking\n-----------\n\nBooking ID: '+id+'\nBooking Timestamp: \n'+bkg_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+n.get()+'\n\nDate: '+date_inp+'\nTime: '+time_inp+'\n\nRate: $'+str(rate)+' per km\nDistance: '+str(distance)+' km\nNumber of passengers: '+str(passno)+'\n\nTotal fare: $'+str(total_fare)+'\n\nPayment\n-------\n\n'+'Payment ID: '+payment_id+'\nPaid by: '+m.get()+'\nCardholder name: '+card_name.get()+'\nCard number: XXXX-XXXX-XXXX-'+card_no.get()[-4:]+'\nCard type: '+cardtype+'\nAmount paid: $'+str(total_fare)+'\n\n------------------'+'\nPAYMENT SUCCESSFUL'+'\n------------------\n'
 										booking_summary.insert(tk.INSERT,text2)
 										booking_summary.configure(state='disabled')
 										
@@ -370,13 +375,19 @@ def bus_booking():		#Bus booking
 											submit_message.clipboard_append(text2)
 											btn1.configure(fg='green',text='Copied!')
 										
-										btn1=tk.Button(submit_message,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
-										btn1.grid(row=5,column=0,padx=10,pady=10)
-										
 										def exit():
 											submit_message.destroy()
 											pay_win.destroy()
 											busbkg_win.destroy()
+
+										def send_to_printer():
+											prt(text2)
+
+										btn1=tk.Button(submit_message,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
+										btn1.grid(row=5,column=0,padx=10,pady=10)
+
+										btn3=tk.Button(submit_message,text='Print...',font=fnt,command=send_to_printer,justify=tk.CENTER)
+										btn3.grid(row=6,column=0,padx=10,pady=10)
 
 										btn2=tk.Button(submit_message,text='OK',font=fnt,command=exit,justify=tk.CENTER)
 										btn2.grid(row=8,column=0,padx=10,pady=10)
@@ -689,7 +700,7 @@ def taxi_booking():		#Taxi booking
 										booking_summary=scrolledtext.ScrolledText(submit_message,font=fnt,width=30,height=8)
 										booking_summary.grid(column=0,row=3,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 
-										text2='Taxi Booking\n------------\n\nBooking ID: '+id+'\nBooking Timestamp: \n'+bkg_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+n.get()+'\n\nDate: '+date_inp+'\nTime: '+time_inp+'\n\nBase rate: $'+str(base_rate)+' for first 5 km\n$'+str(rate)+' per additional km\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)+'\n\nPayment\n-------\n\n'+'Payment ID: '+payment_id+'\nPaid by: '+m.get()+'\nCardholder name: '+card_name.get()+'\nCard number: XXXX-XXXX-XXXX-'+card_no.get()[-4:]+'\nCard type: '+cardtype+'\nAmount paid: $'+str(total_fare)+'\n\n------------------'+'\nPAYMENT SUCCESSFUL'+'\n------------------'
+										text2='\nTaxi Booking\n------------\n\nBooking ID: '+id+'\nBooking Timestamp: \n'+bkg_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+n.get()+'\n\nDate: '+date_inp+'\nTime: '+time_inp+'\n\nBase rate: $'+str(base_rate)+' for first 5 km\n$'+str(rate)+' per additional km\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)+'\n\nPayment\n-------\n\n'+'Payment ID: '+payment_id+'\nPaid by: '+m.get()+'\nCardholder name: '+card_name.get()+'\nCard number: XXXX-XXXX-XXXX-'+card_no.get()[-4:]+'\nCard type: '+cardtype+'\nAmount paid: $'+str(total_fare)+'\n\n------------------'+'\nPAYMENT SUCCESSFUL'+'\n------------------\n'
 										booking_summary.insert(tk.INSERT,text2)
 										booking_summary.configure(state='disabled')
 										
@@ -697,16 +708,20 @@ def taxi_booking():		#Taxi booking
 											submit_message.clipboard_clear()
 											submit_message.clipboard_append(text2)
 											btn1.configure(fg='green',text='Copied!')
-										
-										btn1=tk.Button(submit_message,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
-										btn1.grid(row=5,column=0,padx=10,pady=10)
-										
-										#tk.Label(submit_message,text='The e-receipt will also be sent to\nyour registered electronic mail\naddress.',font=fnt,justify=tk.LEFT).grid(row=6,column=0,padx=10,pady=10,sticky=tk.W)
-										
+																									
 										def exit():
 											submit_message.destroy()
 											pay_win.destroy()
 											taxibkg_win.destroy()
+										
+										def send_to_printer():
+											prt(text2)
+										
+										btn1=tk.Button(submit_message,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
+										btn1.grid(row=5,column=0,padx=10,pady=10)
+
+										btn3=tk.Button(submit_message,text='Print...',font=fnt,command=send_to_printer,justify=tk.CENTER)
+										btn3.grid(row=6,column=0,padx=10,pady=10)
 
 										btn2=tk.Button(submit_message,text='OK',font=fnt,command=exit,justify=tk.CENTER)
 										btn2.grid(row=8,column=0,padx=10,pady=10)
