@@ -14,19 +14,8 @@ import platform as pf
 from datetime import datetime,timedelta
 from escpos.printer import Network, Usb
 
-build='Beta 317'
-build_timestamp='2023-05-25 12:30:22'	
-
-pr_choice=input('''
-[U] USB
-[N] Network
-
-> ''').upper()
-
-
-if not pr_choice in ['U','N']:
-	print('Invalid choice entered. Terminating program.')
-	quit()
+build='Beta 318'
+build_timestamp='2023-05-25 20:07:20'	
 
 #font choice
 if pf.system()=='Windows':
@@ -107,50 +96,97 @@ def init():		#Initialisation script
 		con.commit()
 	
 	def db():
+		def prconnect():
+			global pr_choice
+			global isPrintingEnabled
+			isPrintingEnabled=False
+
+			if pr_con_type.get()=='U':
+				pr_choice='U'
+				isPrintingEnabled=True
+			elif pr_con_type.get()=='N':
+				pr_choice='N'
+				isPrintingEnabled=True
+			elif pr_con_type.get()=='D':
+				messagebox.showinfo('Info','The printing functionality will be disabled.')
+				isPrintingEnabled=False
+			
+			# print(isPrintingEnabled)
+
 		def dbconnect():
 			hostname=inp_host.get()
 			uname=inp_uname.get()
 			passwd=inp_passwd.get()
 			initdb(hostname,uname,passwd)
+
 		if str(login_type.get())=='U':
-			dbconnect()
-			user_main()
-			con.close()
+			if pr_con_type.get() in ['U','N','D']:
+				dbconnect()
+				prconnect()
+				user_main()
+				con.close()
+			else:
+				messagebox.showerror('Error','Please select printer connection option.')
 		elif str(login_type.get())=='E':
-			dbconnect()
-			emp_main()
-			con.close()
+			if pr_con_type.get() in ['U','N','D']:
+				dbconnect()
+				prconnect()
+				emp_main()
+				con.close()
+				
+			else:
+				messagebox.showerror('Error','Please select printer connection option.')
 		else:
 			messagebox.showerror('Error','Please select login option.')
 
+	def enable_dbmsentries():
+		inp_host.configure(state='normal')
+		inp_host.update()
+
+		inp_uname.configure(state='normal')
+		inp_uname.update()
+
+		inp_passwd.configure(state='normal')
+		inp_passwd.update()
+
 	init_window=tk.Tk()
-	init_window.title('RDBMS Configuration')
+	init_window.title('Program Configuration')
 	init_window.resizable(False, False)
 	icon=tk.PhotoImage(file='img/icon.png')
 	init_window.iconphoto(False,icon)
 
-	tk.Label(init_window,text='RDBMS Configuration',font=h1fnt,justify=tk.LEFT).grid(column=0,row=0,padx=10,columnspan=2,sticky=tk.W)
-	tk.Label(init_window,text='If no RDBMS login credentials are specified,\nit will fall back to those of root@localhost.',font=h2fnt,justify=tk.LEFT).grid(column=0,row=1,padx=10,pady=10,columnspan=2,sticky=tk.W)
+	tk.Label(init_window,text='Program Configuration',font=h1fnt,justify=tk.LEFT).grid(column=0,row=0,padx=10,columnspan=2,sticky=tk.W)
+	tk.Label(init_window,text='RDBMS Configuration',font=h2fnt,justify=tk.LEFT).grid(column=0,row=1,padx=10,columnspan=2,sticky=tk.W)
+	tk.Label(init_window,text='If no RDBMS login credentials are specified,\nit will fall back to those of root@localhost.',font=menufnt,justify=tk.LEFT).grid(column=0,row=4,padx=10,pady=10,columnspan=2,sticky=tk.W)
 
-	tk.Label(init_window,text='Logging into:',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10,rowspan=2)
 	login_type = tk.StringVar(init_window)
-	ttk.Radiobutton(init_window, text = 'User Portal',variable = login_type,value = 'U').grid(column=1,row=3,sticky=tk.W,padx=10)
-	ttk.Radiobutton(init_window, text = 'Employee Portal',variable = login_type,value = 'E').grid(column=1,row=4,sticky=tk.W,padx=10)
+	ttk.Radiobutton(init_window, text = 'User Portal',variable = login_type,value = 'U',command=enable_dbmsentries).grid(column=1,row=5,sticky=tk.W,padx=10)
+	ttk.Radiobutton(init_window, text = 'Employee Portal',variable = login_type,value = 'E',command=enable_dbmsentries).grid(column=1,row=6,sticky=tk.W,padx=10)
 		
-	tk.Label(init_window,text='Host',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
-	inp_host=tk.Entry(init_window,font=fnt)
-	inp_host.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
+	tk.Label(init_window,text='Host',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
+	inp_host=tk.Entry(init_window,font=fnt,state='disabled')
+	inp_host.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
 
-	tk.Label(init_window,text='User',font=fnt).grid(column=0,row=7,sticky=tk.E,padx=10,pady=10)
-	inp_uname=tk.Entry(init_window,font=fnt)
-	inp_uname.grid(column=1,row=7,sticky=tk.EW,padx=10,pady=10)
+	tk.Label(init_window,text='User',font=fnt).grid(column=0,row=9,sticky=tk.E,padx=10,pady=10)
+	inp_uname=tk.Entry(init_window,font=fnt,state='disabled')
+	inp_uname.grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
 
-	tk.Label(init_window,text='Password',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
-	inp_passwd=tk.Entry(init_window,show='*',font=fnt)
-	inp_passwd.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
+	tk.Label(init_window,text='Password',font=fnt).grid(column=0,row=10,sticky=tk.E,padx=10,pady=10)
+	inp_passwd=tk.Entry(init_window,show='*',font=fnt,state='disabled')
+	inp_passwd.grid(column=1,row=10,sticky=tk.EW,padx=10,pady=10)
+
+	tk.Label(init_window,text='Printer Configuration',font=h2fnt,justify=tk.LEFT).grid(column=0,row=12,padx=10,columnspan=2,sticky=tk.W)
+	tk.Label(init_window,text='If connection to printer cannot be made,\nprinting functionality will be automatically disabled.',font=menufnt,justify=tk.LEFT).grid(column=0,row=13,padx=10,pady=10,columnspan=2,sticky=tk.W)
+
+	pr_con_type=tk.StringVar(init_window)
+	ttk.Radiobutton(init_window, text = 'USB',variable = pr_con_type,value = 'U').grid(column=1,row=14,sticky=tk.W,padx=10)
+	
+	ttk.Radiobutton(init_window, text = 'Network (192.168.1.124)',variable = pr_con_type,value = 'N').grid(column=1,row=15,sticky=tk.W,padx=10)
+	
+	ttk.Radiobutton(init_window, text = 'Disable printing',variable = pr_con_type,value = 'D').grid(column=1,row=16,sticky=tk.W,padx=10)
 
 	submit=tk.Button(init_window,text='Continue',command=db,font=fntit)
-	submit.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
+	submit.grid(column=1,row=20,padx=10,pady=10,sticky=tk.W)
 	init_window.bind('<Return>',lambda event:db())
 
 	init_window.mainloop()
@@ -246,12 +282,12 @@ for ABC Lines
 	cls.image=img1
 
 
-
 def prt(pr_inp):
 	bar_no=str(rd.randint(1000000000000,9999999999999))
 
 	if pr_choice=='U':
 		pr = Usb(idVendor=0x0483,idProduct=0x5720,timeout=0,in_ep=0x81,out_ep=0x03)
+
 	elif pr_choice=='N':
 		pr = Network('192.168.1.124')
 
@@ -387,14 +423,15 @@ def bus_booking():		#Bus booking
 											pay_win.destroy()
 											busbkg_win.destroy()
 
-										def send_to_printer():
-											prt(text2)
-
 										btn1=tk.Button(submit_message,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
 										btn1.grid(row=5,column=0,padx=10,pady=10)
+										
+										if isPrintingEnabled==True:
+											def send_to_printer():
+												prt(text2)
 
-										btn3=tk.Button(submit_message,text='Print...',font=fnt,command=send_to_printer,justify=tk.CENTER)
-										btn3.grid(row=6,column=0,padx=10,pady=10)
+											btn3=tk.Button(submit_message,text='Print...',font=fnt,command=send_to_printer,justify=tk.CENTER)
+											btn3.grid(row=6,column=0,padx=10,pady=10)
 
 										btn2=tk.Button(submit_message,text='OK',font=fnt,command=exit,justify=tk.CENTER)
 										btn2.grid(row=8,column=0,padx=10,pady=10)
@@ -721,14 +758,16 @@ def taxi_booking():		#Taxi booking
 											pay_win.destroy()
 											taxibkg_win.destroy()
 										
-										def send_to_printer():
-											prt(text2)
 										
 										btn1=tk.Button(submit_message,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
 										btn1.grid(row=5,column=0,padx=10,pady=10)
+										
+										if isPrintingEnabled==True:
+											def send_to_printer():
+												prt(text2)
 
-										btn3=tk.Button(submit_message,text='Print...',font=fnt,command=send_to_printer,justify=tk.CENTER)
-										btn3.grid(row=6,column=0,padx=10,pady=10)
+											btn3=tk.Button(submit_message,text='Print...',font=fnt,command=send_to_printer,justify=tk.CENTER)
+											btn3.grid(row=6,column=0,padx=10,pady=10)
 
 										btn2=tk.Button(submit_message,text='OK',font=fnt,command=exit,justify=tk.CENTER)
 										btn2.grid(row=8,column=0,padx=10,pady=10)
