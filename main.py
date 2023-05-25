@@ -282,36 +282,6 @@ for ABC Lines
 	cls.image=img1
 
 
-def prt(pr_inp):
-	bar_no=str(rd.randint(1000000000000,9999999999999))
-
-	if pr_choice=='U':
-		pr = Usb(idVendor=0x0483,idProduct=0x5720,timeout=0,in_ep=0x81,out_ep=0x03)
-
-	elif pr_choice=='N':
-		pr = Network('192.168.1.124')
-
-
-	pr.image('img/icon-2.png')
-	pr.text(pr_inp)
-	pr.barcode(bar_no, 'EAN13')
-	pr.text('\n')
-	pr.text('Powered by Amadeus')
-	pr.text('\n')
-	pr.text('Version: '+build+' ('+build_timestamp+')')
-	pr.text('\n')
-	
-	if pf.system()=='Windows':
-		pr.text('Platform: '+pf.system()+' '+pf.version())
-	elif pf.system()=='Linux':
-		pr.text('Platform: '+pf.system()+' '+pf.release())
-
-	# pr.text(pr_inp[10])
-	
-	pr.cut()
-	pr.close()
-
-
 def bus_booking():		#Bus booking
 	id='B'+str(rd.randint(10000,99999))
 	locations=['Blackcastle','Westerwitch','Ironlyn','Wellsummer','Meadowynne','Aldcourt','Butterhaven','Winterglass','Northcrest','Mallowdell']
@@ -428,7 +398,41 @@ def bus_booking():		#Bus booking
 										
 										if isPrintingEnabled==True:
 											def send_to_printer():
-												prt(text2)
+												def stp():
+													pr.image('img/icon-2.png')
+													pr.text(text2)
+													pr.barcode(bar_no, 'EAN13')
+													pr.text('\n')
+													pr.text('Powered by Amadeus')
+													pr.text('\n')
+													pr.text('Version: '+build+' ('+build_timestamp+')')
+													pr.text('\n')
+													
+													if pf.system()=='Windows':
+														pr.text('Platform: '+pf.system()+' '+pf.version())
+													elif pf.system()=='Linux':
+														pr.text('Platform: '+pf.system()+' '+pf.release())
+
+													# pr.text(pr_inp[10])
+													
+													pr.cut()
+													pr.close()
+
+												bar_no=str(rd.randint(1000000000000,9999999999999))
+
+												if pr_choice=='U':
+													try:
+														pr = Usb(idVendor=0x0483,idProduct=0x5720,timeout=0,in_ep=0x81,out_ep=0x03)
+														stp()
+													except:
+														messagebox.showerror('Error','Unable to connect to printer via USB.',parent=submit_message)
+
+												elif pr_choice=='N':
+													try:
+														pr = Network('192.168.1.124')
+														stp()
+													except:
+														messagebox.showerror('Error','Unable to connect to printer via USB.')
 
 											btn3=tk.Button(submit_message,text='Print...',font=fnt,command=send_to_printer,justify=tk.CENTER)
 											btn3.grid(row=6,column=0,padx=10,pady=10)
@@ -764,7 +768,41 @@ def taxi_booking():		#Taxi booking
 										
 										if isPrintingEnabled==True:
 											def send_to_printer():
-												prt(text2)
+												def stp():
+													pr.image('img/icon-2.png')
+													pr.text(text2)
+													pr.barcode(bar_no, 'EAN13')
+													pr.text('\n')
+													pr.text('Powered by Amadeus')
+													pr.text('\n')
+													pr.text('Version: '+build+' ('+build_timestamp+')')
+													pr.text('\n')
+													
+													if pf.system()=='Windows':
+														pr.text('Platform: '+pf.system()+' '+pf.version())
+													elif pf.system()=='Linux':
+														pr.text('Platform: '+pf.system()+' '+pf.release())
+
+													# pr.text(pr_inp[10])
+													
+													pr.cut()
+													pr.close()
+
+												bar_no=str(rd.randint(1000000000000,9999999999999))
+
+												if pr_choice=='U':
+													try:
+														pr = Usb(idVendor=0x0483,idProduct=0x5720,timeout=0,in_ep=0x81,out_ep=0x03)
+														stp()
+													except:
+														messagebox.showerror('Error','Unable to connect to printer via USB.',parent=submit_message)
+
+												elif pr_choice=='N':
+													try:
+														pr = Network('192.168.1.124')
+														stp()
+													except:
+														messagebox.showerror('Error','Unable to connect to printer via USB.')
 
 											btn3=tk.Button(submit_message,text='Print...',font=fnt,command=send_to_printer,justify=tk.CENTER)
 											btn3.grid(row=6,column=0,padx=10,pady=10)
