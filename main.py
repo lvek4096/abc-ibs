@@ -14,8 +14,8 @@ import platform as pf
 from datetime import datetime,timedelta
 from escpos.printer import Network, Usb
 
-build='Beta 318'
-build_timestamp='2023-05-25 20:07:20'	
+build='320 [V4]'
+build_timestamp='2023-05-25 21:28:43'	
 
 #font choice
 if pf.system()=='Windows':
