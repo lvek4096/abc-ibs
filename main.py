@@ -12,6 +12,39 @@ import random as rd
 import os
 import platform as pf
 from datetime import datetime,timedelta
+from escpos.printer import Network, Usb
+
+build='Beta 315'
+build_timestamp='2023-05-25 10:09:48'	
+
+pr_choice=input('''
+[U] USB
+[N] Network
+
+> ''').upper()
+		
+if pr_choice=='U':
+	pr = Usb(idVendor=0x0483,idProduct=0x5720,timeout=0,in_ep=0x81,out_ep=0x03)
+elif pr_choice=='N':
+	pr = Network('192.168.1.124')
+else:
+	print('Invalid choice entered. Terminating program.')
+	quit()
+
+t_print=input('''
+Test print?
+[Y] Yes
+[N] No
+
+> ''')
+	      
+if t_print=='Y':
+	pr.text("Hello World\n")
+	pr.image("img/icon-2.png")
+	pr.text('\n')
+	pr.barcode('1324354657687', 'EAN13', 64, 2, '', '')
+	pr.cut()
+
 
 
 #font choice
@@ -143,8 +176,7 @@ def init():		#Initialisation script
 
 def about():	#About page
 	#Build number
-	build='314 [V3]'
-	build_timestamp='2023-05-24 20:52:47'	
+
 	credits_txt='''
 Developed by
 Amadeus Software
