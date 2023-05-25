@@ -59,6 +59,8 @@ if pf.system()=='Windows':
 	except:
 		pass
 
+locations=['Blackcastle','Westerwitch','Ironlyn','Wellsummer','Meadowynne','Aldcourt','Butterhaven','Winterglass','Northcrest','Mallowdell']
+
 def init():		#Initialisation script
 	def initdb(host,uname,passwd):
 		global con
@@ -87,12 +89,14 @@ def init():		#Initialisation script
 		cur.execute('create table if not exists payment_details(pay_id varchar(6) primary key,paytime datetime,bkgid varchar(6),amt int,payment_type varchar(20),cardno varchar(16),cardname varchar(50),cvv int(3),exp_month int(2),exp_year int(4))')
 		cur.execute('create table if not exists employees(emp_id varchar(5) primary key,emp_uname varchar(50),emp_name varchar(50),emp_passwd varchar(50))')
 		cur.execute('create table if not exists admin(admin_id varchar(5) primary key,admin_uname varchar(50),admin_name varchar(50),admin_passwd varchar(50))')
+		
 		try:	#creates root and demo users IF NOT EXISTS
 			cur.execute("insert into admin values('A0001','root','System Administrator','123456')")
 			cur.execute("insert into employees values('E0001','demoagent','Demonstration Agent','demoagent')")
 			cur.execute("insert into users values('U00001','Demonstration User','demo@abc.com','1234567890','demo','demo')")
 		except:
 			pass
+		
 		con.commit()
 	
 	def db():
@@ -111,8 +115,6 @@ def init():		#Initialisation script
 				messagebox.showinfo('Info','The printing functionality will be disabled.')
 				isPrintingEnabled=False
 			
-			# print(isPrintingEnabled)
-
 		def dbconnect():
 			hostname=inp_host.get()
 			uname=inp_uname.get()
@@ -127,15 +129,16 @@ def init():		#Initialisation script
 				con.close()
 			else:
 				messagebox.showerror('Error','Please select printer connection option.')
+
 		elif str(login_type.get())=='E':
 			if pr_con_type.get() in ['U','N','D']:
 				dbconnect()
 				prconnect()
 				emp_main()
 				con.close()
-				
 			else:
 				messagebox.showerror('Error','Please select printer connection option.')
+
 		else:
 			messagebox.showerror('Error','Please select login option.')
 
@@ -156,6 +159,7 @@ def init():		#Initialisation script
 	init_window.iconphoto(False,icon)
 
 	tk.Label(init_window,text='Program Configuration',font=h1fnt,justify=tk.LEFT).grid(column=0,row=0,padx=10,columnspan=2,sticky=tk.W)
+	
 	tk.Label(init_window,text='RDBMS Configuration',font=h2fnt,justify=tk.LEFT).grid(column=0,row=1,padx=10,columnspan=2,sticky=tk.W)
 	tk.Label(init_window,text='If no RDBMS login credentials are specified,\nit will fall back to those of root@localhost.',font=menufnt,justify=tk.LEFT).grid(column=0,row=4,padx=10,pady=10,columnspan=2,sticky=tk.W)
 
@@ -281,11 +285,9 @@ for ABC Lines
 	cls.grid(column=0,row=25,padx=10,pady=10,columnspan=3)
 	cls.image=img1
 
-
 def bus_booking():		#Bus booking
 	id='B'+str(rd.randint(10000,99999))
-	locations=['Blackcastle','Westerwitch','Ironlyn','Wellsummer','Meadowynne','Aldcourt','Butterhaven','Winterglass','Northcrest','Mallowdell']
-	ctype=['','Standard','Express','Premium']
+	bus_type=['','Standard','Express','Premium']
 
 	busbkg_win=tk.Toplevel()
 
@@ -397,7 +399,9 @@ def bus_booking():		#Bus booking
 										btn1.grid(row=5,column=0,padx=10,pady=10)
 										
 										if isPrintingEnabled==True:
+
 											def send_to_printer():
+
 												def stp():
 													pr.image('img/icon-2.png')
 													pr.text(text2)
@@ -413,8 +417,6 @@ def bus_booking():		#Bus booking
 													elif pf.system()=='Linux':
 														pr.text('Platform: '+pf.system()+' '+pf.release())
 
-													# pr.text(pr_inp[10])
-													
 													pr.cut()
 													pr.close()
 
@@ -432,7 +434,7 @@ def bus_booking():		#Bus booking
 														pr = Network('192.168.1.124')
 														stp()
 													except:
-														messagebox.showerror('Error','Unable to connect to printer via USB.')
+														messagebox.showerror('Error','Unable to connect to printer via network.',parent=submit_message)
 
 											btn3=tk.Button(submit_message,text='Print...',font=fnt,command=send_to_printer,justify=tk.CENTER)
 											btn3.grid(row=6,column=0,padx=10,pady=10)
@@ -602,7 +604,7 @@ def bus_booking():		#Bus booking
 
 	n=tk.StringVar()
 	tk.Label(f2,text='Bus Type',font=fnt).grid(column=0,row=7,sticky=tk.E,padx=10,pady=10)
-	bustype=ttk.OptionMenu(f2,n,*ctype)
+	bustype=ttk.OptionMenu(f2,n,*bus_type)
 	bustype.grid(column=1,row=7,sticky=tk.W,padx=10,pady=10)
 
 	tk.Label(f2,text='From',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
@@ -641,7 +643,6 @@ def bus_booking():		#Bus booking
 def taxi_booking():		#Taxi booking
 	#definitions
 	id='T'+str(rd.randint(10000,99999))	#random number for ID
-	locations=['Blackcastle','Westerwitch','Ironlyn','Wellsummer','Meadowynne','Aldcourt','Butterhaven','Winterglass','Northcrest','Mallowdell']	#defines locations
 	ctype=['','Standard','XL','Luxury']	#defines coach type
 
 	#timestamp to mark bookings
@@ -649,7 +650,6 @@ def taxi_booking():		#Taxi booking
 
 	#GUI
 	taxibkg_win=tk.Toplevel()
-	#fonts for GUI
 
 	#Main Window parameters
 	taxibkg_win.title('Taxi Booking')
@@ -720,6 +720,7 @@ def taxi_booking():		#Taxi booking
 								cur_yr=cur_dt.year
 
 								def transaction():		#Makes payment
+
 									def add_bkg():		#Adds booking to DB
 										#timestamp to mark bookings
 										bkg_time=datetime.now()
@@ -767,7 +768,9 @@ def taxi_booking():		#Taxi booking
 										btn1.grid(row=5,column=0,padx=10,pady=10)
 										
 										if isPrintingEnabled==True:
+
 											def send_to_printer():
+												
 												def stp():
 													pr.image('img/icon-2.png')
 													pr.text(text2)
@@ -783,8 +786,6 @@ def taxi_booking():		#Taxi booking
 													elif pf.system()=='Linux':
 														pr.text('Platform: '+pf.system()+' '+pf.release())
 
-													# pr.text(pr_inp[10])
-													
 													pr.cut()
 													pr.close()
 
@@ -802,7 +803,7 @@ def taxi_booking():		#Taxi booking
 														pr = Network('192.168.1.124')
 														stp()
 													except:
-														messagebox.showerror('Error','Unable to connect to printer via USB.')
+														messagebox.showerror('Error','Unable to connect to printer via network.',parent=submit_message)
 
 											btn3=tk.Button(submit_message,text='Print...',font=fnt,command=send_to_printer,justify=tk.CENTER)
 											btn3.grid(row=6,column=0,padx=10,pady=10)
