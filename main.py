@@ -14,8 +14,8 @@ import platform as pf
 from datetime import datetime,timedelta
 from escpos.printer import Network, Usb
 
-build='Beta 316'
-build_timestamp='2023-05-25 11:18:51'	
+build='Beta 317'
+build_timestamp='2023-05-25 12:30:22'	
 
 pr_choice=input('''
 [U] USB
@@ -23,10 +23,10 @@ pr_choice=input('''
 
 > ''').upper()
 
+
 if not pr_choice in ['U','N']:
 	print('Invalid choice entered. Terminating program.')
 	quit()
-
 
 #font choice
 if pf.system()=='Windows':
@@ -245,12 +245,16 @@ for ABC Lines
 	cls.grid(column=0,row=25,padx=10,pady=10,columnspan=3)
 	cls.image=img1
 
+
+
 def prt(pr_inp):
 	bar_no=str(rd.randint(1000000000000,9999999999999))
+
 	if pr_choice=='U':
 		pr = Usb(idVendor=0x0483,idProduct=0x5720,timeout=0,in_ep=0x81,out_ep=0x03)
 	elif pr_choice=='N':
 		pr = Network('192.168.1.124')
+
 
 	pr.image('img/icon-2.png')
 	pr.text(pr_inp)
@@ -265,8 +269,11 @@ def prt(pr_inp):
 		pr.text('Platform: '+pf.system()+' '+pf.version())
 	elif pf.system()=='Linux':
 		pr.text('Platform: '+pf.system()+' '+pf.release())
+
+	# pr.text(pr_inp[10])
 	
 	pr.cut()
+	pr.close()
 
 
 def bus_booking():		#Bus booking
