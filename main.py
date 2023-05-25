@@ -14,8 +14,8 @@ import platform as pf
 from datetime import datetime,timedelta
 from escpos.printer import Network, Usb
 
-build='320 [V4]'
-build_timestamp='2023-05-25 21:28:43'	
+build='321 [V4]'
+build_timestamp='2023-05-26 00:07:21'	
 
 #font choice
 if pf.system()=='Windows':
@@ -99,7 +99,7 @@ def init():		#Initialisation script
 		
 		con.commit()
 	
-	def db():
+	def init_program():
 		def prconnect():
 			global pr_choice
 			global isPrintingEnabled
@@ -110,6 +110,8 @@ def init():		#Initialisation script
 				isPrintingEnabled=True
 			elif pr_con_type.get()=='N':
 				pr_choice='N'
+				global pr_ip
+				pr_ip=inp_pr_ip.get()
 				isPrintingEnabled=True
 			elif pr_con_type.get()=='D':
 				messagebox.showinfo('Info','The printing functionality will be disabled.')
@@ -123,8 +125,8 @@ def init():		#Initialisation script
 
 		if str(login_type.get())=='U':
 			if pr_con_type.get() in ['U','N','D']:
-				dbconnect()
 				prconnect()
+				dbconnect()
 				user_main()
 				con.close()
 			else:
@@ -132,8 +134,8 @@ def init():		#Initialisation script
 
 		elif str(login_type.get())=='E':
 			if pr_con_type.get() in ['U','N','D']:
-				dbconnect()
 				prconnect()
+				dbconnect()
 				emp_main()
 				con.close()
 			else:
@@ -151,6 +153,14 @@ def init():		#Initialisation script
 
 		inp_passwd.configure(state='normal')
 		inp_passwd.update()
+
+	def disable_nw_ip():
+		inp_pr_ip.configure(state='disabled')
+		inp_pr_ip.update()
+
+	def enable_nw_ip():
+		inp_pr_ip.configure(state='normal')
+		inp_pr_ip.update()
 
 	init_window=tk.Tk()
 	init_window.title('Program Configuration')
@@ -183,15 +193,17 @@ def init():		#Initialisation script
 	tk.Label(init_window,text='If connection to printer cannot be made,\nprinting functionality will be automatically disabled.',font=menufnt,justify=tk.LEFT).grid(column=0,row=13,padx=10,pady=10,columnspan=2,sticky=tk.W)
 
 	pr_con_type=tk.StringVar(init_window)
-	ttk.Radiobutton(init_window, text = 'USB',variable = pr_con_type,value = 'U').grid(column=1,row=14,sticky=tk.W,padx=10)
+	ttk.Radiobutton(init_window, text = 'USB',variable = pr_con_type,value = 'U',command=disable_nw_ip).grid(column=0,row=14,sticky=tk.W,padx=10)
 	
-	ttk.Radiobutton(init_window, text = 'Network (192.168.1.124)',variable = pr_con_type,value = 'N').grid(column=1,row=15,sticky=tk.W,padx=10)
-	
-	ttk.Radiobutton(init_window, text = 'Disable printing',variable = pr_con_type,value = 'D').grid(column=1,row=16,sticky=tk.W,padx=10)
+	ttk.Radiobutton(init_window, text = 'Network (enter IP address: )',variable = pr_con_type,value = 'N',command=enable_nw_ip).grid(column=0,row=15,sticky=tk.W,padx=10)
+	inp_pr_ip=tk.Entry(init_window,font=fnt,state='disabled')
+	inp_pr_ip.grid(column=1,row=15,sticky=tk.EW,padx=10,pady=10)
 
-	submit=tk.Button(init_window,text='Continue',command=db,font=fntit)
+	ttk.Radiobutton(init_window, text = 'Disable printing',variable = pr_con_type,value = 'D',command=disable_nw_ip).grid(column=0,row=16,sticky=tk.W,padx=10)
+
+	submit=tk.Button(init_window,text='Continue',command=init_program,font=fntit)
 	submit.grid(column=1,row=20,padx=10,pady=10,sticky=tk.W)
-	init_window.bind('<Return>',lambda event:db())
+	init_window.bind('<Return>',lambda event:init_program())
 
 	init_window.mainloop()
 
@@ -431,7 +443,7 @@ def bus_booking():		#Bus booking
 
 												elif pr_choice=='N':
 													try:
-														pr = Network('192.168.1.124')
+														pr = Network(pr_ip)
 														stp()
 													except:
 														messagebox.showerror('Error','Unable to connect to printer via network.',parent=submit_message)
@@ -800,7 +812,7 @@ def taxi_booking():		#Taxi booking
 
 												elif pr_choice=='N':
 													try:
-														pr = Network('192.168.1.124')
+														pr = Network(pr_ip)
 														stp()
 													except:
 														messagebox.showerror('Error','Unable to connect to printer via network.',parent=submit_message)
