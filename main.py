@@ -12,6 +12,10 @@ import random as rd
 import os
 import platform as pf
 from datetime import datetime,timedelta
+from escpos.printer import Network, Usb
+
+build='320 [V4]'
+build_timestamp='2023-05-25 21:28:43'	
 
 #font choice
 if pf.system()=='Windows':
@@ -55,6 +59,8 @@ if pf.system()=='Windows':
 	except:
 		pass
 
+locations=['Blackcastle','Westerwitch','Ironlyn','Wellsummer','Meadowynne','Aldcourt','Butterhaven','Winterglass','Northcrest','Mallowdell']
+
 def init():		#Initialisation script
 	def initdb(host,uname,passwd):
 		global con
@@ -83,67 +89,115 @@ def init():		#Initialisation script
 		cur.execute('create table if not exists payment_details(pay_id varchar(6) primary key,paytime datetime,bkgid varchar(6),amt int,payment_type varchar(20),cardno varchar(16),cardname varchar(50),cvv int(3),exp_month int(2),exp_year int(4))')
 		cur.execute('create table if not exists employees(emp_id varchar(5) primary key,emp_uname varchar(50),emp_name varchar(50),emp_passwd varchar(50))')
 		cur.execute('create table if not exists admin(admin_id varchar(5) primary key,admin_uname varchar(50),admin_name varchar(50),admin_passwd varchar(50))')
+		
 		try:	#creates root and demo users IF NOT EXISTS
 			cur.execute("insert into admin values('A0001','root','System Administrator','123456')")
 			cur.execute("insert into employees values('E0001','demoagent','Demonstration Agent','demoagent')")
 			cur.execute("insert into users values('U00001','Demonstration User','demo@abc.com','1234567890','demo','demo')")
 		except:
 			pass
+		
 		con.commit()
 	
 	def db():
+		def prconnect():
+			global pr_choice
+			global isPrintingEnabled
+			isPrintingEnabled=False
+
+			if pr_con_type.get()=='U':
+				pr_choice='U'
+				isPrintingEnabled=True
+			elif pr_con_type.get()=='N':
+				pr_choice='N'
+				isPrintingEnabled=True
+			elif pr_con_type.get()=='D':
+				messagebox.showinfo('Info','The printing functionality will be disabled.')
+				isPrintingEnabled=False
+			
 		def dbconnect():
 			hostname=inp_host.get()
 			uname=inp_uname.get()
 			passwd=inp_passwd.get()
 			initdb(hostname,uname,passwd)
+
 		if str(login_type.get())=='U':
-			dbconnect()
-			user_main()
-			con.close()
+			if pr_con_type.get() in ['U','N','D']:
+				dbconnect()
+				prconnect()
+				user_main()
+				con.close()
+			else:
+				messagebox.showerror('Error','Please select printer connection option.')
+
 		elif str(login_type.get())=='E':
-			dbconnect()
-			emp_main()
-			con.close()
+			if pr_con_type.get() in ['U','N','D']:
+				dbconnect()
+				prconnect()
+				emp_main()
+				con.close()
+			else:
+				messagebox.showerror('Error','Please select printer connection option.')
+
 		else:
 			messagebox.showerror('Error','Please select login option.')
 
+	def enable_dbmsentries():
+		inp_host.configure(state='normal')
+		inp_host.update()
+
+		inp_uname.configure(state='normal')
+		inp_uname.update()
+
+		inp_passwd.configure(state='normal')
+		inp_passwd.update()
+
 	init_window=tk.Tk()
-	init_window.title('RDBMS Configuration')
+	init_window.title('Program Configuration')
 	init_window.resizable(False, False)
 	icon=tk.PhotoImage(file='img/icon.png')
 	init_window.iconphoto(False,icon)
 
-	tk.Label(init_window,text='RDBMS Configuration',font=h1fnt,justify=tk.LEFT).grid(column=0,row=0,padx=10,columnspan=2,sticky=tk.W)
-	tk.Label(init_window,text='If no RDBMS login credentials are specified,\nit will fall back to those of root@localhost.',font=h2fnt,justify=tk.LEFT).grid(column=0,row=1,padx=10,pady=10,columnspan=2,sticky=tk.W)
+	tk.Label(init_window,text='Program Configuration',font=h1fnt,justify=tk.LEFT).grid(column=0,row=0,padx=10,columnspan=2,sticky=tk.W)
+	
+	tk.Label(init_window,text='RDBMS Configuration',font=h2fnt,justify=tk.LEFT).grid(column=0,row=1,padx=10,columnspan=2,sticky=tk.W)
+	tk.Label(init_window,text='If no RDBMS login credentials are specified,\nit will fall back to those of root@localhost.',font=menufnt,justify=tk.LEFT).grid(column=0,row=4,padx=10,pady=10,columnspan=2,sticky=tk.W)
 
-	tk.Label(init_window,text='Logging into:',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10,rowspan=2)
 	login_type = tk.StringVar(init_window)
-	ttk.Radiobutton(init_window, text = 'User Portal',variable = login_type,value = 'U').grid(column=1,row=3,sticky=tk.W,padx=10)
-	ttk.Radiobutton(init_window, text = 'Employee Portal',variable = login_type,value = 'E').grid(column=1,row=4,sticky=tk.W,padx=10)
+	ttk.Radiobutton(init_window, text = 'User Portal',variable = login_type,value = 'U',command=enable_dbmsentries).grid(column=1,row=5,sticky=tk.W,padx=10)
+	ttk.Radiobutton(init_window, text = 'Employee Portal',variable = login_type,value = 'E',command=enable_dbmsentries).grid(column=1,row=6,sticky=tk.W,padx=10)
 		
-	tk.Label(init_window,text='Host',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
-	inp_host=tk.Entry(init_window,font=fnt)
-	inp_host.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
+	tk.Label(init_window,text='Host',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
+	inp_host=tk.Entry(init_window,font=fnt,state='disabled')
+	inp_host.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
 
-	tk.Label(init_window,text='User',font=fnt).grid(column=0,row=7,sticky=tk.E,padx=10,pady=10)
-	inp_uname=tk.Entry(init_window,font=fnt)
-	inp_uname.grid(column=1,row=7,sticky=tk.EW,padx=10,pady=10)
+	tk.Label(init_window,text='User',font=fnt).grid(column=0,row=9,sticky=tk.E,padx=10,pady=10)
+	inp_uname=tk.Entry(init_window,font=fnt,state='disabled')
+	inp_uname.grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
 
-	tk.Label(init_window,text='Password',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
-	inp_passwd=tk.Entry(init_window,show='*',font=fnt)
-	inp_passwd.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
+	tk.Label(init_window,text='Password',font=fnt).grid(column=0,row=10,sticky=tk.E,padx=10,pady=10)
+	inp_passwd=tk.Entry(init_window,show='*',font=fnt,state='disabled')
+	inp_passwd.grid(column=1,row=10,sticky=tk.EW,padx=10,pady=10)
+
+	tk.Label(init_window,text='Printer Configuration',font=h2fnt,justify=tk.LEFT).grid(column=0,row=12,padx=10,columnspan=2,sticky=tk.W)
+	tk.Label(init_window,text='If connection to printer cannot be made,\nprinting functionality will be automatically disabled.',font=menufnt,justify=tk.LEFT).grid(column=0,row=13,padx=10,pady=10,columnspan=2,sticky=tk.W)
+
+	pr_con_type=tk.StringVar(init_window)
+	ttk.Radiobutton(init_window, text = 'USB',variable = pr_con_type,value = 'U').grid(column=1,row=14,sticky=tk.W,padx=10)
+	
+	ttk.Radiobutton(init_window, text = 'Network (192.168.1.124)',variable = pr_con_type,value = 'N').grid(column=1,row=15,sticky=tk.W,padx=10)
+	
+	ttk.Radiobutton(init_window, text = 'Disable printing',variable = pr_con_type,value = 'D').grid(column=1,row=16,sticky=tk.W,padx=10)
 
 	submit=tk.Button(init_window,text='Continue',command=db,font=fntit)
-	submit.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
+	submit.grid(column=1,row=20,padx=10,pady=10,sticky=tk.W)
 	init_window.bind('<Return>',lambda event:db())
 
 	init_window.mainloop()
 
 def about():	#About page
 	#Build number
-	build='314 [V3]'
-	build_timestamp='2023-05-24 20:52:47'	
+
 	credits_txt='''
 Developed by
 Amadeus Software
@@ -233,8 +287,7 @@ for ABC Lines
 
 def bus_booking():		#Bus booking
 	id='B'+str(rd.randint(10000,99999))
-	locations=['Blackcastle','Westerwitch','Ironlyn','Wellsummer','Meadowynne','Aldcourt','Butterhaven','Winterglass','Northcrest','Mallowdell']
-	ctype=['','Standard','Express','Premium']
+	bus_type=['','Standard','Express','Premium']
 
 	busbkg_win=tk.Toplevel()
 
@@ -328,7 +381,7 @@ def bus_booking():		#Bus booking
 										booking_summary=scrolledtext.ScrolledText(submit_message,font=fnt,width=30,height=8)
 										booking_summary.grid(column=0,row=3,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 
-										text2='Bus Booking\n-----------\n\nBooking ID: '+id+'\nBooking Timestamp: \n'+bkg_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+n.get()+'\n\nDate: '+date_inp+'\nTime: '+time_inp+'\n\nRate: $'+str(rate)+' per km\nDistance: '+str(distance)+' km\nNumber of passengers: '+str(passno)+'\n\nTotal fare: $'+str(total_fare)+'\n\nPayment\n-------\n\n'+'Payment ID: '+payment_id+'\nPaid by: '+m.get()+'\nCardholder name: '+card_name.get()+'\nCard number: XXXX-XXXX-XXXX-'+card_no.get()[-4:]+'\nCard type: '+cardtype+'\nAmount paid: $'+str(total_fare)+'\n\n------------------'+'\nPAYMENT SUCCESSFUL'+'\n------------------'
+										text2='\nBus Booking\n-----------\n\nBooking ID: '+id+'\nBooking Timestamp: \n'+bkg_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+n.get()+'\n\nDate: '+date_inp+'\nTime: '+time_inp+'\n\nRate: $'+str(rate)+' per km\nDistance: '+str(distance)+' km\nNumber of passengers: '+str(passno)+'\n\nTotal fare: $'+str(total_fare)+'\n\nPayment\n-------\n\n'+'Payment ID: '+payment_id+'\nPaid by: '+m.get()+'\nCardholder name: '+card_name.get()+'\nCard number: XXXX-XXXX-XXXX-'+card_no.get()[-4:]+'\nCard type: '+cardtype+'\nAmount paid: $'+str(total_fare)+'\n\n------------------'+'\nPAYMENT SUCCESSFUL'+'\n------------------\n'
 										booking_summary.insert(tk.INSERT,text2)
 										booking_summary.configure(state='disabled')
 										
@@ -337,13 +390,54 @@ def bus_booking():		#Bus booking
 											submit_message.clipboard_append(text2)
 											btn1.configure(fg='green',text='Copied!')
 										
-										btn1=tk.Button(submit_message,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
-										btn1.grid(row=5,column=0,padx=10,pady=10)
-										
 										def exit():
 											submit_message.destroy()
 											pay_win.destroy()
 											busbkg_win.destroy()
+
+										btn1=tk.Button(submit_message,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
+										btn1.grid(row=5,column=0,padx=10,pady=10)
+										
+										if isPrintingEnabled==True:
+
+											def send_to_printer():
+
+												def stp():
+													pr.image('img/icon-2.png')
+													pr.text(text2)
+													pr.barcode(bar_no, 'EAN13')
+													pr.text('\n')
+													pr.text('Powered by Amadeus')
+													pr.text('\n')
+													pr.text('Version: '+build+' ('+build_timestamp+')')
+													pr.text('\n')
+													
+													if pf.system()=='Windows':
+														pr.text('Platform: '+pf.system()+' '+pf.version())
+													elif pf.system()=='Linux':
+														pr.text('Platform: '+pf.system()+' '+pf.release())
+
+													pr.cut()
+													pr.close()
+
+												bar_no=str(rd.randint(1000000000000,9999999999999))
+
+												if pr_choice=='U':
+													try:
+														pr = Usb(idVendor=0x0483,idProduct=0x5720,timeout=0,in_ep=0x81,out_ep=0x03)
+														stp()
+													except:
+														messagebox.showerror('Error','Unable to connect to printer via USB.',parent=submit_message)
+
+												elif pr_choice=='N':
+													try:
+														pr = Network('192.168.1.124')
+														stp()
+													except:
+														messagebox.showerror('Error','Unable to connect to printer via network.',parent=submit_message)
+
+											btn3=tk.Button(submit_message,text='Print...',font=fnt,command=send_to_printer,justify=tk.CENTER)
+											btn3.grid(row=6,column=0,padx=10,pady=10)
 
 										btn2=tk.Button(submit_message,text='OK',font=fnt,command=exit,justify=tk.CENTER)
 										btn2.grid(row=8,column=0,padx=10,pady=10)
@@ -510,7 +604,7 @@ def bus_booking():		#Bus booking
 
 	n=tk.StringVar()
 	tk.Label(f2,text='Bus Type',font=fnt).grid(column=0,row=7,sticky=tk.E,padx=10,pady=10)
-	bustype=ttk.OptionMenu(f2,n,*ctype)
+	bustype=ttk.OptionMenu(f2,n,*bus_type)
 	bustype.grid(column=1,row=7,sticky=tk.W,padx=10,pady=10)
 
 	tk.Label(f2,text='From',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
@@ -549,7 +643,6 @@ def bus_booking():		#Bus booking
 def taxi_booking():		#Taxi booking
 	#definitions
 	id='T'+str(rd.randint(10000,99999))	#random number for ID
-	locations=['Blackcastle','Westerwitch','Ironlyn','Wellsummer','Meadowynne','Aldcourt','Butterhaven','Winterglass','Northcrest','Mallowdell']	#defines locations
 	ctype=['','Standard','XL','Luxury']	#defines coach type
 
 	#timestamp to mark bookings
@@ -557,7 +650,6 @@ def taxi_booking():		#Taxi booking
 
 	#GUI
 	taxibkg_win=tk.Toplevel()
-	#fonts for GUI
 
 	#Main Window parameters
 	taxibkg_win.title('Taxi Booking')
@@ -628,6 +720,7 @@ def taxi_booking():		#Taxi booking
 								cur_yr=cur_dt.year
 
 								def transaction():		#Makes payment
+
 									def add_bkg():		#Adds booking to DB
 										#timestamp to mark bookings
 										bkg_time=datetime.now()
@@ -656,7 +749,7 @@ def taxi_booking():		#Taxi booking
 										booking_summary=scrolledtext.ScrolledText(submit_message,font=fnt,width=30,height=8)
 										booking_summary.grid(column=0,row=3,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 
-										text2='Taxi Booking\n------------\n\nBooking ID: '+id+'\nBooking Timestamp: \n'+bkg_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+n.get()+'\n\nDate: '+date_inp+'\nTime: '+time_inp+'\n\nBase rate: $'+str(base_rate)+' for first 5 km\n$'+str(rate)+' per additional km\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)+'\n\nPayment\n-------\n\n'+'Payment ID: '+payment_id+'\nPaid by: '+m.get()+'\nCardholder name: '+card_name.get()+'\nCard number: XXXX-XXXX-XXXX-'+card_no.get()[-4:]+'\nCard type: '+cardtype+'\nAmount paid: $'+str(total_fare)+'\n\n------------------'+'\nPAYMENT SUCCESSFUL'+'\n------------------'
+										text2='\nTaxi Booking\n------------\n\nBooking ID: '+id+'\nBooking Timestamp: \n'+bkg_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+n.get()+'\n\nDate: '+date_inp+'\nTime: '+time_inp+'\n\nBase rate: $'+str(base_rate)+' for first 5 km\n$'+str(rate)+' per additional km\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)+'\n\nPayment\n-------\n\n'+'Payment ID: '+payment_id+'\nPaid by: '+m.get()+'\nCardholder name: '+card_name.get()+'\nCard number: XXXX-XXXX-XXXX-'+card_no.get()[-4:]+'\nCard type: '+cardtype+'\nAmount paid: $'+str(total_fare)+'\n\n------------------'+'\nPAYMENT SUCCESSFUL'+'\n------------------\n'
 										booking_summary.insert(tk.INSERT,text2)
 										booking_summary.configure(state='disabled')
 										
@@ -664,16 +757,56 @@ def taxi_booking():		#Taxi booking
 											submit_message.clipboard_clear()
 											submit_message.clipboard_append(text2)
 											btn1.configure(fg='green',text='Copied!')
-										
-										btn1=tk.Button(submit_message,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
-										btn1.grid(row=5,column=0,padx=10,pady=10)
-										
-										#tk.Label(submit_message,text='The e-receipt will also be sent to\nyour registered electronic mail\naddress.',font=fnt,justify=tk.LEFT).grid(row=6,column=0,padx=10,pady=10,sticky=tk.W)
-										
+																									
 										def exit():
 											submit_message.destroy()
 											pay_win.destroy()
 											taxibkg_win.destroy()
+										
+										
+										btn1=tk.Button(submit_message,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
+										btn1.grid(row=5,column=0,padx=10,pady=10)
+										
+										if isPrintingEnabled==True:
+
+											def send_to_printer():
+												
+												def stp():
+													pr.image('img/icon-2.png')
+													pr.text(text2)
+													pr.barcode(bar_no, 'EAN13')
+													pr.text('\n')
+													pr.text('Powered by Amadeus')
+													pr.text('\n')
+													pr.text('Version: '+build+' ('+build_timestamp+')')
+													pr.text('\n')
+													
+													if pf.system()=='Windows':
+														pr.text('Platform: '+pf.system()+' '+pf.version())
+													elif pf.system()=='Linux':
+														pr.text('Platform: '+pf.system()+' '+pf.release())
+
+													pr.cut()
+													pr.close()
+
+												bar_no=str(rd.randint(1000000000000,9999999999999))
+
+												if pr_choice=='U':
+													try:
+														pr = Usb(idVendor=0x0483,idProduct=0x5720,timeout=0,in_ep=0x81,out_ep=0x03)
+														stp()
+													except:
+														messagebox.showerror('Error','Unable to connect to printer via USB.',parent=submit_message)
+
+												elif pr_choice=='N':
+													try:
+														pr = Network('192.168.1.124')
+														stp()
+													except:
+														messagebox.showerror('Error','Unable to connect to printer via network.',parent=submit_message)
+
+											btn3=tk.Button(submit_message,text='Print...',font=fnt,command=send_to_printer,justify=tk.CENTER)
+											btn3.grid(row=6,column=0,padx=10,pady=10)
 
 										btn2=tk.Button(submit_message,text='OK',font=fnt,command=exit,justify=tk.CENTER)
 										btn2.grid(row=8,column=0,padx=10,pady=10)
