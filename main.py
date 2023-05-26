@@ -14,8 +14,8 @@ import platform as pf
 from datetime import datetime,timedelta
 from escpos.printer import Network, Usb
 
-build='321 [V4]'
-build_timestamp='2023-05-26 00:07:21'	
+build='322 [V4]'
+build_timestamp='2023-05-26 09:22:40'	
 
 #font choice
 if pf.system()=='Windows':
@@ -109,10 +109,15 @@ def init():		#Initialisation script
 				pr_choice='U'
 				isPrintingEnabled=True
 			elif pr_con_type.get()=='N':
-				pr_choice='N'
-				global pr_ip
-				pr_ip=inp_pr_ip.get()
-				isPrintingEnabled=True
+				if not inp_pr_ip.get()=='' and not inp_pr_ip.get().isspace():
+					pr_choice='N'
+					global pr_ip
+					pr_ip=inp_pr_ip.get()
+					isPrintingEnabled=True
+				else:
+					messagebox.showerror('Error','No IP address for printer specified.\nThe printing functionality will be disabled.')
+					isPrintingEnabled=False
+
 			elif pr_con_type.get()=='D':
 				messagebox.showinfo('Info','The printing functionality will be disabled.')
 				isPrintingEnabled=False
