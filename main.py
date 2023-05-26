@@ -14,8 +14,8 @@ import platform as pf
 from datetime import datetime,timedelta
 from escpos.printer import Network, Usb
 
-build='323 [V4]'
-build_timestamp='2023-05-26 09:23:54'	
+build='324 [V4]'
+build_timestamp='2023-05-26 09:25:22'	
 
 #font choice
 if pf.system()=='Windows':
@@ -61,7 +61,7 @@ def init():		#Initialisation script
 
 		if con.is_connected():
 			init_window.destroy()
-			messagebox.showinfo('Database','Successfully connected to database on '+con.server_host+'.')
+			messagebox.showinfo('','Successfully connected to database on '+con.server_host+'.')
 		cur=con.cursor()
 
 		#initial creation of db and tables if not existing in MySQL database'
