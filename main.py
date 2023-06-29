@@ -12,10 +12,11 @@ import random as rd
 import os
 import platform as pf
 from datetime import datetime,timedelta
-from escpos.printer import Network, Usb
+from escpos.printer import Network
 
-build='324 [V4]'
-build_timestamp='2023-05-26 09:25:22'	
+build='ibs.beta-325'
+build_timestamp='2023-06-29 23:30:51'	
+
 
 #font choice
 if pf.system()=='Windows':
@@ -60,8 +61,8 @@ def init():		#Initialisation script
 				quit()
 
 		if con.is_connected():
+			messagebox.showinfo('','Successfully connected to database on '+con.server_host+'.',parent=init_window)
 			init_window.destroy()
-			messagebox.showinfo('','Successfully connected to database on '+con.server_host+'.')
 		cur=con.cursor()
 
 		#initial creation of db and tables if not existing in MySQL database'
@@ -69,14 +70,14 @@ def init():		#Initialisation script
 		cur.execute('use taxi')
 		cur.execute('create table if not exists taxi_bkgs(bkgid varchar(6) primary key,bkgtime datetime,start varchar(50),end varchar(50),jdate date,jtime time,taxitype varchar(50))')
 		cur.execute('create table if not exists bus_bkgs(bkgid varchar(6) primary key,bkgtime datetime,pass_no int,start varchar(50),end varchar(50),jdate date,jtime time,bustype varchar(50))')
-		cur.execute('create table if not exists users(uuid varchar(6) primary key,fname varchar(50),email varchar(50),num varchar(10),uname varchar(50),passwd varchar(50))')
+		# cur.execute('create table if not exists users(uuid varchar(6) primary key,fname varchar(50),email varchar(50),num varchar(10),uname varchar(50),passwd varchar(50))')
 		cur.execute('create table if not exists payment_details(pay_id varchar(6) primary key,paytime datetime,bkgid varchar(6),amt int,payment_type varchar(20),cardno varchar(16),cardname varchar(50),cvv int(3),exp_month int(2),exp_year int(4))')
 		cur.execute('create table if not exists employees(emp_id varchar(5) primary key,emp_uname varchar(50),emp_name varchar(50),emp_passwd varchar(50))')
 		cur.execute('create table if not exists admin(admin_id varchar(5) primary key,admin_uname varchar(50),admin_name varchar(50),admin_passwd varchar(50))')
 		
 		try:	#creates root and demo users IF NOT EXISTS
-			cur.execute("insert into admin values('A0001','root','System Administrator','123456')")
-			cur.execute("insert into employees values('E0001','demoagent','Demonstration Agent','demoagent')")
+			cur.execute("insert into admin values('A0001','root','System Administrator','root')")
+			cur.execute("insert into employees values('E0001','demo','Demonstration Agent','demo')")
 			cur.execute("insert into users values('U00001','Demonstration User','demo@abc.com','1234567890','demo','demo')")
 		except:
 			pass
@@ -89,21 +90,18 @@ def init():		#Initialisation script
 			global isPrintingEnabled
 			isPrintingEnabled=False
 
-			if pr_con_type.get()=='U':
-				pr_choice='U'
-				isPrintingEnabled=True
-			elif pr_con_type.get()=='N':
+			if pr_con_type.get()=='N':
 				if not inp_pr_ip.get()=='' and not inp_pr_ip.get().isspace():
 					pr_choice='N'
 					global pr_ip
 					pr_ip=inp_pr_ip.get()
 					isPrintingEnabled=True
 				else:
-					messagebox.showerror('Error','No IP address for printer specified.\nThe printing functionality will be disabled.')
+					messagebox.showerror('Error','No IP address for printer specified.\nThe printing functionality will be disabled.',parent=init_window)
 					isPrintingEnabled=False
 
 			elif pr_con_type.get()=='D':
-				messagebox.showinfo('Info','The printing functionality will be disabled.')
+				messagebox.showinfo('Info','The printing functionality will be disabled.',parent=init_window)
 				isPrintingEnabled=False
 			
 		def dbconnect():
@@ -112,36 +110,13 @@ def init():		#Initialisation script
 			passwd=inp_passwd.get()
 			initdb(hostname,uname,passwd)
 
-		if str(login_type.get())=='U':
-			if pr_con_type.get() in ['U','N','D']:
-				prconnect()
-				dbconnect()
-				user_main()
-				con.close()
-			else:
-				messagebox.showerror('Error','Please select printer connection option.')
-
-		elif str(login_type.get())=='E':
-			if pr_con_type.get() in ['U','N','D']:
-				prconnect()
-				dbconnect()
-				emp_main()
-				con.close()
-			else:
-				messagebox.showerror('Error','Please select printer connection option.')
-
+		if pr_con_type.get() in ['N','D']:
+			prconnect()
+			dbconnect()
+			emp_main()
+			con.close()
 		else:
-			messagebox.showerror('Error','Please select login option.')
-
-	def enable_dbmsentries():
-		inp_host.configure(state='normal')
-		inp_host.update()
-
-		inp_uname.configure(state='normal')
-		inp_uname.update()
-
-		inp_passwd.configure(state='normal')
-		inp_passwd.update()
+			messagebox.showerror('Error','Please select printer connection option.')
 
 	def disable_nw_ip():
 		inp_pr_ip.configure(state='disabled')
@@ -152,37 +127,33 @@ def init():		#Initialisation script
 		inp_pr_ip.update()
 
 	init_window=tk.Tk()
-	init_window.title('Program Configuration')
+	init_window.title('ABC-IBS ('+build+')')
 	init_window.resizable(False, False)
 	icon=tk.PhotoImage(file='img/icon.png')
 	init_window.iconphoto(False,icon)
 
-	tk.Label(init_window,text='Program Configuration',font=h1fnt,justify=tk.LEFT).grid(column=0,row=0,padx=10,columnspan=2,sticky=tk.W)
+	tk.Label(init_window,text='IBS configuration options',font=h1fnt,justify=tk.LEFT).grid(column=0,row=0,padx=10,columnspan=2,sticky=tk.W)
 	
 	tk.Label(init_window,text='RDBMS Configuration',font=h2fnt,justify=tk.LEFT).grid(column=0,row=1,padx=10,columnspan=2,sticky=tk.W)
 	tk.Label(init_window,text='If no RDBMS login credentials are specified,\nit will fall back to those of root@localhost.',font=menufnt,justify=tk.LEFT).grid(column=0,row=4,padx=10,pady=10,columnspan=2,sticky=tk.W)
 
-	login_type = tk.StringVar(init_window)
-	ttk.Radiobutton(init_window, text = 'User Portal',variable = login_type,value = 'U',command=enable_dbmsentries).grid(column=1,row=5,sticky=tk.W,padx=10)
-	ttk.Radiobutton(init_window, text = 'Employee Portal',variable = login_type,value = 'E',command=enable_dbmsentries).grid(column=1,row=6,sticky=tk.W,padx=10)
-		
 	tk.Label(init_window,text='Host',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
-	inp_host=tk.Entry(init_window,font=fnt,state='disabled')
+	inp_host=tk.Entry(init_window,font=fnt)
 	inp_host.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
 
 	tk.Label(init_window,text='User',font=fnt).grid(column=0,row=9,sticky=tk.E,padx=10,pady=10)
-	inp_uname=tk.Entry(init_window,font=fnt,state='disabled')
+	inp_uname=tk.Entry(init_window,font=fnt)
 	inp_uname.grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
 
 	tk.Label(init_window,text='Password',font=fnt).grid(column=0,row=10,sticky=tk.E,padx=10,pady=10)
-	inp_passwd=tk.Entry(init_window,show='*',font=fnt,state='disabled')
+	inp_passwd=tk.Entry(init_window,show='*',font=fnt)
 	inp_passwd.grid(column=1,row=10,sticky=tk.EW,padx=10,pady=10)
 
-	tk.Label(init_window,text='Printer Configuration',font=h2fnt,justify=tk.LEFT).grid(column=0,row=12,padx=10,columnspan=2,sticky=tk.W)
+	tk.Label(init_window,text='ESC/POS Printer Configuration',font=h2fnt,justify=tk.LEFT).grid(column=0,row=12,padx=10,columnspan=2,sticky=tk.W)
 	tk.Label(init_window,text='If connection to printer cannot be made,\nprinting functionality will be automatically disabled.',font=menufnt,justify=tk.LEFT).grid(column=0,row=13,padx=10,pady=10,columnspan=2,sticky=tk.W)
 
 	pr_con_type=tk.StringVar(init_window)
-	ttk.Radiobutton(init_window, text = 'USB',variable = pr_con_type,value = 'U',command=disable_nw_ip).grid(column=0,row=14,sticky=tk.W,padx=10)
+	# ttk.Radiobutton(init_window, text = 'USB',variable = pr_con_type,value = 'U',command=disable_nw_ip).grid(column=0,row=14,sticky=tk.W,padx=10)
 	
 	ttk.Radiobutton(init_window, text = 'Network (enter IP address: )',variable = pr_con_type,value = 'N',command=enable_nw_ip).grid(column=0,row=15,sticky=tk.W,padx=10)
 	inp_pr_ip=tk.Entry(init_window,font=fnt,state='disabled')
@@ -191,8 +162,11 @@ def init():		#Initialisation script
 	ttk.Radiobutton(init_window, text = 'Disable printing',variable = pr_con_type,value = 'D',command=disable_nw_ip).grid(column=0,row=16,sticky=tk.W,padx=10)
 
 	submit=tk.Button(init_window,text='Continue',command=init_program,font=fntit)
-	submit.grid(column=1,row=20,padx=10,pady=10,sticky=tk.W)
+	submit.grid(column=1,row=20,padx=10,pady=10,sticky=tk.E)
 	init_window.bind('<Return>',lambda event:init_program())
+
+	submit=tk.Button(init_window,text='About ABC-IBS',command=about,font=fntit)
+	submit.grid(column=0,row=20,padx=10,pady=10,sticky=tk.W)
 
 	init_window.mainloop()
 
@@ -212,8 +186,8 @@ for ABC Lines
 	about.iconphoto(False,icon)
 
 	#Labels
-	tk.Label(about,text='About',font=h1fnt).grid(column=0,row=0,columnspan=3)
-	tk.Label(about,text=('Build '+build+'\n('+build_timestamp+')'),font=fnt).grid(column=0,row=1,columnspan=3)
+	tk.Label(about,text='Amadeus\nIntegrated Booking System (IBS)',font=h1fnt).grid(column=0,row=0,columnspan=3)
+	tk.Label(about,text=(''+build+'\n('+build_timestamp+')'),font=fnt).grid(column=0,row=1,columnspan=3)
 	
 	logo_img=tk.PhotoImage(file='img/amadeus.png')
 	logo=tk.Label(about,image=logo_img)
@@ -232,8 +206,11 @@ for ABC Lines
 
 	tk.Label(about,text=('Python',pf.python_version()),font=fnt).grid(column=0,row=7,padx=10)
 	tk.Label(about,text=('Tkinter',tk.TkVersion),font=fnt).grid(column=0,row=8,padx=10)
-	tk.Label(about,text=('MySQL',con.get_server_info()),font=fnt).grid(column=0,row=9,padx=10)
-	
+	try:
+		tk.Label(about,text=('MySQL',con.get_server_info()),font=fnt).grid(column=0,row=9,padx=10)
+	except:
+		tk.Label(about,text=('MySQL server is inactive.'),font=fntit).grid(column=0,row=9,padx=10)
+
 	if pf.system()=='Windows':
 		src=tk.PhotoImage(file='img/win.png')
 	elif pf.system()=='Darwin':		#Darwin - macOS
@@ -269,12 +246,18 @@ for ABC Lines
 	tk.Label(about,text=(pf.machine()+' system'),font=fnt).grid(column=0,row=12,columnspan=3,padx=10)
 	Separator(about,orient='horizontal').grid(column=0,row=16,sticky=tk.EW,padx=10,pady=10,columnspan=3)
 	
-	dbinfohdg=tk.Label(about,text='MySQL database details:',font=fntbit)
-	dbinfohdg.grid(column=0,row=18,columnspan=3,padx=10)
-	
-	dbinfo=tk.Label(about,text='Connected to database \''+con.database+'\''+' on '+con.server_host,font=fnt)
-	dbinfo.grid(column=0,row=19,columnspan=3,padx=10)
-	
+	try:
+		dbinfohdg=tk.Label(about,text='MySQL database details:',font=fntbit)
+		dbinfohdg.grid(column=0,row=18,columnspan=3,padx=10)
+		
+		dbinfo=tk.Label(about,text='Connected to database \''+con.database+'\''+' on '+con.server_host,font=fnt)
+		dbinfo.grid(column=0,row=19,columnspan=3,padx=10)
+	except:
+		dbinfohdg=tk.Label(about,text='MySQL database inactive',font=fntbit)
+		dbinfohdg.grid(column=0,row=18,columnspan=3,padx=10)
+		
+		dbinfo=tk.Label(about,text='Database details not available!',font=fnt)
+		dbinfo.grid(column=0,row=19,columnspan=3,padx=10)
 	Separator(about,orient='horizontal').grid(column=0,row=24,sticky=tk.EW,padx=10,pady=10,columnspan=3)
 	
 	#Closes the window
@@ -423,14 +406,8 @@ def bus_booking():		#Bus booking
 
 												bar_no=str(rd.randint(1000000000000,9999999999999))
 
-												if pr_choice=='U':
-													try:
-														pr = Usb(idVendor=0x0483,idProduct=0x5720,timeout=0,in_ep=0x81,out_ep=0x03)
-														stp()
-													except:
-														messagebox.showerror('Error','Unable to connect to printer via USB.',parent=submit_message)
 
-												elif pr_choice=='N':
+												if pr_choice=='N':
 													try:
 														pr = Network(pr_ip)
 														stp()
@@ -792,14 +769,7 @@ def taxi_booking():		#Taxi booking
 
 												bar_no=str(rd.randint(1000000000000,9999999999999))
 
-												if pr_choice=='U':
-													try:
-														pr = Usb(idVendor=0x0483,idProduct=0x5720,timeout=0,in_ep=0x81,out_ep=0x03)
-														stp()
-													except:
-														messagebox.showerror('Error','Unable to connect to printer via USB.',parent=submit_message)
-
-												elif pr_choice=='N':
+												if pr_choice=='N':
 													try:
 														pr = Network(pr_ip)
 														stp()
@@ -1011,758 +981,6 @@ def taxi_booking():		#Taxi booking
 	btn.image=subimg
 
 	taxibkg_win.bind('<Return>',lambda event:start_payment())
-
-def user_main():		#User main functions
-	#Initialise the UI
-	welcome=tk.Tk()
-	welcome.title('Welcome to ABC Lines')
-	try:
-		welcome.state('zoomed')
-	except:		
-		w,h=welcome.winfo_screenwidth(),welcome.winfo_screenheight()
-		welcome.geometry(str(w)+'x'+str(h))
-	icon=tk.PhotoImage(file='img/icon.png')
-	welcome.iconphoto(False,icon)
-
-	tk.Grid.columnconfigure(welcome,0,weight=1)
-
-	# definitions
-	def bookings():		#make bookings			
-		#init GUI
-		logwin=tk.Tk()
-		logwin.title('Make bookings')
-
-		icon=tk.PhotoImage(file='img/icon.png')
-		logwin.iconphoto(False,icon)
-
-		#Maximises windows
-		try:
-			logwin.state('zoomed')
-		except:		
-			w,h=logwin.winfo_screenwidth(),logwin.winfo_screenheight()
-			logwin.geometry(str(w)+'x'+str(h))
-
-		#login
-		def login():
-			#Main menu
-			def main():
-
-				def logout():	#Logs out and returns to the start page.
-					main_user_menu.destroy()
-					user_main()
-
-				main_user_menu=tk.Tk()
-				main_user_menu.title('Main Menu')
-				icon=tk.PhotoImage(file='img/icon.png')
-				main_user_menu.iconphoto(False,icon)
-				try:
-					main_user_menu.state('zoomed')
-				except:
-					w,h=main_user_menu.winfo_screenwidth(),main_user_menu.winfo_screenheight()
-					main_user_menu.geometry(str(w)+'x'+str(h))
-
-				menubar=tk.Menu(main_user_menu)
-
-				more=tk.Menu(menubar,tearoff=0)
-				menubar.add_cascade(label='Info',menu=more,font=menufnt)
-				more.add_command(label='About this program...',command=about,font=menufnt,underline=0)
-				main_user_menu.config(menu=menubar)
-
-				tk.Grid.columnconfigure(main_user_menu,0,weight=1)
-
-				#FRAME 1
-				tk.Grid.rowconfigure(main_user_menu,0,weight=1)
-				f1=tk.Frame(main_user_menu,bg='#283593')
-				f1.grid(row=0,column=0,sticky=tk.NSEW)
-
-				#frame 1 grid
-				tk.Grid.columnconfigure(f1,0,weight=1)
-
-				cur.execute('select uname,fname from users')
-				a=dict(cur.fetchall())
-				cur.execute('select uname,uuid from users')
-				uuidlist=dict(cur.fetchall())
-
-				tk.Grid.rowconfigure(f1,0,weight=1)
-				tk.Grid.rowconfigure(f1,1,weight=1)
-				tk.Grid.rowconfigure(f1,2,weight=1)
-
-				logo_img=tk.PhotoImage(file='img/logo.png')
-				logo=tk.Label(f1,image=logo_img,fg='white',bg='#283593')
-				logo.grid(column=0,row=0,padx=10,pady=10,sticky=tk.EW)
-				logo.image=logo_img
-
-				tk.Label(f1,text='Welcome, '+a[uname_inp],font=h1fnt,fg='white',bg='#283593').grid(column=0,row=1)
-				tk.Label(f1,text=('ID: '+uuidlist[uname_inp]),font=h2fnt,fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
-				
-				Separator(f1,orient='horizontal').grid(column=0,row=3,sticky=tk.EW,padx=10,pady=10)
-
-				#FRAME 2
-				tk.Grid.rowconfigure(main_user_menu,1,weight=1)
-				f2=tk.Frame(main_user_menu)
-				f2.grid(row=1,column=0,padx=10,pady=10,sticky=tk.NSEW)
-
-				#frame 2 grid
-				tk.Grid.columnconfigure(f2,0,weight=1)
-				tk.Grid.columnconfigure(f2,1,weight=1)
-				tk.Grid.columnconfigure(f2,2,weight=1)
-				tk.Grid.columnconfigure(f2,3,weight=1)
-
-				tk.Label(f2,text=('You can:'),font=fntit).grid(column=1,row=2,padx=10,pady=10,sticky=tk.W)
-
-				tk.Grid.rowconfigure(f2,5,weight=1)
-				#Book Taxi
-				img6=tk.PhotoImage(file='icons/taxi.png')
-				bkgbtn=tk.Button(f2,text='Book taxi',image=img6,font=fnt,command=taxi_booking)
-				bkgbtn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
-				tk.Label(f2,text='Book a taxi.',font=fnt,bg='yellow').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
-
-				#Book Bus
-				img4=tk.PhotoImage(file='icons/bus.png')
-				passbtn=tk.Button(f2,text='Book Bus',image=img4,command=bus_booking)
-				passbtn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
-				tk.Label(f2,text='Book a bus.',font=fnt,fg='blue').grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
-
-				tk.Label(f2,text=('or:'),font=fntit).grid(column=1,row=9,padx=10,sticky=tk.W)
-
-				tk.Grid.rowconfigure(f2,11,weight=1)
-				#Logout
-				img7=tk.PhotoImage(file='icons/logout.png')
-				logoutbtn=tk.Button(f2,text='Logout',font=fnt,image=img7,command=logout)
-				logoutbtn.grid(column=0,row=11,padx=10,pady=10,sticky=tk.E)
-				tk.Label(f2,text='Logout',font=fnt).grid(column=1,row=11,padx=10,pady=10,sticky=tk.W)
-
-				#Logout and Exit
-				img8=tk.PhotoImage(file='icons/close.png')
-				exitbtn=tk.Button(f2,text='Logout and exit',font=fnt,image=img8,command=main_user_menu.destroy)
-				exitbtn.grid(column=2,row=11,padx=10,pady=10,sticky=tk.E)
-				tk.Label(f2,text='Logout and exit',font=fnt,fg='red').grid(column=3,row=11,padx=10,pady=10,sticky=tk.W)
-
-				tk.Grid.rowconfigure(f2,12,weight=1)
-				main_user_menu.mainloop()
-
-			uname_inp=login_uname.get()
-			passwd_inp=login_passwd.get()
-			cur.execute('select uname,passwd from users')
-			op=dict(cur.fetchall())
-
-			cur.execute('select uname,fname from users')
-			fnamelist=dict(cur.fetchall())
-
-			if (not uname_inp=='' and not uname_inp.isspace()) and (not passwd_inp=='' and not passwd_inp.isspace()):
-				if uname_inp not in op.keys():
-					messagebox.showerror('Error','Username \''+uname_inp+'\' does not exist.')
-				else:
-					if not passwd_inp == op[uname_inp]:
-						messagebox.showerror('Error','Invalid password entered for '+fnamelist[uname_inp]+'.')
-					else:
-						logwin.destroy()
-						main()
-			else:
-				messagebox.showerror('Error','Please do not leave any fields blank.')
-
-		#Register user
-		def register():
-			uuid='U'+str(rd.randint(10000,99999))
-			#Adds user to DB
-			def reguser():
-				
-				reg_fname_inp=reg_fname.get()
-				reg_email_inp=reg_email.get()
-				reg_num_inp=reg_num.get()
-				reg_uname_inp=reg_uname.get().lower()
-				reg_passwd_inp=reg_passwd.get()
-
-				cur.execute('select uname from users')
-				users=cur.fetchall()
-
-				b=(reg_uname_inp,)
-				if (not reg_fname_inp.isspace()==True and not reg_fname_inp=='') and (not reg_email_inp.isspace()==True and not reg_email_inp=='') and (not reg_num_inp.isspace()==True and not reg_num_inp=='') and (not reg_uname_inp.isspace()==True and not reg_uname_inp=='') and (not reg_passwd_inp.isspace()==True and not reg_passwd_inp==''):		#checks if inputs are not empty or contains spaces
-					if b not in users:
-						if '@' in reg_email_inp and '.' in reg_email_inp:
-							if len(reg_num_inp) == 10:
-								regsql='insert into users values(%s,%s,%s,%s,%s,%s)'
-								regval=(uuid,reg_fname_inp,reg_email_inp,reg_num_inp,reg_uname_inp,reg_passwd_inp)
-
-								cur.execute(regsql,regval)
-								con.commit()
-
-								messagebox.showinfo('','The new user '+reg_fname_inp+'\nhas been successfully registered.',parent=logwin)
-								logwin.destroy()
-							else:
-								messagebox.showerror('Error','Invalid phone number entered.',parent=logwin)
-						else:
-							messagebox.showerror('Error','Invalid electronic mail ID entered.',parent=logwin)		
-					else:
-						messagebox.showerror('Error','Username '+reg_uname_inp+'\nalready exists.',parent=logwin)
-					
-				else:
-					messagebox.showerror('Error','Please do not leave any fields blank.',parent=logwin)
-			
-			logwin=tk.Toplevel()
-			logwin.title('Register')
-			logwin.resizable(False, False)
-			icon=tk.PhotoImage(file='img/icon.png')
-			logwin.iconphoto(False,icon)
-
-			tk.Label(logwin,text='Register',font=h1fnt).grid(column=0,row=0,padx=10,pady=10,columnspan=2,sticky=tk.EW)
-			
-			tk.Label(logwin,text='ID',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
-			tk.Label(logwin,text=uuid,font=fnt).grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
-			
-			tk.Label(logwin,text='1. Personal info',font=fntit).grid(column=0,row=5,sticky=tk.W,padx=10,pady=10)
-
-			tk.Label(logwin,text='Name',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
-			reg_fname=tk.Entry(logwin,font=fnt)
-			reg_fname.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
-
-			tk.Label(logwin,text='Electronic mail ID',font=fnt).grid(column=0,row=7,sticky=tk.E,padx=10,pady=10)
-			reg_email=tk.Entry(logwin,font=fnt)
-			reg_email.grid(column=1,row=7,sticky=tk.EW,padx=10,pady=10)
-
-			tk.Label(logwin,text='Phone number',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
-			reg_num=tk.Entry(logwin,font=fnt)
-			reg_num.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
-
-			tk.Label(logwin,text='2. Login info',font=fntit).grid(column=0,row=10,sticky=tk.W,padx=10,pady=10)
-
-			tk.Label(logwin,text='Username',font=fnt).grid(column=0,row=11,sticky=tk.E,padx=10,pady=10)
-			reg_uname=tk.Entry(logwin,font=fnt)
-			reg_uname.grid(column=1,row=11,sticky=tk.EW,padx=10,pady=10)
-
-			tk.Label(logwin,text='Password',font=fnt).grid(column=0,row=12,sticky=tk.E,padx=10,pady=10)
-			reg_passwd=tk.Entry(logwin,show='*',font=fnt)
-			reg_passwd.grid(column=1,row=12,sticky=tk.EW,padx=10,pady=10)
-
-			regsubmit=tk.Button(logwin,text='Register',command=reguser,font=fntit)
-			regsubmit.grid(column=1,row=14,padx=10,pady=10,sticky=tk.W)
-			logwin.bind('<Return>',lambda event:reguser())
-		
-		#Opens manage profile window
-		def manage_profile():
-			logwin.destroy()
-			manage_user_profile()
-
-		#Window
-		tk.Grid.columnconfigure(logwin,0,weight=1)
-
-		#FRAME 1
-		tk.Grid.rowconfigure(logwin,0,weight=1)
-		f1=tk.Frame(logwin,bg='#283593')
-		f1.grid(row=0,column=0,sticky=tk.NSEW)
-
-		#frame 1 grid
-		tk.Grid.columnconfigure(f1,0,weight=1)
-
-		tk.Grid.rowconfigure(f1,0,weight=1)
-		tk.Label(f1,text='Login',font=h1fnt,fg='white',bg='#283593').grid(column=0,row=0)
-		Separator(f1,orient='horizontal').grid(row=1,column=0,sticky=tk.EW,padx=10,pady=10)
-
-		#FRAME 2
-		tk.Grid.rowconfigure(logwin,1,weight=1)
-		f2=tk.Frame(logwin)
-		f2.grid(row=1,column=0,padx=10,pady=10,sticky=tk.NSEW)
-
-		#frame 2 grid
-		tk.Grid.columnconfigure(f2,0,weight=1)
-		tk.Grid.columnconfigure(f2,1,weight=1)
-
-		tk.Label(f2,text='Username',font=fnt).grid(column=0,row=3,padx=10,pady=10,sticky=tk.E)
-		login_uname=tk.Entry(f2,font=fnt)
-		login_uname.grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
-
-		tk.Label(f2,text='Password',font=fnt).grid(column=0,row=4,padx=10,pady=10,sticky=tk.E)
-		login_passwd=tk.Entry(f2,show='*',font=fnt)
-		login_passwd.grid(column=1,row=4,sticky=tk.W,padx=10,pady=10)
-
-		img1=tk.PhotoImage(file='icons/login.png')
-		logsubmit=tk.Button(f2,text='Login...',image=img1,command=login)
-		logsubmit.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
-
-		tk.Grid.rowconfigure(f2,12,weight=2)
-		tk.Label(f2,text='New here?\nClick here to register.',font=fntit,justify=tk.RIGHT,fg='#283593').grid(column=0,row=12,padx=10,pady=10,sticky=tk.E)
-		img2=tk.PhotoImage(file='icons/adduser.png')
-		reg=tk.Button(f2,text='Register',image=img2,command=register)
-		reg.grid(column=1,row=12,padx=10,pady=10,sticky=tk.W)
-
-		manage=tk.Button(f2,text='Manage your profile...',font=fntit,command=manage_profile)
-		manage.grid(column=1,row=11,padx=10,pady=10,columnspan=2,sticky=tk.W)
-
-		logwin.bind('<Return>',lambda event:login())
-		logwin.mainloop()
-
-	def manage_user_profile():		#manages profile
-		#init GUI
-		login_win=tk.Tk()
-		login_win.title('Manage profile')
-		icon=tk.PhotoImage(file='img/icon.png')
-		login_win.iconphoto(False,icon)
-
-		try:
-			login_win.state('zoomed')
-		except:
-			w,h=login_win.winfo_screenwidth(),login_win.winfo_screenheight()
-			login_win.geometry(str(w)+'x'+str(h))
-
-		def bookings_login():
-			login_win.destroy()
-			bookings()
-		
-		def login():
-			def manage(): #Manage user window
-
-				def delete_profile():	#Delete function
-					cur.execute('select uname,fname from users')
-					a=cur.fetchall()
-					user_namelist=dict(a)				
-					def deluser():	#Delete user from DB
-						cur.execute('select uname,passwd from users')
-						b=cur.fetchall()
-						upass=dict(b)
-						p=del_passwd.get()
-						
-						if not p=='' and not p.isspace():
-							if p == upass[uname_inp]:
-								confirm=messagebox.askyesno('','Really delete your user profile?',parent=delwin)
-								if confirm==True:
-									sql="delete from users where uname =%s"
-									val=(uname_inp,)
-									cur.execute(sql,val)
-									con.commit()
-									messagebox.showinfo('','User '+user_namelist[uname_inp]+' deleted.\nYou will be returned to the start page.',parent=delwin)
-									delwin.destroy()
-									mguser_win.destroy()
-									user_main()
-								else:
-									pass
-							else:
-								messagebox.showerror('Error','Invalid password entered.',parent=delwin)
-						else:
-							messagebox.showerror('Error','Please enter a password.',parent=delwin)
-					
-					delwin=tk.Toplevel()
-					delwin.title('Delete User')
-					delwin.resizable(False,False)
-					tk.Label(delwin,text='Delete User',font=h1fnt).grid(column=0,row=0,padx=10,pady=10)
-
-					tk.Label(delwin,text='Please enter the password.',font=fnt).grid(column=0,row=4,sticky=tk.W,padx=10,pady=10)
-					del_passwd=tk.Entry(delwin,show='*',font=fnt);del_passwd.grid(column=0,row=5,sticky=tk.EW,padx=10,pady=10)
-
-					delsubmit=tk.Button(delwin,text='Delete User',command=deluser,font=fntit,fg='red');delsubmit.grid(column=0,row=6,padx=10,pady=10)
-					delwin.bind('<Return>',lambda event:deluser())
-					
-				def passwd():	#Change password function
-					def chpasswd():		#Changes passwd in DB.
-						cur.execute('select uname,passwd from users')
-						b=cur.fetchall()
-						upass=dict(b)
-						op=old_pass.get()
-						np=new_pass.get()
-						if (not np=='' and not np.isspace()) and (not op=='' and not op.isspace()):
-							if op == upass[uname_inp]:
-								confirm=messagebox.askyesno('','Really change your password?',parent=passwin)
-								if confirm==True:
-									sql="update users set passwd=%s where uname=%s"
-									val=(np,uname_inp)
-									cur.execute(sql,val)
-									con.commit()
-									messagebox.showinfo('','Password updated.',parent=passwin)
-									passwin.destroy()
-								else:
-									pass
-							else:
-								messagebox.showerror('Error','Invalid old password entered.',parent=passwin)
-						else:
-							messagebox.showerror('Error','Please do not leave any fields blank.',parent=passwin)
-
-					passwin=tk.Toplevel()
-					passwin.title('Change Password')
-					passwin.resizable(False,False)
-					icon=tk.PhotoImage(file='img/icon.png')
-					passwin.iconphoto(False,icon)
-
-
-					tk.Label(passwin,text='Changing password for '+fnamelist[uname_inp],font=(h1fnt,18)).grid(column=1,row=0,padx=10,pady=10)
-
-					tk.Label(passwin,text='Current Password',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
-					old_pass=tk.Entry(passwin,show='*',font=fnt);old_pass.grid(column=1,row=5,sticky=tk.EW,padx=10,pady=10)
-					
-					tk.Label(passwin,text='New Password',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
-					new_pass=tk.Entry(passwin,show='*',font=fnt);new_pass.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
-					
-					passsubmit=tk.Button(passwin,text='Change password',command=chpasswd,font=fntit)
-					passsubmit.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
-					passwin.bind('<Return>',lambda event:chpasswd())
-					
-				def logout():	#Logs out
-					mguser_win.destroy()
-					user_main()
-				
-				def info():		#Changes personal information.
-					chinfo_home=tk.Toplevel()
-					chinfo_home.resizable(False,False)
-					chinfo_home.title('Change personal information')
-					icon=tk.PhotoImage(file='img/icon.png')
-					chinfo_home.iconphoto(False,icon)
-
-					tk.Label(chinfo_home,text=('Change your\npersonal information'),font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,sticky=tk.W)
-					
-					def name():		#Change full (display) name
-						def chname():		#Changes full name in DB
-							new_name=en1.get()
-
-							if not new_name=='' and not new_name.isspace():
-								sql="update users set fname=%s where uname like %s"
-								val=(new_name,uname_inp)
-
-								cur.execute(sql,val)
-								con.commit()
-
-								messagebox.showinfo('','Name successfully changed from '+fnamelist[uname_inp]+' to '+new_name+'.\nPlease log out for any changes to take effect.',parent=chinfo_name)
-								tk.Label(chinfo_name,text='Please log out for\nany changes to take effect.',font=fnt,justify=tk.LEFT).grid(row=8,column=1,sticky=tk.W,padx=10,pady=10)
-								chinfo_name.destroy()
-							else:
-								messagebox.showerror('','No new name has been specified.',parent=chinfo_name)
-						chinfo_name=tk.Toplevel()
-						chinfo_name.resizable(False,False)
-						chinfo_name.title('Change display name...')
-						icon=tk.PhotoImage(file='img/icon.png')
-						chinfo_name.iconphoto(False,icon)
-
-						tk.Label(chinfo_name,text=('Change your display (full) name'),font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,sticky=tk.W)
-						
-						tk.Label(chinfo_name,text='Current name',font=fnt).grid(row=5,column=0,sticky=tk.E,padx=10,pady=10)
-						tk.Label(chinfo_name,text=fnamelist[uname_inp],font=fnt).grid(row=5,column=1,sticky=tk.W,padx=10,pady=10)
-
-						tk.Label(chinfo_name,text='New name',font=fnt).grid(row=6,column=0,sticky=tk.E,padx=10,pady=10)
-						en1=tk.Entry(chinfo_name,font=fnt)
-						en1.grid(row=6,column=1,sticky=tk.W,padx=10,pady=10)
-
-						btn3=tk.Button(chinfo_name,text='Make changes',font=fntit,command=chname)
-						btn3.grid(row=10,column=1,padx=10,pady=10,sticky=tk.W)
-
-						#Binds Enter key to submit function
-						chinfo_name.bind('<Return>',lambda event:chname())
-
-					def contacts():		#Change contact info
-						def chcontacts():	#Changes email or phone number in DB
-							new_email=en2.get()
-							new_num=en3.get()
-						
-							def changes_confirmed():
-								chinfo_contacts.destroy()
-								
-							if (not new_num=='' and not new_num.isspace()) or (not new_email=='' and not new_email.isspace()):
-								if new_num=='' or new_num.isspace():
-									if '@' in new_email and '.' in new_email:
-										sql='update users set email=%s where uname like %s' 
-										val=(new_email,uname_inp)
-										cur.execute(sql,val)
-										con.commit()
-										messagebox.showinfo('','Electronic mail address changed successfully to '+new_email+'.',parent=chinfo_contacts)
-										changes_confirmed()							
-									else:
-										messagebox.showerror('Error','Invalid electronic mail entered.',parent=chinfo_contacts)
-								elif new_email=='' or new_email.isspace():
-									if len(new_num)==10:
-										sql='update users set num=%s where uname like %s' 
-										val=(new_num,uname_inp)
-										cur.execute(sql,val)
-										con.commit()
-										messagebox.showinfo('','Phone number changed successfully to '+new_num+'.',parent=chinfo_contacts)
-										changes_confirmed()						
-									else:
-										messagebox.showerror('Error','Invalid phone number entered.',parent=chinfo_contacts)
-								elif (not new_num=='' and not new_num.isspace()) and (not new_email=='' and not new_email.isspace()):
-									if ('@' in new_email and '.' in new_email) and (len(new_num)==10):
-										sql='update users set email=%s where uname like %s' 
-										val=(new_email,uname_inp)
-										cur.execute(sql,val)
-										con.commit()
-
-										sql='update users set num=%s where uname like %s' 
-										val=(new_num,uname_inp)
-										cur.execute(sql,val)
-										con.commit()
-										messagebox.showinfo('','Electronic mail address and phone number changed successfully to '+new_email+' and '+new_num+', respectively.',parent=chinfo_contacts)
-										changes_confirmed()							
-									else:
-										messagebox.showerror('Error','Invalid electronic mail or phone number entered.',parent=chinfo_contacts)
-							else:
-								messagebox.showerror('Error','Please fill at least one field.',parent=chinfo_contacts)
-
-						cur.execute('select uname,email from users')
-						a=dict(cur.fetchall())
-
-						cur.execute('select uname,num from users')
-						b=dict(cur.fetchall())
-
-						chinfo_contacts=tk.Toplevel()
-						chinfo_contacts.resizable(False,False)
-						icon=tk.PhotoImage(file='img/icon.png')
-						chinfo_contacts.iconphoto(False,icon)
-
-						chinfo_contacts.title('Change contact details...')
-						tk.Label(chinfo_contacts,text=('Change your contact details'),font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,sticky=tk.W)
-						tk.Label(chinfo_contacts,text='If you do not wish to change a\nparticular contact, then leave the\ncorresponding field blank.',font=fnt,justify=tk.LEFT).grid(row=2,column=1,sticky=tk.W,padx=10,pady=10)
-						tk.Label(chinfo_contacts,text='Current\nelectronic mail address',font=fnt,justify=tk.RIGHT).grid(row=5,column=0,sticky=tk.E,padx=10,pady=10)
-						tk.Label(chinfo_contacts,text=a[uname_inp],font=fnt).grid(row=5,column=1,sticky=tk.W,padx=10,pady=10)
-
-						tk.Label(chinfo_contacts,text='New\nelectronic mail address',font=fnt,justify=tk.RIGHT).grid(row=6,column=0,sticky=tk.E,padx=10,pady=10)
-						en2=tk.Entry(chinfo_contacts,font=fnt)
-						en2.grid(row=6,column=1,sticky=tk.EW,padx=10,pady=10)
-
-						tk.Label(chinfo_contacts,text='Current phone number',font=fnt).grid(row=7,column=0,sticky=tk.E,padx=10,pady=10)
-						tk.Label(chinfo_contacts,text=b[uname_inp],font=fnt).grid(row=7,column=1,sticky=tk.W,padx=10,pady=10)
-
-						tk.Label(chinfo_contacts,text='New phone number',font=fnt).grid(row=8,column=0,sticky=tk.E,padx=10,pady=10)
-						en3=tk.Entry(chinfo_contacts,font=fnt)
-						en3.grid(row=8,column=1,sticky=tk.EW,padx=10,pady=10)
-
-						btn3=tk.Button(chinfo_contacts,text='Make changes',font=fntit,command=chcontacts)
-						btn3.grid(row=15,column=1,padx=10,pady=10,sticky=tk.W)
-
-						#Binds Enter key to submit function
-						chinfo_contacts.bind('<Return>',lambda event:chcontacts())
-
-					img1=tk.PhotoImage(file='icons/user.png')
-					btn1=tk.Button(chinfo_home,text='Name',image=img1,command=name)
-					btn1.image=img1
-					btn1.grid(column=0,row=3,padx=10,pady=10,sticky=tk.E)
-					tk.Label(chinfo_home,text='Change your display (full) name',font=fnt,justify=tk.LEFT).grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
-
-					img2=tk.PhotoImage(file='icons/contacts-2.png')
-					btn2=tk.Button(chinfo_home,text='Contact',image=img2,command=contacts)
-					btn2.image=img2
-					btn2.grid(column=0,row=6,padx=10,pady=10,sticky=tk.E)
-					tk.Label(chinfo_home,text='Change your contact details',font=fnt).grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
-
-				cur.execute('select uname,uuid from users')
-				uuidlist=dict(cur.fetchall())
-				cur.execute('select uname,fname from users')
-				fnamelist=dict(cur.fetchall())
-				
-				login_win.destroy()
-
-				mguser_win=tk.Tk()
-				mguser_win.title('Manage profile')
-				icon=tk.PhotoImage(file='img/icon.png')
-				mguser_win.iconphoto(False,icon)
-
-				try:
-					mguser_win.state('zoomed')
-				except:
-					w,h=mguser_win.winfo_screenwidth(),mguser_win.winfo_screenheight()
-					mguser_win.geometry(str(w)+'x'+str(h))
-				
-				#Menubar
-				menubar=tk.Menu(mguser_win)
-				more=tk.Menu(menubar,tearoff=0)
-				menubar.add_cascade(label='Info',menu=more,font=menufnt)
-				more.add_command(label='About this program...',command=about,font=menufnt,underline=0)
-				mguser_win.config(menu=menubar)
-
-				tk.Grid.columnconfigure(mguser_win,0,weight=1)
-				
-				#FRAME 1
-				tk.Grid.rowconfigure(mguser_win,0,weight=1)
-				f1=tk.Frame(mguser_win,bg='#283593')
-				f1.grid(row=0,column=0,sticky=tk.NSEW)
-
-				#frame 1 grid
-				tk.Grid.columnconfigure(f1,0,weight=1)
-				
-				tk.Grid.rowconfigure(f1,0,weight=1)
-				tk.Grid.rowconfigure(f1,1,weight=1)
-				tk.Grid.rowconfigure(f1,2,weight=1)
-				tk.Grid.rowconfigure(f1,3,weight=1)
-
-				logo_img=tk.PhotoImage(file='img/logo.png')
-				logo=tk.Label(f1,image=logo_img,fg='white',bg='#283593')
-				logo.grid(column=0,row=0,padx=10,pady=10,sticky=tk.EW)
-				logo.image=logo_img
-
-				tk.Label(f1,text=('Welcome, '+fnamelist[uname_inp]),font=h1fnt,fg='white',bg='#283593').grid(column=0,row=1,padx=10,sticky=tk.EW)
-				tk.Label(f1,text=('ID: '+uuidlist[uname_inp]),font=h2fnt,fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
-				tk.Label(f1,text=('Manage your profile'),font=h2fnt,fg='white',bg='#283593').grid(column=0,row=3,padx=10,sticky=tk.EW)
-				
-				Separator(f1,orient='horizontal').grid(column=0,row=4,sticky=tk.EW,padx=10,pady=10,columnspan=2)
-				#FRAME 2
-				tk.Grid.rowconfigure(mguser_win,1,weight=1)
-				f2=tk.Frame(mguser_win)
-				f2.grid(row=1,column=0,padx=10,pady=10,sticky=tk.NSEW)
-
-				#frame 2 grid
-				tk.Grid.columnconfigure(f2,0,weight=1)
-				tk.Grid.columnconfigure(f2,1,weight=1)
-				tk.Grid.columnconfigure(f2,2,weight=1)
-				tk.Grid.columnconfigure(f2,3,weight=1)
-
-				tk.Label(f2,text=('You can:'),font=fntit).grid(column=1,row=2,padx=10,pady=10,sticky=tk.W)
-				
-				tk.Grid.rowconfigure(f2,5,weight=1)
-				img4=tk.PhotoImage(file='icons/passwd.png')
-				passbtn=tk.Button(f2,text='Change Password',image=img4,command=passwd)
-				passbtn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
-				tk.Label(f2,text='Change your password.',font=fnt).grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
-
-				img9=tk.PhotoImage(file='icons/user.png')
-				delusrbtn=tk.Button(f2,text='Manage Personal Info',image=img9,command=info)
-				delusrbtn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
-				tk.Label(f2,text='Change your personal information.',font=fnt,fg='green').grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
-
-				tk.Grid.rowconfigure(f2,6,weight=1)
-				img3=tk.PhotoImage(file='icons/ban_user.png')
-				delusrbtn=tk.Button(f2,text='Remove User',image=img3,command=delete_profile)
-				delusrbtn.grid(column=0,row=6,padx=10,pady=10,sticky=tk.E)
-				tk.Label(f2,text='Delete your profile.',font=fnt,fg='red').grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
-				
-				tk.Label(f2,text=('or:'),font=fntit).grid(column=1,row=9,padx=10,sticky=tk.W)
-
-				tk.Grid.rowconfigure(f2,11,weight=1)
-				img7=tk.PhotoImage(file='icons/logout.png')
-				logoutbtn=tk.Button(f2,text='Logout',font=fnt,image=img7,command=logout)
-				logoutbtn.grid(column=0,row=11,padx=10,pady=10,sticky=tk.E)
-				tk.Label(f2,text='Logout',font=fnt).grid(column=1,row=11,padx=10,pady=10,sticky=tk.W)
-
-				img8=tk.PhotoImage(file='icons/close.png')
-				exitbtn=tk.Button(f2,text='Logout and exit',font=fnt,image=img8,command=mguser_win.destroy)
-				exitbtn.grid(column=2,row=11,padx=10,pady=10,sticky=tk.E)
-				tk.Label(f2,text='Logout and exit',font=fnt,fg='red').grid(column=3,row=11,padx=10,pady=10,sticky=tk.W)
-				
-				mguser_win.mainloop()
-
-			uname_inp=login_uname.get()
-			passwd_inp=login_passwd.get()
-			cur.execute('select uname,passwd from users')
-			op=dict(cur.fetchall())
-
-			cur.execute('select uname,fname from users')
-			fnamelist=dict(cur.fetchall())
-
-			if (not uname_inp=='' and not uname_inp.isspace()) and (not passwd_inp=='' and not passwd_inp.isspace()):
-				if uname_inp not in op.keys():
-					messagebox.showerror('Error','Username \''+uname_inp+'\' does not exist.')
-				else:
-					if not passwd_inp == op[uname_inp]:
-						messagebox.showerror('Error','Invalid password entered for '+fnamelist[uname_inp]+'.')
-					else:
-						manage()
-			else:
-				messagebox.showerror('Error','Please do not leave any fields blank.')
-
-		tk.Grid.columnconfigure(login_win,0,weight=1)
-
-		#FRAME 3
-		tk.Grid.rowconfigure(login_win,0,weight=1)
-		f3=tk.Frame(login_win,bg='#283593')
-		f3.grid(row=0,column=0,sticky=tk.NSEW)
-
-		#frame 3 grid
-		tk.Grid.columnconfigure(f3,0,weight=1)
-
-		tk.Grid.rowconfigure(f3,0,weight=1)
-		tk.Label(login_win,text='Login',font=h1fnt,fg='white',bg='#283593').grid(column=0,row=0)
-		Separator(f3,orient='horizontal').grid(row=1,column=0,sticky=tk.EW,padx=10,pady=10)
-
-		#FRAME 4
-		tk.Grid.rowconfigure(login_win,1,weight=1)
-		f4=tk.Frame(login_win)
-		f4.grid(row=1,column=0,sticky=tk.NSEW,padx=10,pady=10)
-
-		#frame 4 grid
-		tk.Grid.columnconfigure(f4,0,weight=1)
-		tk.Grid.columnconfigure(f4,1,weight=1)
-
-		tk.Label(f4,text='Username',font=fnt).grid(column=0,row=3,padx=10,pady=10,sticky=tk.E)
-		login_uname=tk.Entry(f4,font=fnt)
-		login_uname.grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
-
-		tk.Label(f4,text='Password',font=fnt).grid(column=0,row=4,padx=10,pady=10,sticky=tk.E)
-		login_passwd=tk.Entry(f4,show='*',font=fnt)
-		login_passwd.grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
-
-		img1=tk.PhotoImage(file='icons/login.png')
-		logsubmit=tk.Button(f4,text='Login...',image=img1,command=login)
-		logsubmit.grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
-
-		tk.Grid.rowconfigure(f4,6,weight=1)
-		tk.Label(f4,text='Want to make bookings?\nClick here to continue.',font=fntit,justify=tk.RIGHT,bg='#00e676').grid(column=0,row=6,padx=10,pady=10,sticky=tk.E)
-		img6=tk.PhotoImage(file='icons/booking.png')
-		bkgbtn=tk.Button(f4,text='Booking',image=img6,font=fnt,command=bookings_login)
-		bkgbtn.grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
-
-		#Binds enter key to login function
-		login_win.bind('<Return>',lambda event:login())
-		login_win.mainloop()
-
-	menubar=tk.Menu(welcome)
-
-	more=tk.Menu(menubar,tearoff=0)
-	menubar.add_cascade(label='Info',menu=more,font=menufnt)
-	more.add_command(label='About this program...',command=about,font=menufnt,underline=0)
-	welcome.config(menu=menubar)
-
-	tk.Grid.columnconfigure(welcome,0,weight=1)
-
-	#FRAME 1
-	tk.Grid.rowconfigure(welcome,0,weight=1)
-	f1=tk.Frame(welcome,bg='#283593')
-	f1.grid(row=0,column=0,sticky=tk.NSEW)
-
-	#frame 1 grid
-	tk.Grid.columnconfigure(f1,0,weight=1)
-	tk.Grid.rowconfigure(f1,0,weight=1)
-
-	logo_img=tk.PhotoImage(file='img/logo.png')
-	logo=tk.Label(f1,image=logo_img,font=h1fnt,fg='white',bg='#283593')
-	logo.grid(column=0,row=0,padx=10,pady=10,sticky=tk.EW)
-	logo.image=logo_img
-
-	Separator(f1,orient='horizontal').grid(column=0,row=1,sticky=tk.EW,padx=10,pady=10,columnspan=2)
-
-	#FRAME 2
-	tk.Grid.rowconfigure(welcome,1,weight=1)
-
-	f2=tk.Frame(welcome)
-	f2.grid(row=1,column=0,padx=10,pady=10,sticky=tk.NSEW)
-
-	#frame 2 grid
-	tk.Grid.columnconfigure(f2,0,weight=1)
-	tk.Grid.columnconfigure(f2,1,weight=1)
-
-	def open_bookings():
-		welcome.destroy()
-		bookings()
-
-	def open_manage():
-		welcome.destroy()
-		manage_user_profile()
-
-	#Bookings
-	tk.Grid.rowconfigure(f2,5,weight=1)
-	img6=tk.PhotoImage(file='icons/booking.png')
-	bkgbtn=tk.Button(f2,text='Booking',image=img6,font=fnt,command=open_bookings)
-	bkgbtn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
-	tk.Label(f2,text='Make a booking...',font=fnt,bg='#00e676').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
-
-	#Manage Profile
-	tk.Grid.rowconfigure(f2,6,weight=1)	
-	img4=tk.PhotoImage(file='icons/manage_accts.png')
-	passbtn=tk.Button(f2,text='Profile',image=img4,command=open_manage)
-	passbtn.grid(column=0,row=6,padx=10,pady=10,sticky=tk.E)
-	tk.Label(f2,text='Manage user profile...',font=fnt).grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
-
-	#Exit
-	tk.Grid.rowconfigure(f2,7,weight=1)	
-	img5=tk.PhotoImage(file='icons/close.png')
-	passbtn=tk.Button(f2,text='Exit',image=img5,command=welcome.destroy)
-	passbtn.grid(column=0,row=7,padx=10,pady=10,sticky=tk.E)
-	tk.Label(f2,text='Exit',font=fnt,fg='red').grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
-
-	tk.Grid.rowconfigure(f2,8,weight=1)	
-
-	welcome.mainloop()
 
 def emp_main():			#Corporate functions
 	#main window
@@ -3159,8 +2377,8 @@ def emp_main():			#Corporate functions
 				tk.Message(f2,text='WARNING: This will delete\nan agent\'s profile\nfrom the system permanently.',width=500,font=fnt,fg='white',bg='red').grid(column=1,row=8,padx=10,pady=10,sticky=tk.NW)
 
 				tk.Grid.rowconfigure(f2,16,weight=1)
-				
-			def manage_users():	#Manage users
+			
+			'''def manage_users():	#Manage users
 				manageuserwin=tk.Toplevel()
 				manageuserwin.title('User Manager')
 				icon=tk.PhotoImage(file='img/icon.png')
@@ -3533,7 +2751,7 @@ def emp_main():			#Corporate functions
 
 				tk.Grid.rowconfigure(f2,16,weight=1)
 
-				tk.Grid.rowconfigure(f2,17,weight=1)
+				tk.Grid.rowconfigure(f2,17,weight=1)'''				
 
 			def manage_db():	#Manage databases
 
@@ -3932,11 +3150,11 @@ which deletes the table structure from the database along with its contents.'''
 			btn5.image=img12
 			tk.Label(f2,text='Manage the administrators.',font=fnt,fg='red').grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
 
-			img11=tk.PhotoImage(file='icons/people.png')
-			btn4=tk.Button(f2,text='Manage users',image=img11,font=fnt,command=manage_users)
-			btn4.grid(column=2,row=6,padx=10,pady=10,sticky=tk.E)
-			btn4.image=img11
-			tk.Label(f2,text='Manage the users.',font=fnt,fg='purple').grid(column=3,row=6,padx=10,pady=10,sticky=tk.W)
+			# img11=tk.PhotoImage(file='icons/people.png')
+			# btn4=tk.Button(f2,text='Manage users',image=img11,font=fnt,command=manage_users)
+			# btn4.grid(column=2,row=6,padx=10,pady=10,sticky=tk.E)
+			# btn4.image=img11
+			# tk.Label(f2,text='Manage the users.',font=fnt,fg='purple').grid(column=3,row=6,padx=10,pady=10,sticky=tk.W)
 			
 			tk.Grid.rowconfigure(f2,8,weight=1)
 
@@ -3957,7 +3175,6 @@ which deletes the table structure from the database along with its contents.'''
 			root.mainloop()
 
 		def agent_portal():		#Agent booking menu
-
 			#functions
 			
 			def about_this_program():
