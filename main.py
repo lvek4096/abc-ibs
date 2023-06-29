@@ -14,8 +14,8 @@ import platform as pf
 from datetime import datetime,timedelta
 from escpos.printer import Network
 
-build='ibs.beta-325'
-build_timestamp='2023-06-29 23:30:51'	
+build='ibs.beta-326'
+build_timestamp='2023-06-30 00:09:11'	
 
 
 #font choice
@@ -365,13 +365,13 @@ def bus_booking():		#Bus booking
 										booking_summary=scrolledtext.ScrolledText(submit_message,font=fnt,width=30,height=8)
 										booking_summary.grid(column=0,row=3,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 
-										text2='\nBus Booking\n-----------\n\nBooking ID: '+id+'\nBooking Timestamp: \n'+bkg_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+n.get()+'\n\nDate: '+date_inp+'\nTime: '+time_inp+'\n\nRate: $'+str(rate)+' per km\nDistance: '+str(distance)+' km\nNumber of passengers: '+str(passno)+'\n\nTotal fare: $'+str(total_fare)+'\n\nPayment\n-------\n\n'+'Payment ID: '+payment_id+'\nPaid by: '+m.get()+'\nCardholder name: '+card_name.get()+'\nCard number: XXXX-XXXX-XXXX-'+card_no.get()[-4:]+'\nCard type: '+cardtype+'\nAmount paid: $'+str(total_fare)+'\n\n------------------'+'\nPAYMENT SUCCESSFUL'+'\n------------------\n'
-										booking_summary.insert(tk.INSERT,text2)
+										summary_text='\nBus Booking\n-----------\n\nBooking ID: '+id+'\nBooking Timestamp: \n'+bkg_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+n.get()+'\n\nDate: '+date_inp+'\nTime: '+time_inp+'\n\nRate: $'+str(rate)+' per km\nDistance: '+str(distance)+' km\nNumber of passengers: '+str(passno)+'\n\nTotal fare: $'+str(total_fare)+'\n\nPayment\n-------\n\n'+'Payment ID: '+payment_id+'\nPaid by: '+m.get()+'\nCardholder name: '+card_name.get()+'\nCard number: XXXX-XXXX-XXXX-'+card_no.get()[-4:]+'\nCard type: '+cardtype+'\nAmount paid: $'+str(total_fare)+'\n\n------------------'+'\nPAYMENT SUCCESSFUL'+'\n------------------\n'
+										booking_summary.insert(tk.INSERT,summary_text)
 										booking_summary.configure(state='disabled')
 										
 										def clipboard():
 											submit_message.clipboard_clear()
-											submit_message.clipboard_append(text2)
+											submit_message.clipboard_append(summary_text)
 											btn1.configure(fg='green',text='Copied!')
 										
 										def exit():
@@ -385,10 +385,12 @@ def bus_booking():		#Bus booking
 										if isPrintingEnabled==True:
 
 											def send_to_printer():
+												
+												summary_text='\nBus Booking\n------------\n\nBooking ID: '+id+'\nBooking Timestamp: \n'+bkg_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+n.get()+'\n\nDate: '+date_inp+'\nTime: '+time_inp+'\n\nDistance: '+str(distance)+' km'+'\nTotal fare: $'+str(total_fare)+'\n\nPayment\n-------\n\n'+'Payment ID: '+payment_id+'\nPaid by: '+m.get()+'\nEnjoy your journey! Thank you for choosing ABC LINES!'+'\n------------------\n'
 
 												def stp():
 													pr.image('img/icon-2.png')
-													pr.text(text2)
+													pr.text(summary_text)
 													pr.barcode(bar_no, 'EAN13')
 													pr.text('\n')
 													pr.text('Powered by Amadeus')
@@ -577,7 +579,7 @@ def bus_booking():		#Bus booking
 	#Input fields
 	tk.Label(f2,text='Number of passengers',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
 	q=tk.IntVar()
-	pass_no=tk.Scale(f2,from_=1,to=100,orient='horizontal',variable=q,font=fnt)
+	pass_no=tk.Scale(f2,from_=1,to=10,orient='horizontal',variable=q,font=fnt)
 	pass_no.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
 
 	n=tk.StringVar()
@@ -609,10 +611,17 @@ def bus_booking():		#Bus booking
 
 	Separator(f2,orient='horizontal').grid(row=14,column=0,columnspan=3,sticky=tk.EW)
 
-	tk.Label(f2,text='Proceed to checkout',font=fnt,justify=tk.RIGHT).grid(column=0,row=15,sticky=tk.E,padx=10,pady=10)
+	payment_method=tk.StringVar(f2)
+	# ttk.Radiobutton(init_window, text = 'USB',variable = pr_con_type,value = 'U',command=disable_nw_ip).grid(column=0,row=14,sticky=tk.W,padx=10)
+	
+	ttk.Radiobutton(f2, text = 'Credit/Debit Card',variable = payment_method,value = 'R').grid(column=0,row=15,sticky=tk.W,padx=10)
+
+	ttk.Radiobutton(f2, text = 'Cash',variable = payment_method,value = 'C').grid(column=0,row=16,sticky=tk.W,padx=10)
+
+	tk.Label(f2,text='Proceed to checkout',font=fnt,justify=tk.RIGHT).grid(column=0,row=20,sticky=tk.E,padx=10,pady=10)
 	subimg=tk.PhotoImage(file='icons/checkout.png')
 	btn=tk.Button(f2,font=fnt,text='Continue to Payment',image=subimg,command=start_payment)
-	btn.grid(column=1,row=15,padx=10,pady=10,sticky=tk.W)
+	btn.grid(column=1,row=20,padx=10,pady=10,sticky=tk.W)
 	btn.image=subimg
 
 	#Binds enter key to submit function
@@ -727,13 +736,13 @@ def taxi_booking():		#Taxi booking
 										booking_summary=scrolledtext.ScrolledText(submit_message,font=fnt,width=30,height=8)
 										booking_summary.grid(column=0,row=3,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 
-										text2='\nTaxi Booking\n------------\n\nBooking ID: '+id+'\nBooking Timestamp: \n'+bkg_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+n.get()+'\n\nDate: '+date_inp+'\nTime: '+time_inp+'\n\nBase rate: $'+str(base_rate)+' for first 5 km\n$'+str(rate)+' per additional km\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)+'\n\nPayment\n-------\n\n'+'Payment ID: '+payment_id+'\nPaid by: '+m.get()+'\nCardholder name: '+card_name.get()+'\nCard number: XXXX-XXXX-XXXX-'+card_no.get()[-4:]+'\nCard type: '+cardtype+'\nAmount paid: $'+str(total_fare)+'\n\n------------------'+'\nPAYMENT SUCCESSFUL'+'\n------------------\n'
-										booking_summary.insert(tk.INSERT,text2)
+										summary_text='\nTaxi Booking\n------------\n\nBooking ID: '+id+'\nBooking Timestamp: \n'+bkg_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+n.get()+'\n\nDate: '+date_inp+'\nTime: '+time_inp+'\n\nBase rate: $'+str(base_rate)+' for first 5 km\n$'+str(rate)+' per additional km\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)+'\n\nPayment\n-------\n\n'+'Payment ID: '+payment_id+'\nPaid by: '+m.get()+'\nCardholder name: '+card_name.get()+'\nCard number: XXXX-XXXX-XXXX-'+card_no.get()[-4:]+'\nCard type: '+cardtype+'\nAmount paid: $'+str(total_fare)+'\n\n------------------'+'\nPAYMENT SUCCESSFUL'+'\n------------------\n'
+										booking_summary.insert(tk.INSERT,summary_text)
 										booking_summary.configure(state='disabled')
 										
 										def clipboard():
 											submit_message.clipboard_clear()
-											submit_message.clipboard_append(text2)
+											submit_message.clipboard_append(summary_text)
 											btn1.configure(fg='green',text='Copied!')
 																									
 										def exit():
@@ -746,12 +755,14 @@ def taxi_booking():		#Taxi booking
 										btn1.grid(row=5,column=0,padx=10,pady=10)
 										
 										if isPrintingEnabled==True:
-
+											
+											summary_text='\nTaxi Booking\n------------\n\nBooking ID: '+id+'\nBooking Timestamp: \n'+bkg_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+n.get()+'\n\nDate: '+date_inp+'\nTime: '+time_inp+'\n\nDistance: '+str(distance)+' km'+'\nTotal fare: $'+str(total_fare)+'\n\nPayment\n-------\n\n'+'Payment ID: '+payment_id+'\nPaid by: '+m.get()+'\nEnjoy your journey! Thank you for choosing ABC LINES!'+'\n------------------\n'
+											
 											def send_to_printer():
 												
 												def stp():
 													pr.image('img/icon-2.png')
-													pr.text(text2)
+													pr.text(summary_text)
 													pr.barcode(bar_no, 'EAN13')
 													pr.text('\n')
 													pr.text('Powered by Amadeus')
@@ -974,10 +985,17 @@ def taxi_booking():		#Taxi booking
 
 	Separator(f2,orient='horizontal').grid(row=14,column=0,columnspan=3,sticky=tk.EW)
 
-	tk.Label(f2,text='Proceed to checkout',font=fnt,justify=tk.RIGHT).grid(column=0,row=15,sticky=tk.E,padx=10,pady=10)
+	payment_method=tk.StringVar(f2)
+	# ttk.Radiobutton(init_window, text = 'USB',variable = pr_con_type,value = 'U',command=disable_nw_ip).grid(column=0,row=14,sticky=tk.W,padx=10)
+	
+	ttk.Radiobutton(f2, text = 'Credit/Debit Card',variable = payment_method,value = 'R').grid(column=0,row=15,sticky=tk.W,padx=10)
+
+	ttk.Radiobutton(f2, text = 'Cash',variable = payment_method,value = 'C').grid(column=0,row=16,sticky=tk.W,padx=10)
+
+	tk.Label(f2,text='Proceed to checkout',font=fnt,justify=tk.RIGHT).grid(column=0,row=20,sticky=tk.E,padx=10,pady=10)
 	subimg=tk.PhotoImage(file='icons/checkout.png')
 	btn=tk.Button(f2,font=fnt,text='Continue to Payment',image=subimg,command=start_payment)
-	btn.grid(column=1,row=15,padx=10,pady=10,sticky=tk.W)
+	btn.grid(column=1,row=20,padx=10,pady=10,sticky=tk.W)
 	btn.image=subimg
 
 	taxibkg_win.bind('<Return>',lambda event:start_payment())
