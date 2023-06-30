@@ -14,8 +14,8 @@ import platform as pf
 from datetime import datetime,timedelta
 from escpos.printer import Network
 
-build='ibs.beta-326'
-build_timestamp='2023-06-30 00:09:11'	
+build='ibs.beta-327'
+build_timestamp='2023-06-30 13:29:46'	
 
 
 #font choice
@@ -127,7 +127,7 @@ def init():		#Initialisation script
 		inp_pr_ip.update()
 
 	init_window=tk.Tk()
-	init_window.title('ABC-IBS ('+build+')')
+	init_window.title('ABC-IBS ('+build+', '+build_timestamp+')')
 	init_window.resizable(False, False)
 	icon=tk.PhotoImage(file='img/icon.png')
 	init_window.iconphoto(False,icon)
@@ -186,7 +186,7 @@ for ABC Lines
 	about.iconphoto(False,icon)
 
 	#Labels
-	tk.Label(about,text='Amadeus\nIntegrated Booking System (IBS)',font=h1fnt).grid(column=0,row=0,columnspan=3)
+	tk.Label(about,text='Integrated Booking System (IBS)',font=h1fnt).grid(column=0,row=0,columnspan=3)
 	tk.Label(about,text=(''+build+'\n('+build_timestamp+')'),font=fnt).grid(column=0,row=1,columnspan=3)
 	
 	logo_img=tk.PhotoImage(file='img/amadeus.png')
