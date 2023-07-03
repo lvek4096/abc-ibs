@@ -17,6 +17,7 @@ from escpos.printer import Network
 build='ibs.beta-328'
 build_timestamp='2023-07-03 00:47:05'	
 
+dev_string=str('[UNDER CONSTRUCTION] '+build+', '+build_timestamp)
 
 #font choice
 if pf.system()=='Windows':
@@ -127,7 +128,7 @@ def init():		#Initialisation script
 		printer_ip_input.update()
 
 	init_window=tk.Tk()
-	init_window.title('ABC-IBS ('+build+', '+build_timestamp+')')
+	init_window.title('ABC-IBS '+dev_string)
 	init_window.resizable(False, False)
 	icon=tk.PhotoImage(file='img/icon.png')
 	init_window.iconphoto(False,icon)
@@ -270,7 +271,7 @@ for ABC Lines
 	cls.image=img1
 
 def bus_booking():		#Bus booking
-	
+
 	# Initialising the bus booking function
 	busbkg_id='B'+str(rd.randint(10000,99999))													# Booking ID
 	bus_type=['','Standard','Express','Premium']										# Bus type
@@ -729,6 +730,8 @@ def bus_booking():		#Bus booking
 	busbooking_win.bind('<Return>',lambda event:payment()) # Binds enter key to submit function
 
 def taxi_booking():		#Taxi booking
+	messagebox.showwarning('Work in progress','Taxi booking functions are under development and may present rough edges and instability.\nProceed with caution comrades!')
+	
 	#definitions
 	id='T'+str(rd.randint(10000,99999))	#random number for ID
 	ctype=['','Standard','XL','Luxury']	#defines coach type
@@ -1104,7 +1107,7 @@ def taxi_booking():		#Taxi booking
 def emp_main():			#Corporate functions
 	#main window
 	emp_login_win=tk.Tk()
-	emp_login_win.title('ABC IBS ('+build+', '+build_timestamp+')')
+	emp_login_win.title('ABC IBS '+dev_string)
 	icon=tk.PhotoImage(file='img/icon.png')
 	emp_login_win.iconphoto(False,icon)
 
@@ -3300,7 +3303,7 @@ which deletes the table structure from the database along with its contents.'''
 				about()
 
 			def logout():
-				main_menu.destroy()
+				home_page.destroy()
 				emp_main()
 
 			def managetaxibkgs():
@@ -3313,45 +3316,45 @@ which deletes the table structure from the database along with its contents.'''
 				manage_payments()
 
 			if emptype_inp=='Agent':
-				main_menu=tk.Tk()
-				main_menu.title('Agent Portal')
+				home_page=tk.Tk()
+				home_page.title('Agent Portal [UNDER DEVELOPMENT]')
 			elif emptype_inp=='Administrator':
-				main_menu=tk.Toplevel()
-				main_menu.title('Booking Portal')
+				home_page=tk.Toplevel()
+				home_page.title('Booking Portal')
 			
 			icon=tk.PhotoImage(file='img/icon.png')
-			main_menu.iconphoto(False,icon)
+			home_page.iconphoto(False,icon)
 
 			if emptype_inp=='Agent':
 				try:
-					main_menu.state('zoomed')
+					home_page.state('zoomed')
 				except:
-					w,h=main_menu.winfo_screenwidth(),main_menu.winfo_screenheight()
-					main_menu.geometry(str(w)+'x'+str(h))
+					w,h=home_page.winfo_screenwidth(),home_page.winfo_screenheight()
+					home_page.geometry(str(w)+'x'+str(h))
 			
 			elif emptype_inp=='Administrator':
-				main_menu.geometry('960x540')
+				home_page.geometry('960x540')
 			
 			if emptype_inp=='Agent':
-				menubar=tk.Menu(main_menu)
+				menubar=tk.Menu(home_page)
 
 				user=tk.Menu(menubar,tearoff=0)
 				menubar.add_cascade(label='User',menu=user,font=menufnt)
 				user.add_command(label='Logout',command=logout,font=menufnt,underline=0)
-				user.add_command(label='Logout and exit',command=main_menu.destroy,font=menufnt,underline=11)
-				main_menu.config(menu=menubar)
+				user.add_command(label='Logout and exit',command=home_page.destroy,font=menufnt,underline=11)
+				home_page.config(menu=menubar)
 				
 				more=tk.Menu(menubar,tearoff=0)
 				menubar.add_cascade(label='Info',menu=more,font=menufnt)
 				more.add_command(label='About this program...',command=about_this_program,font=menufnt,underline=0)
-				main_menu.config(menu=menubar)
+				home_page.config(menu=menubar)
 
-			tk.Grid.columnconfigure(main_menu,0,weight=1)
+			tk.Grid.columnconfigure(home_page,0,weight=1)
 
 
 			#FRAME 1
-			tk.Grid.rowconfigure(main_menu,0,weight=1)
-			f1=tk.Frame(main_menu,bg='#1b69bc')
+			tk.Grid.rowconfigure(home_page,0,weight=1)
+			f1=tk.Frame(home_page,bg='#1b69bc')
 			f1.grid(row=0,column=0,sticky=tk.NSEW)
 
 			tk.Grid.columnconfigure(f1,0,weight=1)
@@ -3385,8 +3388,8 @@ which deletes the table structure from the database along with its contents.'''
 
 			Separator(f1,orient='horizontal').grid(column=0,row=4,sticky=tk.EW,padx=10,pady=10)
 			#FRAME 2
-			tk.Grid.rowconfigure(main_menu,1,weight=1)
-			f2=tk.Frame(main_menu)
+			tk.Grid.rowconfigure(home_page,1,weight=1)
+			f2=tk.Frame(home_page)
 			f2.grid(row=1,column=0,sticky=tk.NSEW)
 
 			tk.Grid.columnconfigure(f2,0,weight=1)
@@ -3426,7 +3429,7 @@ which deletes the table structure from the database along with its contents.'''
 			tk.Grid.rowconfigure(f2,10,weight=1)
 
 			if emptype_inp=='Agent':
-				main_menu.mainloop()
+				home_page.mainloop()
 
 		#Converts inputs to strings
 		emp_uname_inp=emp_uname.get().lower()
