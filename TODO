@@ -1,5 +1,5 @@
-- Improve integration of ticket database.
+- Improve integration of ticket database.  - DONE
 - Update taxi booking function.
 - General change in variable names.
 - Update export function to create 'export' folder if not exists
-- Update transaction delete function to integrate with ticket database.
+- Update transaction and booking delete function to integrate with ticket database. - DONE

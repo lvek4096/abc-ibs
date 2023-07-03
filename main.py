@@ -14,8 +14,8 @@ import platform as pf
 from datetime import datetime,timedelta
 from escpos.printer import Network
 
-build='ibs.beta-328'
-build_timestamp='2023-07-03 00:47:05'	
+build='ibs.beta-330'
+build_timestamp='2023-07-03 22:28:54'	
 
 dev_string=str('[UNDER CONSTRUCTION] '+build+', '+build_timestamp)
 
@@ -71,7 +71,7 @@ def init():		#Initialisation script
 		cur.execute('use taxi')
 		cur.execute('create table if not exists taxi_bkgs(bkgid varchar(6) primary key,bkgtime datetime,start varchar(50),end varchar(50),jdate date,jtime time,taxitype varchar(50))')
 		cur.execute('create table if not exists bus_bkgs(bkgid varchar(6) primary key,bkgtime datetime,pass_no int,start varchar(50),end varchar(50),jdate date,jtime time,bustype varchar(50))')
-		cur.execute('create table if not exists tkt_details(tktid char(6) primary key, bkgid varchar(6), timestamp datetime)')
+		cur.execute('create table if not exists tkt_details(tktid char(9) primary key, bkgid varchar(6), timestamp datetime)')
 		# cur.execute('create table if not exists users(uuid varchar(6) primary key,fname varchar(50),email varchar(50),num varchar(10),uname varchar(50),passwd varchar(50))')
 		cur.execute('create table if not exists payment_details(pay_id varchar(6) primary key,paytime datetime,bkgid varchar(6),amt int,payment_type varchar(20),cardno varchar(16),cardname varchar(50),cvv int(3),exp_month int(2),exp_year int(4))')
 		cur.execute('create table if not exists employees(emp_id varchar(5) primary key,emp_uname varchar(50),emp_name varchar(50),emp_passwd varchar(50))')
@@ -96,7 +96,12 @@ def init():		#Initialisation script
 				if not printer_ip_input.get()=='' and not printer_ip_input.get().isspace():
 					global pr_ip
 					pr_ip=printer_ip_input.get()
-					isPrintingEnabled=True
+					try:
+						Network(pr_ip)
+						isPrintingEnabled=True
+					except:
+						messagebox.showerror('Error','Unable to connect to printer.\nThe printing functionality will be disabled.',parent=init_window)
+						isPrintingEnabled=False
 				else:
 					messagebox.showerror('Error','No IP address for printer specified.\nThe printing functionality will be disabled.',parent=init_window)
 					isPrintingEnabled=False
@@ -383,6 +388,8 @@ def bus_booking():		#Bus booking
 											submit_message=tk.Toplevel()
 											submit_message.resizable(False,False)
 											submit_message.title('Booking successful')
+											icon=tk.PhotoImage(file='img/icon.png')
+											cardpay_window.iconphoto(False,icon)
 
 											tk.Label(submit_message,text='The booking has been\nsuccessfully made.',font=h1fnt,justify=tk.LEFT).grid(row=0,column=0,sticky=tk.W,padx=10,pady=10)
 
@@ -560,7 +567,8 @@ def bus_booking():		#Bus booking
 									cardpay_window.bind('<Return>',lambda event:card_payment())		
 
 								elif payment_method.get()=='C':
-									
+
+									# Adding booking details to database
 									bkg_time=datetime.now()									#timestamp to mark bookings
 									bkg_timestamp=bkg_time.strftime('%Y-%m-%d %H:%M:%S')	#Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
 								
@@ -569,34 +577,45 @@ def bus_booking():		#Bus booking
 									cur.execute(sql,val)
 									con.commit()
 
-									#Confirmation message
-									submit_message=tk.Toplevel()
-									submit_message.resizable(False,False)
-									submit_message.title('Booking successful')
+									# Adds payment details to database
+									pay_time=datetime.now()									# 	Timestamp to mark payment
+									pay_timestamp=pay_time.strftime('%Y-%m-%d %H:%M:%S')	#	Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
+									
+									sql=('insert into payment_details values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)')
+									val=(payment_id,pay_timestamp,busbkg_id,total_fare,'Cash',None,None,None,None,None)
+									cur.execute(sql,val)
+									con.commit()
 
-									tk.Label(submit_message,text='The booking has been\nsuccessfully made.',font=h1fnt,justify=tk.LEFT).grid(row=0,column=0,sticky=tk.W,padx=10,pady=10)
+									# Confirmation popup
+									def clipboard():
+										confirmmsg_win.clipboard_clear()
+										confirmmsg_win.clipboard_append(summary_text)
+										clipbd_btn.configure(fg='green',text='Copied!')
+									
+									def exit():
+										confirmmsg_win.destroy()
+										busbooking_win.destroy()									
+									
+									confirmmsg_win=tk.Toplevel()
+									confirmmsg_win.resizable(False,False)
+									confirmmsg_win.title('Booking successful')
+									icon=tk.PhotoImage(file='img/icon.png')
+									confirmmsg_win.iconphoto(False,icon)
 
-									summary=scrolledtext.ScrolledText(submit_message,font=fnt,width=30,height=8)
+									tk.Label(confirmmsg_win,text='The booking has been\nsuccessfully made.',font=h1fnt,justify=tk.LEFT).grid(row=0,column=0,sticky=tk.W,padx=10,pady=10)
+
+									summary=scrolledtext.ScrolledText(confirmmsg_win,font=fnt,width=30,height=8)
 									summary.grid(column=0,row=3,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 
 									summary_text='\nBus Booking\n-----------\n\nBooking ID: '+busbkg_id+'\nBooking Timestamp: \n'+bkg_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+bustype_inp.get()+'\n\nDate: '+date_of_journey+'\nTime: '+time_of_journey+'\n\nRate: $'+str(rate)+' per km\nDistance: '+str(distance)+' km\nNumber of passengers: '+str(passno)+'\n\nTotal fare: $'+str(total_fare)+'\n\nPayment\n-------\n\n'+'Payment ID: '+payment_id+'\nPaid by: Cash'+'\nAmount paid: $'+str(total_fare)+'\n\n------------------'+'\nPAYMENT SUCCESSFUL'+'\n------------------\n'
 									summary.insert(tk.INSERT,summary_text)
 									summary.configure(state='disabled')
 									
-									def clipboard():
-										submit_message.clipboard_clear()
-										submit_message.clipboard_append(summary_text)
-										btn1.configure(fg='green',text='Copied!')
+									clipbd_btn=tk.Button(confirmmsg_win,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
+									clipbd_btn.grid(row=5,column=0,padx=10,pady=10)
 									
-									def exit():
-										submit_message.destroy()
-										busbooking_win.destroy()
-
-									btn1=tk.Button(submit_message,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
-									btn1.grid(row=5,column=0,padx=10,pady=10)
-									
+									# Printing function
 									if isPrintingEnabled==True:
-
 										def receipt():
 
 											def print_receipt():
@@ -604,9 +623,15 @@ def bus_booking():		#Bus booking
 												tkt_timestamp=tkt_time.strftime('%Y-%m-%d %H:%M:%S')	#Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
 
 												bar_no=str(rd.randint(1000000000000,9999999999999))
-												tktid='TKT'+str(rd.randint(000000,999999))
+												tktid='TKT'+str(rd.randint(100000,999999))
 															# title									# ticket details									# journey																																		# fare																																						
 												receipt_text='\nBus Booking '+busbkg_id+'\n------------\n\nTicket '+tktid+'\nTimestamp: \n'+tkt_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+bustype_inp.get()+'\n\nDate: '+date_of_journey+'\nTime: '+time_of_journey+'\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)+'\n\nPaid by: Cash'+'\n\nEnjoy your journey! Thank you for choosing ABC LINES!'
+												
+												sql=('insert into tkt_details values(%s,%s,%s)')
+												print(tktid,busbkg_id,tkt_timestamp)
+												val=(tktid,busbkg_id,tkt_timestamp)
+												cur.execute(sql,val)
+												con.commit()
 
 												pr.image('img/icon-2.png')
 												pr.text(receipt_text)
@@ -622,35 +647,23 @@ def bus_booking():		#Bus booking
 												elif pf.system()=='Linux':
 													pr.text('Platform: '+pf.system()+' '+pf.release())
 
-												sql=('insert into tkt_details values(%s,%s,%s)')
-												val=(tktid,busbkg_id,tkt_timestamp)
-												cur.execute(sql,val)
-												con.commit()
-
 												pr.cut()
 												pr.close()
 
-											try:
-												pr = Network(pr_ip)
-												print_receipt()
-											except:
-												messagebox.showerror('Error','Unable to connect to printer via network.',parent=submit_message)
+											#try:
+											pr = Network(pr_ip)
+											print_receipt()
+											#except:
+											#	messagebox.showerror('Error','Unable to print receipt.',parent=confirmmsg_win)
 
-										btn3=tk.Button(submit_message,text='Print...',font=fnt,command=receipt,justify=tk.CENTER)
-										btn3.grid(row=6,column=0,padx=10,pady=10)
+										print_btn=tk.Button(confirmmsg_win,text='Print...',font=fnt,command=receipt,justify=tk.CENTER)
+										print_btn.grid(row=6,column=0,padx=10,pady=10)
 
-									btn2=tk.Button(submit_message,text='OK',font=fnt,command=exit,justify=tk.CENTER)
-									btn2.grid(row=8,column=0,padx=10,pady=10)
-									submit_message.bind('<Return>',lambda event:exit())		
 
-									# Adds payment details to database
-									pay_time=datetime.now()									# 	Timestamp to mark payment
-									pay_timestamp=pay_time.strftime('%Y-%m-%d %H:%M:%S')	#	Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
-									
-									sql=('insert into payment_details values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)')
-									val=(payment_id,pay_timestamp,busbkg_id,total_fare,'Cash',None,None,None,None,None)
-									cur.execute(sql,val)
-									con.commit()
+									ok_btn=tk.Button(confirmmsg_win,text='OK',font=fnt,command=exit,justify=tk.CENTER)
+									ok_btn.grid(row=10,column=0,padx=10,pady=10)
+									confirmmsg_win.bind('<Return>',lambda event:exit())		
+
 							else:
 								messagebox.showerror('Error','Please select payment method',parent=busbooking_win)	
 						else:
@@ -727,9 +740,9 @@ def bus_booking():		#Bus booking
 	btn.grid(column=1,row=20,padx=10,pady=10,sticky=tk.W)
 	btn.image=submit_icon
 
-	busbooking_win.bind('<Return>',lambda event:payment()) # Binds enter key to submit function
+	busbooking_win.bind('<Return>',lambda event:payment()) 							# Binds enter key to submit function
 
-def taxi_booking():		#Taxi booking
+def taxi_booking():																	#Taxi booking
 	messagebox.showwarning('Work in progress','Taxi booking functions are under development and may present rough edges and instability.\nProceed with caution comrades!')
 	
 	#definitions
@@ -1104,7 +1117,7 @@ def taxi_booking():		#Taxi booking
 
 	taxibkg_win.bind('<Return>',lambda event:start_payment())
 
-def emp_main():			#Corporate functions
+def emp_main():																		#Corporate functions
 	#main window
 	emp_login_win=tk.Tk()
 	emp_login_win.title('ABC IBS '+dev_string)
@@ -1118,10 +1131,9 @@ def emp_main():			#Corporate functions
 		w,h=emp_login_win.winfo_screenwidth(),emp_login_win.winfo_screenheight()
 		emp_login_win.geometry(str(w)+'x'+str(h))
 
-	#functions
-	def login():	#action on login
+	def login():																	# action on login
 
-		def manage_busbkg():	#manage bus bookings
+		def manage_busbkg():														# manage bus bookings
 
 			managebusbkgs=tk.Toplevel()
 			managebusbkgs.title('Manage bus bookings')
@@ -1129,7 +1141,7 @@ def emp_main():			#Corporate functions
 			managebusbkgs.iconphoto(False,icon)
 
 
-			def viewbkg_all():	#View all bookings
+			def viewbkg_all():															# View all bookings
 				viewall_win=tk.Toplevel()
 				viewall_win.title('All bus bookings')
 				viewall_win.resizable(False,False)
@@ -1138,23 +1150,23 @@ def emp_main():			#Corporate functions
 				
 				header=('Booking ID','Timestamp','Number of Passengers','Origin','Destination','Date','Time','Bus Type')
 
-				sql2=str('select * from bus_bkgs')			#getting data from table
+				sql2=str('select * from bus_bkgs')										# getting data from table
 
 				cur.execute(sql2)
-				data=[header]+cur.fetchall()						#appending header to data
+				data=[header]+cur.fetchall()											# appending header to data
 				
 				rows=len(data)
 				cols=len(data[0])
 
-				for i in range(rows):							#drawing the table in GUI
+				for i in range(rows):													# drawing the table in GUI
 					for j in range(cols):
 						entry = tk.Label(viewall_win,borderwidth=1,relief='solid',padx=10,height=2,font=fnt)
 						entry.grid(row=i, column=j,padx=2,pady=2,sticky=tk.EW)
 						entry.configure(text=data[i][j])
 						if i==0:
-							entry.configure(fg='red',font=fntit)	#colors and italicises header
+							entry.configure(fg='red',font=fntit)							# colors and italicises header
 
-			def viewbkg_single():	#View single booking
+			def viewbkg_single():															# View single booking
 				def get_busbkginfo():
 					if not bkgid.get()=='' and not bkgid.get().isspace():
 						if bkgid.get() in bus_bkgid_list:
@@ -1177,13 +1189,13 @@ def emp_main():			#Corporate functions
 							rows=len(e)
 							cols=len(e[0])
 							tk.Label(frame3,font=fntit,text='Data').grid(row=0,column=0,sticky=tk.W)
-							for i in range(rows):							#drawing the table in GUI
+							for i in range(rows):											#drawing the table in GUI
 								for j in range(cols):
 									entry = tk.Label(frame2,borderwidth=1,relief='solid',padx=10,width=30,height=2,font=fnt)
 									entry.grid(row=i,column=j,padx=2,pady=2,sticky=tk.EW)
 									entry.configure(text=e[i][j])
 									if j==0:
-										entry.configure(fg='red',font=fntit) #colors and italicises header
+										entry.configure(fg='red',font=fntit) 				#colors and italicises header
 						else:
 							messagebox.showerror('Error','Booking \''+bkgid.get()+'\' does not exist.',parent=viewone_win)
 					else:
@@ -1226,7 +1238,7 @@ def emp_main():			#Corporate functions
 				submit.grid(row=5,column=2,padx=10,pady=10)
 				viewone_win.bind('<Return>',lambda event:get_busbkginfo())
 
-			def delbkg():	#Delete booking
+			def delbkg():																		# Delete booking menu
 				delone_win=tk.Toplevel()
 				delone_win.resizable(False,False)
 				delone_win.title('Delete bus booking')
@@ -1236,19 +1248,25 @@ def emp_main():			#Corporate functions
 				cur.execute('select bkgid,pay_id from payment_details')
 				e=dict(cur.fetchall())
 				
-				def delete_busbkg():
+				def delete_busbkg():															# Delete booking function
 					if not bkgid.get()=='' and not bkgid.get().isspace():
 						if bkgid.get() in bus_bkgid_list:
 							messagebox.showwarning('','This operation will delete\nthe booking selected permanently.\nContinue?',parent=delone_win)
 							confirm=messagebox.askyesno('','Do you wish to delete the booking '+bkgid.get()+'?',parent=delone_win)
 							if confirm == True:
-								sql='delete from bus_bkgs where bkgid =%s'
+								sql='delete from bus_bkgs where bkgid =%s'						# Deletes booking from database
 								val=(bkgid.get(),)
 								cur.execute(sql,val)
-								sql2='delete from payment_details where bkgid=%s'
+								
+								sql2='delete from payment_details where bkgid=%s'				# Deletes payment details from database
 								cur.execute(sql2,val)
 								con.commit()
-								messagebox.showinfo('','Booking '+bkgid.get()+' deleted;\nTransaction '+e[bkgid.get()]+' cancelled.',parent=delone_win)
+								
+								sql3='delete from tkt_details where bkgid=%s'					# Deletes ticket info from database
+								cur.execute(sql3,val)
+								con.commit()
+								
+								messagebox.showinfo('','Booking '+bkgid.get()+' deleted;\nTransaction '+e[bkgid.get()]+' cancelled, and corresponding tickets deleted.',parent=delone_win)
 								delone_win.destroy()
 							else:
 								messagebox.showinfo('','Booking '+bkgid.get()+' not deleted.\nThe database has not been modified.',parent=delone_win)
@@ -1339,13 +1357,13 @@ def emp_main():			#Corporate functions
 
 			tk.Grid.rowconfigure(f2,16,weight=1)
 
-		def manage_taxibkg():	#Manage taxi bookings
+		def manage_taxibkg():													#Manage taxi bookings
 			managetaxibkgs=tk.Toplevel()
 			managetaxibkgs.title('Manage taxi bookings')
 			icon=tk.PhotoImage(file='img/icon.png')
 			managetaxibkgs.iconphoto(False,icon)
 
-			def viewbkg_all():  #View all bookings
+			def viewbkg_all():  												#View all bookings
 				viewall_win=tk.Toplevel()
 				viewall_win.title('All taxi bookings')
 				viewall_win.resizable(False,False)
@@ -1354,22 +1372,22 @@ def emp_main():			#Corporate functions
 				
 				header=('Booking ID','Timestamp','Origin','Destination','Date','Time','Taxi Type')
 
-				sql2=str('select * from taxi_bkgs')			#getting data from table
+				sql2=str('select * from taxi_bkgs')							# getting data from table
 				cur.execute(sql2)
-				data=[header]+cur.fetchall()						#appending header to data
+				data=[header]+cur.fetchall()								# appending header to data
 				
 				rows=len(data)
 				cols=len(data[0])
 
-				for i in range(rows):							#drawing the table in GUI
+				for i in range(rows):											#drawing the table in GUI
 					for j in range(cols):
 						entry = tk.Label(viewall_win,borderwidth=1,relief='solid',padx=10,height=2,font=fnt)
 						entry.grid(row=i, column=j,padx=2,pady=2,sticky=tk.EW)
 						entry.configure(text=data[i][j])
 						if i==0:
-							entry.configure(fg='red',font=fntit)	#colors and italicises header
+							entry.configure(fg='red',font=fntit)				#colors and italicises header
 
-			def viewbkg_single():	#View one bookings
+			def viewbkg_single():													# View a single booking
 				def get_taxibkginfo():
 					if not bkgid.get()=='' and not bkgid.get().isspace():
 						if bkgid.get() in taxi_bkgid_list:
@@ -1390,13 +1408,13 @@ def emp_main():			#Corporate functions
 							rows=len(e)
 							cols=len(e[0])
 							tk.Label(frame3,font=fntit,text='Data').grid(row=0,column=0,sticky=tk.W)
-							for i in range(rows):							#drawing the table in GUI
+							for i in range(rows):									# drawing the table in GUI
 								for j in range(cols):
 									entry = tk.Label(frame2,borderwidth=1,relief='solid',padx=10,width=30,height=2,font=fnt)
 									entry.grid(row=i,column=j,padx=2,pady=2,sticky=tk.EW)
 									entry.configure(text=e[i][j])
 									if j==0:
-										entry.configure(fg='red',font=fntit) #colors and italicises header
+										entry.configure(fg='red',font=fntit) 		# colors and italicises header
 						else:
 							messagebox.showerror('Error','Booking \''+bkgid.get()+'\' does not exist.',parent=viewone_win)
 					else:
@@ -1439,7 +1457,7 @@ def emp_main():			#Corporate functions
 				submit.grid(row=5,column=2,padx=10,pady=10)
 				viewone_win.bind('<Return>',lambda event:get_taxibkginfo())
 
-			def delbkg(): #Delete one booking.
+			def delbkg(): 																# Delete bookings menu.
 				delone_win=tk.Toplevel()
 				delone_win.resizable(False,False)
 				delone_win.title('Delete taxi booking')
@@ -1449,19 +1467,27 @@ def emp_main():			#Corporate functions
 				cur.execute('select bkgid,pay_id from payment_details')
 				e=dict(cur.fetchall())
 
-				def delete_taxi_bkg():
+				def delete_taxi_bkg():													# Delete bookings function
+					
 					if not bkgid.get()=='' and not bkgid.get().isspace():
 						if bkgid.get() in taxi_bkgid_list:
 							messagebox.showwarning('','This operation will delete\nthe booking selected permanently.\nContinue?',parent=delone_win)
 							confirm=messagebox.askyesno('','Do you wish to delete the booking '+bkgid.get()+'?',parent=delone_win)
 							if confirm == True:
-								sql='delete from taxi_bkgs where bkgid =%s'
+								
+								sql='delete from taxi_bkgs where bkgid =%s'						# Deletes booking from database
 								val=(bkgid.get(),)
 								cur.execute(sql,val)
-								sql2='delete from payment_details where bkgid=%s'
+								
+								sql2='delete from payment_details where bkgid=%s'				# Deletes transaction from database
 								cur.execute(sql2,val)
 								con.commit()
-								messagebox.showinfo('','Booking '+bkgid.get()+' deleted;\nTransaction '+e[bkgid.get()]+' cancelled.',parent=delone_win)
+								
+								sql3='delete from tkt_details where bkgid=%s'					# Deletes ticket info from database
+								cur.execute(sql3,val)
+								con.commit()
+								
+								messagebox.showinfo('','Booking '+bkgid.get()+' deleted;\nTransaction '+e[bkgid.get()]+' cancelled, and corresponding tickets deleted.',parent=delone_win)
 								delone_win.destroy()
 							else:
 								messagebox.showinfo('','Booking '+bkgid.get()+' not deleted.\nThe database has not been modified.',parent=delone_win)
@@ -1659,7 +1685,7 @@ def emp_main():			#Corporate functions
 				submit.grid(row=5,column=2,padx=10,pady=10)
 				viewone_win.bind('<Return>',lambda event:get_payinfo())
 
-			def delpay(): #Cancel single transaction.
+			def delpay(): 																		# Delete transaction page
 				delone_win=tk.Toplevel()
 				delone_win.resizable(False,False)
 				delone_win.title('Cancel transaction')
@@ -1667,26 +1693,30 @@ def emp_main():			#Corporate functions
 				delone_win.iconphoto(False,icon)
 				
 				cur.execute('select pay_id,bkgid from payment_details')
-				e=dict(cur.fetchall())
+				pay_bkg_dict=dict(cur.fetchall())
 				
-				def delete_transaction():
+				def delete_transaction():														# Delete transactions
 					if not payid.get()=='' and not payid.get().isspace():
 						if payid.get() in payment_id_list:
 							messagebox.showwarning('','This operation will cancel the transaction selected.\nContinue?',parent=delone_win)
 							confirm=messagebox.askyesno('','Do you wish to cancel the transaction '+payid.get()+'?',parent=delone_win)
 							if confirm == True:
-								sql='delete from payment_details where pay_id=%s'
+								sql='delete from payment_details where pay_id=%s'				# Deletes payment entry from payment db
 								val=(payid.get(),)
 								cur.execute(sql,val)
-								if e[payid.get()][0]=='B':
+								
+								if pay_bkg_dict[payid.get()][0]=='B':							# Deletes booking entry from booking db
 									sql2='delete from bus_bkgs where bkgid=%s'
-								elif e[payid.get()][0]=='T':
+								elif pay_bkg_dict[payid.get()][0]=='T':
 									sql2='delete from taxi_bkgs where bkgid=%s'
-								val2=(e[payid.get()],)
+								val2=(pay_bkg_dict[payid.get()],)
 								cur.execute(sql2,val2)
 								
+								sql3='delete from tkt_details where bkgid=%s'					# Delete correpsonding ticket records
+								cur.execute(sql3,val2)
+								
 								con.commit()
-								messagebox.showinfo('','Transaction '+payid.get()+' cancelled;\nBooking '+e[payid.get()]+' cancelled.',parent=delone_win)
+								messagebox.showinfo('','Transaction '+payid.get()+' reversed;\nBooking '+pay_bkg_dict[payid.get()]+' cancelled, and corresponding tickets cancelled',parent=delone_win)
 								delone_win.destroy()
 							else:
 								messagebox.showinfo('','Transaction '+payid.get()+' not cancelled.\nThe database has not been modified.',parent=delone_win)
@@ -1797,9 +1827,6 @@ def emp_main():			#Corporate functions
 
 			def bookings():
 				agent_portal()
-
-			def manage_payments():
-				manage_payments()
 
 			def manage_admin():	#Manage admins
 
