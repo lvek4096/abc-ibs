@@ -35,7 +35,7 @@ On Linux systems, you can directly run the file by making it executable:
 
 Then, you can run directly with  ```./main.py``` (or from the GUI file manager).
 
-On Windows systems, you can replicate this behaviour with Python Launcher, without any additional setup*.<br>
+On Windows systems, you can replicate this behaviour with Python Launcher, with minimal additional setup*.<br>
 Just double-click 'main.py', and you're good to go!
 
 <b>*NOTE:</b>
