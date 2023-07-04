@@ -32,14 +32,14 @@ source env/scripts/activate		# on Linux
 4. Install dependencies <br>
 ```pip install -r requirements.txt```
 ### Running 
-```python3 main.py``` or ```python main.py```
-On Linux systems, you can directly run the file by making it executable: ```chmod +x main.py```	
+```python3 ibs.py``` or ```python ibs.py```
+On Linux systems, you can directly run the file by making it executable: ```chmod +x ibs.py```	
 <br>(or make file executable via GUI file manager).
 
-Then, you can run directly with  ```./main.py``` (or from the GUI file manager).
+Then, you can run directly with  ```./ibs.py``` (or from the GUI file manager).
 
 On Windows systems, you can replicate this behaviour with Python Launcher, with minimal additional setup*.<br>
-Just double-click 'main.py', and you're good to go!
+Just double-click 'ibs.py', and you're good to go!
 
 <b>*NOTE:</b>
 - It is highly recommended use <a href="https://www.python.org/downloads">regular Python distribution</a> (.exe installer) for the same.
