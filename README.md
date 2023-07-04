@@ -1,5 +1,5 @@
 
-<p align='center> ![icon-2](https://github.com/lvek4096/abc-ibs/assets/133903654/ecb1918c-20d0-4a13-a692-694cd3ac7cbf) </p>
+<p align='center'> ![icon-2](https://github.com/lvek4096/abc-ibs/assets/133903654/ecb1918c-20d0-4a13-a692-694cd3ac7cbf) </p>
 
 # abc-ibs
  ABC Lines Integrated Booking System (IBS)
