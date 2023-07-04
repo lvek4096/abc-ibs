@@ -15,10 +15,10 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string
-build='ibs.beta-334'
-build_timestamp='2023-07-04 16:59:21'	
+build='ibs.rc-334'
+build_timestamp='2023-07-04 22:11:29'	
 
-dev_string=str('[UNDER CONSTRUCTION] '+build+', '+build_timestamp)
+# dev_string=str('[UNDER CONSTRUCTION] '+build+', '+build_timestamp)
 
 # Fonts for GUI
 if pf.system()=='Windows':
@@ -435,7 +435,7 @@ def bus_booking():																	# Bus booking
 														bar_no=str(rd.randint(1000000000000,9999999999999))
 														tktid='TKT'+str(rd.randint(100000,999999))														
 																		# title										# ticket details									# journey																																												# fare
-														receipt_text='\nBus Booking '+busbkg_id+'\n------------\n\nTicket '+tktid+'\nTimestamp: \n'+tkt_timestamp+'\n\nNumber of passengers:'+str(passno)+'\nFrom: '+o+'\nTo: '+d+'\nType: '+bustype_inp.get()+'\n\nDate: '+date_of_journey+'\nTime: '+time_of_journey+'\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)+'\n\nPaid by: '+cardtype_inp.get()+'\n\nEnjoy your journey! Thank you for choosing ABC LINES!'+'\n------------------\n'
+														receipt_text='\nBus Booking '+busbkg_id+'\n\nTicket '+tktid+'\n('+tkt_timestamp+')\n\nNumber of passengers: '+str(passno)+'\nFrom: '+o+' To: '+d+'\nType: '+bustype_inp.get()+'\n\nDate: '+date_of_journey+' Time: '+time_of_journey+'\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)+'\nPaid by: '+cardtype_inp.get()+'\n\nEnjoy your journey!\nThank you for choosing ABC LINES!'
 														
 														sql=('insert into tkt_details values(%s,%s,%s)')
 														#print(tktid,busbkg_id,tkt_timestamp)
@@ -445,6 +445,7 @@ def bus_booking():																	# Bus booking
 
 														pr.image('img/icon-2.png')
 														pr.text(receipt_text)
+														pr.text('\n')
 														pr.barcode(bar_no, 'EAN13')
 														pr.text('\n')
 														pr.text('Powered by Amadeus')
@@ -458,11 +459,12 @@ def bus_booking():																	# Bus booking
 															pr.text('Platform: '+pf.system()+' '+pf.release())
 
 														pr.cut()
-														pr.close()
 													
 													try:
 														pr = Network(pr_ip)
-														print_receipt()
+														for i in range(passno):
+															print_receipt()
+														pr.close()
 													except:
 														messagebox.showerror('Error','Unable to print receipt.',parent=confirmmsg_win)
 
@@ -632,17 +634,18 @@ def bus_booking():																	# Bus booking
 
 												bar_no=str(rd.randint(1000000000000,9999999999999))
 												tktid='TKT'+str(rd.randint(100000,999999))
-															# title										# ticket details										# journey																																											# fare																																						
-												receipt_text='\nBus Booking '+busbkg_id+'\n------------\n\nTicket '+tktid+'\nTimestamp: \n'+tkt_timestamp+'\n\nNumber of passengers:'+str(passno)+'\nFrom: '+o+'\nTo: '+d+'\nType: '+bustype_inp.get()+'\n\nDate: '+date_of_journey+'\nTime: '+time_of_journey+'\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)+'\n\nPaid by: Cash'+'\n\nEnjoy your journey! Thank you for choosing ABC LINES!'+'\n------------------\n'
+															# title										# ticket details										# journey																																									# fare																																						
+												receipt_text='\nBus Booking '+busbkg_id+'\n\nTicket '+tktid+'\n('+tkt_timestamp+')\n\nNumber of passengers: '+str(passno)+'\nFrom: '+o+' To: '+d+'\nType: '+bustype_inp.get()+'\n\nDate: '+date_of_journey+' Time: '+time_of_journey+'\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)+'\nPaid by: Cash'+'\n\nEnjoy your journey!\nThank you for choosing ABC LINES!'
 												
 												sql=('insert into tkt_details values(%s,%s,%s)')
-												print(tktid,busbkg_id,tkt_timestamp)
+												#print(tktid,busbkg_id,tkt_timestamp)
 												val=(tktid,busbkg_id,tkt_timestamp)
 												cur.execute(sql,val)
 												con.commit()
 
 												pr.image('img/icon-2.png')
 												pr.text(receipt_text)
+												pr.text('\n')
 												pr.barcode(bar_no, 'EAN13')
 												pr.text('\n')
 												pr.text('Powered by Amadeus')
@@ -656,11 +659,12 @@ def bus_booking():																	# Bus booking
 													pr.text('Platform: '+pf.system()+' '+pf.release())
 
 												pr.cut()
-												pr.close()
-
+												
 											try:
 												pr = Network(pr_ip)
-												print_receipt()
+												for i in range(passno):
+													print_receipt()
+												pr.close()
 											except:
 												messagebox.showerror('Error','Unable to print receipt.',parent=confirmmsg_win)
 
@@ -929,7 +933,7 @@ def taxi_booking():																	# Taxi booking
 														bar_no=str(rd.randint(1000000000000,9999999999999))
 														tktid='TKT'+str(rd.randint(100000,999999))														
 																		# title									# ticket details									# journey																																			# fare
-														receipt_text='\nTaxi Booking '+taxibkg_id+'\n------------\n\nTicket '+tktid+'\nTimestamp: \n'+tkt_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+taxi_type+'\n\nDate: '+date_of_journey+'\nTime: '+time_of_journey+'\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)+'\n\nPaid by: '+cardtype_inp.get()+'\n\nEnjoy your journey! Thank you for choosing ABC LINES!'+'\n------------------\n'
+														receipt_text='\nTaxi Booking '+taxibkg_id+'\n\nTicket '+tktid+'\n('+tkt_timestamp+')\n\nFrom: '+o+' To: '+d+'\nType: '+taxi_type+'\n\nDate: '+date_of_journey+' Time: '+time_of_journey+'\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)+'\nPaid by: '+cardtype_inp.get()+'\n\nEnjoy your journey!\nThank you for choosing ABC LINES!'
 														
 														sql=('insert into tkt_details values(%s,%s,%s)')
 														#print(tktid,taxibkg_id,tkt_timestamp)
@@ -939,6 +943,7 @@ def taxi_booking():																	# Taxi booking
 
 														pr.image('img/icon-2.png')
 														pr.text(receipt_text)
+														pr.text('\n')
 														pr.barcode(bar_no, 'EAN13')
 														pr.text('\n')
 														pr.text('Powered by Amadeus')
@@ -1127,7 +1132,7 @@ def taxi_booking():																	# Taxi booking
 												bar_no=str(rd.randint(1000000000000,9999999999999))
 												tktid='TKT'+str(rd.randint(100000,999999))
 															# title									# ticket details									# journey																																		# fare																																						
-												receipt_text='\nBus Booking '+taxibkg_id+'\n------------\n\nTicket '+tktid+'\nTimestamp: \n'+tkt_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+taxi_type+'\n\nDate: '+date_of_journey+'\nTime: '+time_of_journey+'\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)+'\n\nPaid by: Cash'+'\n\nEnjoy your journey! Thank you for choosing ABC LINES!'
+												receipt_text='\nBus Booking '+taxibkg_id+'\n\nTicket '+tktid+'\n('+tkt_timestamp+')\n\nFrom: '+o+' To: '+d+'\nType: '+taxi_type+'\n\nDate: '+date_of_journey+' Time: '+time_of_journey+'\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)+'\nPaid by: Cash'+'\n\nEnjoy your journey!\nThank you for choosing ABC LINES!'
 												
 												sql=('insert into tkt_details values(%s,%s,%s)')
 												#print(tktid,taxibkg_id,tkt_timestamp)
@@ -1137,6 +1142,7 @@ def taxi_booking():																	# Taxi booking
 
 												pr.image('img/icon-2.png')
 												pr.text(receipt_text)
+												pr.text('\n')
 												pr.barcode(bar_no, 'EAN13')
 												pr.text('\n')
 												pr.text('Powered by Amadeus')
@@ -3461,7 +3467,7 @@ which deletes the table structure from the database along with its contents.'''
 			# Window properties depending on agent or admin
 			if emp_type=='Agent':
 				home_page=tk.Tk()
-				home_page.title('Agent Portal [UNDER DEVELOPMENT]')
+				home_page.title('Agent Portal')
 			elif emp_type=='Administrator':
 				home_page=tk.Toplevel()
 				home_page.title('Booking Portal')
