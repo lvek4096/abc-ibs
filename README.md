@@ -26,7 +26,7 @@ python3 -m venv env			# or python -m venv env
 env\scripts\activate			# Windows
 source env/scripts/activate		# Linux
 ```
-4. Install dependencies
+4. Install dependencies <br>
 ```pip install -r requirements.txt```
 ### Running 
 ```python3 main.py``` or ```python main.py```
