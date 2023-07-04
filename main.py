@@ -16,7 +16,7 @@ from escpos.printer import Network
 
 # Build string
 build='ibs.beta-334'
-build_timestamp='2023-07-04 16:46:21'	
+build_timestamp='2023-07-04 16:59:21'	
 
 dev_string=str('[UNDER CONSTRUCTION] '+build+', '+build_timestamp)
 
@@ -48,7 +48,7 @@ if pf.system()=='Windows':
 # Defines stops
 locations=['Blackcastle','Westerwitch','Ironlyn','North Ganking','Goldsnow','Aldcourt','Bridgehedge','Glasspond','Winterglass','Northcrest','Orlake','Clearhedge','Estermount','Shorebush','Greenfay']
 
-def init():																						# Initalisation function
+def init():																			# Initalisation function
 	
 	def init_program():																			# Initialises IBS.
 	
@@ -138,7 +138,7 @@ def init():																						# Initalisation function
 		printer_ip_input.update()
 
 	ibs_init_win=tk.Tk()
-	ibs_init_win.title('ABC-IBS '+dev_string)
+	ibs_init_win.title('ABC-IBS Configuration')
 	ibs_init_win.resizable(False, False)
 	icon=tk.PhotoImage(file='img/icon.png')
 	ibs_init_win.iconphoto(False,icon)
@@ -765,7 +765,7 @@ def taxi_booking():																	# Taxi booking
 	icon=tk.PhotoImage(file='img/icon.png')
 	taxibkg_win.iconphoto(False,icon)
 
-	def payment():									# The payment function
+	def payment():																	# The payment function
 		
 		# Defining 'today' and 'tomorrow'
 		inpdate_str=''
@@ -1244,7 +1244,7 @@ def taxi_booking():																	# Taxi booking
 def emp_main():																		
 	#main window
 	emp_login_win=tk.Tk()
-	emp_login_win.title('ABC IBS '+dev_string)
+	emp_login_win.title('ABC IBS')
 	icon=tk.PhotoImage(file='img/icon.png')
 	emp_login_win.iconphoto(False,icon)
 
