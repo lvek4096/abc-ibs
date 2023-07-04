@@ -33,7 +33,7 @@ source env/scripts/activate		# on Linux
 ```pip install -r requirements.txt```
 ### Running 
 ```python3 main.py``` or ```python main.py```
-On Linux systems, you can directly run the file by making it executable:
+On Linux systems, you can directly run the file by making it executable:<br>
 ```chmod +x main.py```	(or make file executable via GUI file manager)
 
 Then, you can run directly with  ```./main.py``` (or from the GUI file manager).
