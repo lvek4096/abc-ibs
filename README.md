@@ -18,7 +18,7 @@ This is the booking system for ABC Lines.
 ## How-to
 ### Setup
 1. Clone the repository
-2. Set up python venv<br>
+2. Set up Python virtual environment
 ```
 cd abc-ibs
 python3 -m venv env			# or python -m venv env
