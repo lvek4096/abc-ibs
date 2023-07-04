@@ -15,8 +15,8 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string
-build='ibs.rc-334'
-build_timestamp='2023-07-04 22:11:29'	
+build='ibs.rc-335'
+build_timestamp='2023-07-04 22:36:49'	
 
 # dev_string=str('[UNDER CONSTRUCTION] '+build+', '+build_timestamp)
 
