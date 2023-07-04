@@ -18,13 +18,13 @@ This is the booking system for ABC Lines.
 ## How-to
 ### Setup
 1. Clone the repository
-2. Set up python venv
-	a. ```cd abc-ibs```
-	b. ```python3 -m venv env``` or ```python -m venv env```
-	c. Windows:
-		```> env\scripts\activate.bat```
-	   Linux
-   		```$ source env/bin/activate```
+2. Set up python venv<br>
+	a. ```cd abc-ibs```<br>
+	b. ```python3 -m venv env``` or ```python -m venv env```<br>
+	c. Windows:<br>
+		```> env\scripts\activate.bat```<br>
+	   Linux<br>
+   		```$ source env/bin/activate```<br>
 4. Install dependencies
 ```pip install -r requirements.txt```
 ### Running 
