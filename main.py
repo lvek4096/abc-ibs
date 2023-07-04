@@ -15,8 +15,8 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string
-build='ibs.beta-333'
-build_timestamp='2023-07-04 16:24:44'	
+build='ibs.beta-334'
+build_timestamp='2023-07-04 16:46:21'	
 
 dev_string=str('[UNDER CONSTRUCTION] '+build+', '+build_timestamp)
 
@@ -48,80 +48,81 @@ if pf.system()=='Windows':
 # Defines stops
 locations=['Blackcastle','Westerwitch','Ironlyn','North Ganking','Goldsnow','Aldcourt','Bridgehedge','Glasspond','Winterglass','Northcrest','Orlake','Clearhedge','Estermount','Shorebush','Greenfay']
 
-def init():																			# Initialisation function
-	def initdb(host,uname,passwd):
-		# ensure MySQL connection and cursor variables are global across the entire program
-		global con
-		global cur
-		try:
-			con=ms.connect(host=host,user=uname,password=passwd)
-		except:
-			try:
-				con=ms.connect(host='localhost',user='root',password='123456')
-				messagebox.showerror('Error','Incorrect hostname or credentials provided.\nFalling back to default credentials.')
-			except:
-				messagebox.showerror('Error','RDBMS not found on localhost.\nThe program will terminate.')
-				quit()
-
-		if con.is_connected():
-			messagebox.showinfo('','Successfully connected to database on '+con.server_host+'.',parent=init_window)
-			init_window.destroy()
-		cur=con.cursor()
-
-		# initial creation of db and tables if not exists in MySQL database
-		cur.execute('create database if not exists taxi')
-		cur.execute('use taxi')
-		cur.execute('create table if not exists taxi_bkgs(bkgid varchar(6) primary key,bkgtime datetime,start varchar(50),end varchar(50),jdate date,jtime time,taxitype varchar(50))')
-		cur.execute('create table if not exists bus_bkgs(bkgid varchar(6) primary key,bkgtime datetime,pass_no int,start varchar(50),end varchar(50),jdate date,jtime time,bustype varchar(50))')
-		cur.execute('create table if not exists tkt_details(tktid char(9) primary key, bkgid varchar(6), timestamp datetime)')
-		# cur.execute('create table if not exists users(uuid varchar(6) primary key,fname varchar(50),email varchar(50),num varchar(10),uname varchar(50),passwd varchar(50))')
-		cur.execute('create table if not exists payment_details(pay_id varchar(6) primary key,paytime datetime,bkgid varchar(6),amt int,payment_type varchar(20),cardno varchar(16),cardname varchar(50),cvv int(3),exp_month int(2),exp_year int(4))')
-		cur.execute('create table if not exists employees(emp_id varchar(5) primary key,emp_uname varchar(50),emp_name varchar(50),emp_passwd varchar(50))')
-		cur.execute('create table if not exists admin(admin_id varchar(5) primary key,admin_uname varchar(50),admin_name varchar(50),admin_passwd varchar(50))')
-		
-		# creates root and demo users IF NOT EXISTS
-		try:	
-			cur.execute("insert into admin values('A0001','root','System Administrator','root')")
-			cur.execute("insert into employees values('E0001','demo','Demonstration Agent','demo')")
-			cur.execute("insert into users values('U00001','Demonstration User','demo@abc.com','1234567890','demo','demo')")
-		except:
-			pass
-		
-		con.commit()
+def init():																						# Initalisation function
 	
-	def init_program():
-		def prconnect():
-			global pr_choice
+	def init_program():																			# Initialises IBS.
+	
+		def initdb():															# Initialises database.
+			# ensure MySQL connection and cursor variables are global (i.e. accessible across the entire program, and not confined to a single function)
+			global con
+			global cur
+			host=inp_host.get()
+			uname=inp_uname.get()
+			passwd=inp_passwd.get()
+
+			try:																# Tries connecting to db with provided credentials
+				con=ms.connect(host=host,user=uname,password=passwd)
+			except:
+				try:															# If providec credentials are invalid, fall back to defaults (root@localhost)
+					messagebox.showerror('Error','Incorrect hostname or credentials provided.\nFalling back to default credentials.')
+					con=ms.connect(host='localhost',user='root',password='123456')
+				except:															# Terminates the program if no database is found on localhost						
+					messagebox.showerror('Error','RDBMS not found on localhost.\nThe program will terminate.')
+					quit()
+
+			if con.is_connected():												# Successful connection message
+				messagebox.showinfo('','Successfully connected to database on '+con.server_host+'.',parent=ibs_init_win)
+				ibs_init_win.destroy()
+			cur=con.cursor()
+
+			# initial creation of db and tables (if not exists) in MySQL database
+			cur.execute('create database if not exists taxi')
+			cur.execute('use taxi')
+			cur.execute('create table if not exists taxi_bkgs(bkgid varchar(6) primary key,bkgtime datetime,start varchar(50),end varchar(50),jdate date,jtime time,taxitype varchar(50))')
+			cur.execute('create table if not exists bus_bkgs(bkgid varchar(6) primary key,bkgtime datetime,pass_no int,start varchar(50),end varchar(50),jdate date,jtime time,bustype varchar(50))')
+			cur.execute('create table if not exists tkt_details(tktid char(9) primary key, bkgid varchar(6), timestamp datetime)')
+			# cur.execute('create table if not exists users(uuid varchar(6) primary key,fname varchar(50),email varchar(50),num varchar(10),uname varchar(50),passwd varchar(50))')
+			cur.execute('create table if not exists payment_details(pay_id varchar(6) primary key,paytime datetime,bkgid varchar(6),amt int,payment_type varchar(20),cardno varchar(16),cardname varchar(50),cvv int(3),exp_month int(2),exp_year int(4))')
+			cur.execute('create table if not exists employees(emp_id varchar(5) primary key,emp_uname varchar(50),emp_name varchar(50),emp_passwd varchar(50))')
+			cur.execute('create table if not exists admin(admin_id varchar(5) primary key,admin_uname varchar(50),admin_name varchar(50),admin_passwd varchar(50))')
+			
+			# creates root and demo users IF NOT EXISTS
+			try:	
+				cur.execute("insert into admin values('A0001','root','System Administrator','root')")
+				cur.execute("insert into employees values('E0001','demo','Demonstration Agent','demo')")
+				# cur.execute("insert into users values('U00001','Demonstration User','demo@abc.com','1234567890','demo','demo')")
+			except:
+				pass
+			
+			con.commit()
+		
+		def prconnect():																		# Initialises printer.
+			# ensure printer status variable is global (i.e. accessible across the entire program, and not confined to a single function)
 			global isPrintingEnabled
 			isPrintingEnabled=False
 
-			if pr_con_type.get()=='N':
+			# Enables or disables printer support
+			if pr_con_type.get()=='N':	
 				if not printer_ip_input.get()=='' and not printer_ip_input.get().isspace():
 					global pr_ip
 					pr_ip=printer_ip_input.get()
-					try:
+					try:										# Test connection to printer, disable printing if connection fails.
 						Network(pr_ip)
 						isPrintingEnabled=True
 					except:
-						messagebox.showerror('Error','Unable to connect to printer.\nThe printing functionality will be disabled.',parent=init_window)
+						messagebox.showerror('Error','Unable to connect to printer.\nThe printing functionality will be disabled.',parent=ibs_init_win)
 						isPrintingEnabled=False
-				else:
-					messagebox.showerror('Error','No IP address for printer specified.\nThe printing functionality will be disabled.',parent=init_window)
+				else:											# Disables printing if IP address for printer is left blank
+					messagebox.showerror('Error','No IP address for printer specified.\nThe printing functionality will be disabled.',parent=ibs_init_win)
 					isPrintingEnabled=False
 
-			elif pr_con_type.get()=='D':
-				messagebox.showinfo('Info','The printing functionality will be disabled.',parent=init_window)
+			elif pr_con_type.get()=='D':							
+				messagebox.showinfo('Info','The printing functionality will be disabled.',parent=ibs_init_win)
 				isPrintingEnabled=False
-			
-		def dbconnect():
-			hostname=inp_host.get()
-			uname=inp_uname.get()
-			passwd=inp_passwd.get()
-			initdb(hostname,uname,passwd)
 
-		if pr_con_type.get() in ['N','D']:
+		if pr_con_type.get() in ['N','D']:														# Invokes init functions if printer choice is correct.
 			prconnect()
-			dbconnect()
+			initdb()
 			emp_main()
 			con.close()
 		else:
@@ -136,49 +137,49 @@ def init():																			# Initialisation function
 		printer_ip_input.configure(state='normal')
 		printer_ip_input.update()
 
-	init_window=tk.Tk()
-	init_window.title('ABC-IBS '+dev_string)
-	init_window.resizable(False, False)
+	ibs_init_win=tk.Tk()
+	ibs_init_win.title('ABC-IBS '+dev_string)
+	ibs_init_win.resizable(False, False)
 	icon=tk.PhotoImage(file='img/icon.png')
-	init_window.iconphoto(False,icon)
+	ibs_init_win.iconphoto(False,icon)
 
-	tk.Label(init_window,text='IBS configuration options',font=h1fnt,justify=tk.LEFT).grid(column=0,row=0,padx=10,columnspan=2,sticky=tk.W)
+	tk.Label(ibs_init_win,text='IBS configuration options',font=h1fnt,justify=tk.LEFT).grid(column=0,row=0,padx=10,columnspan=2,sticky=tk.W)
 	
-	tk.Label(init_window,text='RDBMS Configuration',font=h2fnt,justify=tk.LEFT).grid(column=0,row=1,padx=10,columnspan=2,sticky=tk.W)
-	tk.Label(init_window,text='If no RDBMS login credentials are specified,\nit will fall back to those of root@localhost.',font=menufnt,justify=tk.LEFT).grid(column=0,row=4,padx=10,pady=10,columnspan=2,sticky=tk.W)
+	tk.Label(ibs_init_win,text='RDBMS Configuration',font=h2fnt,justify=tk.LEFT).grid(column=0,row=1,padx=10,columnspan=2,sticky=tk.W)
+	tk.Label(ibs_init_win,text='If no RDBMS login credentials are specified,\nit will fall back to those of root@localhost.',font=menufnt,justify=tk.LEFT).grid(column=0,row=4,padx=10,pady=10,columnspan=2,sticky=tk.W)
 
-	tk.Label(init_window,text='Host',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
-	inp_host=tk.Entry(init_window,font=fnt)
+	tk.Label(ibs_init_win,text='Host',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
+	inp_host=tk.Entry(ibs_init_win,font=fnt)
 	inp_host.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
 
-	tk.Label(init_window,text='User',font=fnt).grid(column=0,row=9,sticky=tk.E,padx=10,pady=10)
-	inp_uname=tk.Entry(init_window,font=fnt)
+	tk.Label(ibs_init_win,text='User',font=fnt).grid(column=0,row=9,sticky=tk.E,padx=10,pady=10)
+	inp_uname=tk.Entry(ibs_init_win,font=fnt)
 	inp_uname.grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
 
-	tk.Label(init_window,text='Password',font=fnt).grid(column=0,row=10,sticky=tk.E,padx=10,pady=10)
-	inp_passwd=tk.Entry(init_window,show='*',font=fnt)
+	tk.Label(ibs_init_win,text='Password',font=fnt).grid(column=0,row=10,sticky=tk.E,padx=10,pady=10)
+	inp_passwd=tk.Entry(ibs_init_win,show='*',font=fnt)
 	inp_passwd.grid(column=1,row=10,sticky=tk.EW,padx=10,pady=10)
 
-	tk.Label(init_window,text='ESC/POS Printer Configuration',font=h2fnt,justify=tk.LEFT).grid(column=0,row=12,padx=10,columnspan=2,sticky=tk.W)
-	tk.Label(init_window,text='If connection to printer cannot be made,\nprinting functionality will be automatically disabled.',font=menufnt,justify=tk.LEFT).grid(column=0,row=13,padx=10,pady=10,columnspan=2,sticky=tk.W)
+	tk.Label(ibs_init_win,text='ESC/POS Printer Configuration',font=h2fnt,justify=tk.LEFT).grid(column=0,row=12,padx=10,columnspan=2,sticky=tk.W)
+	tk.Label(ibs_init_win,text='If connection to printer cannot be made,\nprinting functionality will be automatically disabled.',font=menufnt,justify=tk.LEFT).grid(column=0,row=13,padx=10,pady=10,columnspan=2,sticky=tk.W)
 
-	pr_con_type=tk.StringVar(init_window)
+	pr_con_type=tk.StringVar(ibs_init_win)
 	# ttk.Radiobutton(init_window, text = 'USB',variable = pr_con_type,value = 'U',command=disable_nw_ip).grid(column=0,row=14,sticky=tk.W,padx=10)
 	
-	ttk.Radiobutton(init_window, text = 'Network (enter IP address: )',variable = pr_con_type,value = 'N',command=enable_nw_ip).grid(column=0,row=15,sticky=tk.W,padx=10)
-	printer_ip_input=tk.Entry(init_window,font=fnt,state='disabled')
+	ttk.Radiobutton(ibs_init_win, text = 'Network (enter IP address: )',variable = pr_con_type,value = 'N',command=enable_nw_ip).grid(column=0,row=15,sticky=tk.W,padx=10)
+	printer_ip_input=tk.Entry(ibs_init_win,font=fnt,state='disabled')
 	printer_ip_input.grid(column=1,row=15,sticky=tk.EW,padx=10,pady=10)
 
-	ttk.Radiobutton(init_window, text = 'Disable printing',variable = pr_con_type,value = 'D',command=disable_nw_ip).grid(column=0,row=16,sticky=tk.W,padx=10)
+	ttk.Radiobutton(ibs_init_win, text = 'Disable printing',variable = pr_con_type,value = 'D',command=disable_nw_ip).grid(column=0,row=16,sticky=tk.W,padx=10)
 
-	submit=tk.Button(init_window,text='Continue',command=init_program,font=fntit)
+	submit=tk.Button(ibs_init_win,text='Continue',command=init_program,font=fntit)
 	submit.grid(column=1,row=20,padx=10,pady=10,sticky=tk.E)
-	init_window.bind('<Return>',lambda event:init_program())
+	ibs_init_win.bind('<Return>',lambda event:init_program())
 
-	submit=tk.Button(init_window,text='About ABC-IBS',command=about,font=fntit)
+	submit=tk.Button(ibs_init_win,text='About ABC-IBS',command=about,font=fntit)
 	submit.grid(column=0,row=20,padx=10,pady=10,sticky=tk.W)
 
-	init_window.mainloop()
+	ibs_init_win.mainloop()
 
 def about():																		# About page
 
@@ -194,7 +195,7 @@ for ABC Lines
 	icon=tk.PhotoImage(file='img/icon.png')
 	about.iconphoto(False,icon)
 
-	#Labels
+	# Headings
 	tk.Label(about,text='Integrated Booking System (IBS)',font=h1fnt).grid(column=0,row=0,columnspan=3)
 	tk.Label(about,text=(''+build+'\n('+build_timestamp+')'),font=fnt).grid(column=0,row=1,columnspan=3)
 	
@@ -208,6 +209,7 @@ for ABC Lines
 	
 	Separator(about,orient='horizontal').grid(column=0,row=5,sticky=tk.EW,padx=10,pady=10,columnspan=3)
 	
+	# Platform information
 	pyimgsrc=tk.PhotoImage(file='img/python.png')
 	pyimg=tk.Label(about,image=pyimgsrc)
 	pyimg.image=pyimgsrc
@@ -231,14 +233,13 @@ for ABC Lines
 	osimg.image=src
 	osimg.grid(column=2,row=6,padx=10,pady=10)
 
-	#System info
-	if pf.system()=='Windows':										# Additional info - Windows systems ONLY
+	# OS info
+	if pf.system()=='Windows':										# Additional info - Windows ONLY
 		tk.Label(about,text=(pf.system()+' '+pf.release()+'\n(Build '+pf.version()+')'),font=fntb).grid(column=2,row=7,padx=10)
 	else:
 		tk.Label(about,text=(pf.system(),pf.release()),font=fntb).grid(column=2,row=7,padx=10)
 	
-	#Additional distribution info - Linux ONLY
-	if pf.system()=='Linux':
+	if pf.system()=='Linux':										# Additional distribution info - Linux ONLY
 		try:
 			linux=pf.freedesktop_os_release()
 			tk.Label(about,text=(linux['NAME']+' '+linux['VERSION']),font=fntit).grid(column=2,row=8,padx=10)
@@ -249,11 +250,12 @@ for ABC Lines
 
 	Separator(about,orient='horizontal').grid(column=0,row=10,sticky=tk.EW,padx=10,pady=10,columnspan=3)
 	
-	#Hostname and CPU type (e.g.i386 (32-bit); AMD64/x86_64 (64-bit) etc.)
+	# Hostname and CPU type (e.g.i386 (32-bit); AMD64/x86_64 (64-bit) etc.)
 	tk.Label(about,text=pf.node(),font=fntbit).grid(column=0,row=11,columnspan=3,padx=10)
 	tk.Label(about,text=(pf.machine()+' system'),font=fnt).grid(column=0,row=12,columnspan=3,padx=10)
 	Separator(about,orient='horizontal').grid(column=0,row=16,sticky=tk.EW,padx=10,pady=10,columnspan=3)
 	
+	# Database additional details
 	try:
 		dbinfohdg=tk.Label(about,text='MySQL database details:',font=fntbit)
 		dbinfohdg.grid(column=0,row=18,columnspan=3,padx=10)
@@ -267,13 +269,9 @@ for ABC Lines
 		dbinfo=tk.Label(about,text='Database details not available!',font=fnt)
 		dbinfo.grid(column=0,row=19,columnspan=3,padx=10)
 	Separator(about,orient='horizontal').grid(column=0,row=24,sticky=tk.EW,padx=10,pady=10,columnspan=3)
-	
-	#Closes the window
-	def close():
-		about.destroy()
 
 	img1=tk.PhotoImage(file='icons/close.png')
-	cls=tk.Button(about,font=fnt,text='Close',image=img1,command=close)
+	cls=tk.Button(about,font=fnt,text='Close',image=img1,command=about.destroy)
 	cls.grid(column=0,row=25,padx=10,pady=10,columnspan=3)
 	cls.image=img1
 
