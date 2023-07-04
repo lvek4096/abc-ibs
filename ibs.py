@@ -15,8 +15,8 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string
-build='ibs.rc1-336'
-build_timestamp='2023-07-05 00:53:14'	
+build='ibs.rc1-337'
+build_timestamp='2023-07-05 01:02:29'	
 
 # dev_string=str('[UNDER CONSTRUCTION] '+build+', '+build_timestamp)
 
@@ -178,6 +178,8 @@ def init():																			# Initalisation function
 
 	submit=tk.Button(ibs_init_win,text='About ABC-IBS',command=about,font=fntit)
 	submit.grid(column=0,row=20,padx=10,pady=10,sticky=tk.W)
+
+	ibs_init_win.bind('<Return>',lambda event:init_program())
 
 	ibs_init_win.mainloop()
 
@@ -3688,7 +3690,6 @@ which deletes the table structure from the database along with its contents.'''
 	loggin_btn.grid(column=1,row=8,padx=10,pady=10,sticky=tk.W)
 
 	emp_login_win.bind('<Return>',lambda event:on_login())
-
 	emp_login_win.mainloop()
 
 init()
