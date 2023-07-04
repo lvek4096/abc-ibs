@@ -9,12 +9,15 @@ This is the booking system for ABC Lines.
  - Easy-to-use portal for agents to book and manage bus and taxi journeys
  - Well-stocked and easy administration suite:
 	 - Database management
+   	 - Export data to CSV
 	 - Agent and administration management
 	 - Booking and transaction management
 	- Ticket integration
+- Support for ESC/POS printers over network (with [escpos](https://github.com/python-escpos/python-escpos) library)
 - Ticket printing
 	- Multiple ticket printing for bus journeys with multiple passengers
-- Support for ESC/POS printers over network (with [escpos](https://github.com/python-escpos/python-escpos) library)
+ 
+
 ## How-to
 ### Setup
 1. Clone the repository
