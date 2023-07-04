@@ -14,7 +14,7 @@ This is the booking system for ABC Lines.
 	- Ticket integration
 - Ticket printing
 	- Multiple ticket printing for bus journeys with multiple passengers
-- Support for ESC/POS printers over network
+- Support for ESC/POS printers over network (with [escpos](https://github.com/python-escpos/python-escpos) library)
 ## How-to
 ### Setup
 1. Clone the repository
