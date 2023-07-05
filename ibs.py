@@ -15,8 +15,8 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string
-build='ibs.rc1-337'
-build_timestamp='2023-07-05 01:02:29'	
+build='ibs.beta-338'
+build_timestamp='2023-07-05 09:31:08'	
 
 # dev_string=str('[UNDER CONSTRUCTION] '+build+', '+build_timestamp)
 
@@ -107,8 +107,9 @@ def init():																			# Initalisation function
 					global pr_ip
 					pr_ip=printer_ip_input.get()
 					try:										# Test connection to printer, disable printing if connection fails.
-						Network(pr_ip)
+						pr=Network(pr_ip)
 						isPrintingEnabled=True
+						pr.close()
 					except:
 						messagebox.showerror('Error','Unable to connect to printer.\nThe printing functionality will be disabled.',parent=ibs_init_win)
 						isPrintingEnabled=False
