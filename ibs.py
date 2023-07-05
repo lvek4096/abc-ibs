@@ -15,8 +15,8 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string
-build='ibs.beta-338'
-build_timestamp='2023-07-05 09:31:08'	
+build='ibs.beta-339'
+build_timestamp='2023-07-05 11:43:28'	
 
 # dev_string=str('[UNDER CONSTRUCTION] '+build+', '+build_timestamp)
 
@@ -46,7 +46,9 @@ if pf.system()=='Windows':
 		pass
 
 # Defines stops
-locations=['Blackcastle','Westerwitch','Ironlyn','North Ganking','Goldsnow','Aldcourt','Bridgehedge','Glasspond','Winterglass','Northcrest','Orlake','Clearhedge','Estermount','Shorebush','Greenfay']
+
+locations_df=pd.read_csv('places.csv',header=None)
+locations=locations_df[0].tolist()
 
 def init():																			# Initalisation function
 	
