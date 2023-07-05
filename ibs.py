@@ -12,37 +12,23 @@ import random as rd
 import os
 import platform as pf
 from datetime import datetime,timedelta
-from escpos.printer import Network, Usb
+from escpos.printer import Network
 
-build='320 [V4]'
-build_timestamp='2023-05-25 21:28:43'	
+# Build string
+build='ibs.beta-338'
+build_timestamp='2023-07-05 09:31:08'	
 
-#font choice
+# dev_string=str('[UNDER CONSTRUCTION] '+build+', '+build_timestamp)
+
+# Fonts for GUI
 if pf.system()=='Windows':
-	if int(pf.release()) > 7:
-		fnt=('Cascadia Mono',12)
-		fntb=('Cascadia Mono',12,'bold')
-		fntit=('Cascadia Mono',12,'italic')
-		fntbit=('Cascadia Mono',12,'bold italic')
-		h1fnt=('Segoe UI Variable Display',24,'bold')
-		h2fnt=('Segoe UI Variable Text',12)
-		menufnt=('Cascadia Mono',11)
-	elif int(pf.release()) == 7:
-		fnt=('Consolas',12)
-		fntb=('Consolas',12,'bold')
-		fntit=('Consolas',12,'italic')
-		fntbit=('Consolas',12,'bold italic')
-		h1fnt=('Segoe UI',24,'bold')
-		h2fnt=('Segoe UI',12)
-		menufnt=('Consolas',11)
-	else:
-		fnt=('Courier New',12)
-		fntb=('Courier New',12,'bold')
-		fntit=('Courier New',12,'italic')
-		fntbit=('Courier New',12,'bold italic')
-		h1fnt=('Tahoma',24,'bold')
-		h2fnt=('Tahoma',12)
-		menufnt=('Courier New',11)
+	fnt=('Cascadia Mono',12)
+	fntb=('Cascadia Mono',12,'bold')
+	fntit=('Cascadia Mono',12,'italic')
+	fntbit=('Cascadia Mono',12,'bold italic')
+	h1fnt=('Segoe UI Variable Display',24,'bold')
+	h2fnt=('Segoe UI Variable Text',12)
+	menufnt=('Cascadia Mono',11)
 elif pf.system()=='Linux':
 	fnt=('Ubuntu Mono',12)
 	fntb=('Ubuntu Mono',12,'bold')
@@ -52,151 +38,153 @@ elif pf.system()=='Linux':
 	h2fnt=('Ubuntu',12)
 	menufnt=('Ubuntu Mono',11)
 
-# Enables support for DPI scaling awareness on supported Windows versions
+# Enables DPI scaling awareness on supported Windows versions
 if pf.system()=='Windows':
 	try:
 		ctypes.windll.shcore.SetProcessDpiAwareness(True)
 	except:
 		pass
 
-locations=['Blackcastle','Westerwitch','Ironlyn','Wellsummer','Meadowynne','Aldcourt','Butterhaven','Winterglass','Northcrest','Mallowdell']
+# Defines stops
+locations=['Blackcastle','Westerwitch','Ironlyn','North Ganking','Goldsnow','Aldcourt','Bridgehedge','Glasspond','Winterglass','Northcrest','Orlake','Clearhedge','Estermount','Shorebush','Greenfay']
 
-def init():		#Initialisation script
-	def initdb(host,uname,passwd):
-		global con
-		global cur
-		try:
-			con=ms.connect(host=host,user=uname,password=passwd)
-		except:
-			try:
-				con=ms.connect(host='localhost',user='root',password='123456')
-				messagebox.showerror('Error','Incorrect hostname or credentials provided.\nFalling back to default credentials.')
-			except:
-				messagebox.showerror('Error','RDBMS not found on localhost.\nThe program will terminate.')
-				quit()
-
-		if con.is_connected():
-			init_window.destroy()
-			messagebox.showinfo('Database','Successfully connected to database on '+con.server_host+'.')
-		cur=con.cursor()
-
-		#initial creation of db and tables if not existing in MySQL database'
-		cur.execute('create database if not exists taxi')
-		cur.execute('use taxi')
-		cur.execute('create table if not exists taxi_bkgs(bkgid varchar(6) primary key,bkgtime datetime,start varchar(50),end varchar(50),jdate date,jtime time,taxitype varchar(50))')
-		cur.execute('create table if not exists bus_bkgs(bkgid varchar(6) primary key,bkgtime datetime,pass_no int,start varchar(50),end varchar(50),jdate date,jtime time,bustype varchar(50))')
-		cur.execute('create table if not exists users(uuid varchar(6) primary key,fname varchar(50),email varchar(50),num varchar(10),uname varchar(50),passwd varchar(50))')
-		cur.execute('create table if not exists payment_details(pay_id varchar(6) primary key,paytime datetime,bkgid varchar(6),amt int,payment_type varchar(20),cardno varchar(16),cardname varchar(50),cvv int(3),exp_month int(2),exp_year int(4))')
-		cur.execute('create table if not exists employees(emp_id varchar(5) primary key,emp_uname varchar(50),emp_name varchar(50),emp_passwd varchar(50))')
-		cur.execute('create table if not exists admin(admin_id varchar(5) primary key,admin_uname varchar(50),admin_name varchar(50),admin_passwd varchar(50))')
-		
-		try:	#creates root and demo users IF NOT EXISTS
-			cur.execute("insert into admin values('A0001','root','System Administrator','123456')")
-			cur.execute("insert into employees values('E0001','demoagent','Demonstration Agent','demoagent')")
-			cur.execute("insert into users values('U00001','Demonstration User','demo@abc.com','1234567890','demo','demo')")
-		except:
-			pass
-		
-		con.commit()
+def init():																			# Initalisation function
 	
-	def db():
-		def prconnect():
-			global pr_choice
+	def init_program():																			# Initialises IBS.
+	
+		def initdb():															# Initialises database.
+			# ensure MySQL connection and cursor variables are global (i.e. accessible across the entire program, and not confined to a single function)
+			global con
+			global cur
+			host=inp_host.get()
+			uname=inp_uname.get()
+			passwd=inp_passwd.get()
+
+			try:																# Tries connecting to db with provided credentials
+				con=ms.connect(host=host,user=uname,password=passwd)
+			except:
+				try:															# If providec credentials are invalid, fall back to defaults (root@localhost)
+					messagebox.showerror('Error','Incorrect hostname or credentials provided.\nFalling back to default credentials.')
+					con=ms.connect(host='localhost',user='root',password='123456')
+				except:															# Terminates the program if no database is found on localhost						
+					messagebox.showerror('Error','RDBMS not found on localhost.\nThe program will terminate.')
+					quit()
+
+			if con.is_connected():												# Successful connection message
+				messagebox.showinfo('','Successfully connected to database on '+con.server_host+'.',parent=ibs_init_win)
+				ibs_init_win.destroy()
+			cur=con.cursor()
+
+			# initial creation of db and tables (if not exists) in MySQL database
+			cur.execute('create database if not exists taxi')
+			cur.execute('use taxi')
+			cur.execute('create table if not exists taxi_bkgs(bkgid varchar(6) primary key,bkgtime datetime,start varchar(50),end varchar(50),jdate date,jtime time,taxitype varchar(50))')
+			cur.execute('create table if not exists bus_bkgs(bkgid varchar(6) primary key,bkgtime datetime,pass_no int,start varchar(50),end varchar(50),jdate date,jtime time,bustype varchar(50))')
+			cur.execute('create table if not exists tkt_details(tktid char(9) primary key, bkgid varchar(6), timestamp datetime)')
+			# cur.execute('create table if not exists users(uuid varchar(6) primary key,fname varchar(50),email varchar(50),num varchar(10),uname varchar(50),passwd varchar(50))')
+			cur.execute('create table if not exists payment_details(pay_id varchar(6) primary key,paytime datetime,bkgid varchar(6),amt int,payment_type varchar(20),cardno varchar(16),cardname varchar(50),cvv int(3),exp_month int(2),exp_year int(4))')
+			cur.execute('create table if not exists employees(emp_id varchar(5) primary key,emp_uname varchar(50),emp_name varchar(50),emp_passwd varchar(50))')
+			cur.execute('create table if not exists admin(admin_id varchar(5) primary key,admin_uname varchar(50),admin_name varchar(50),admin_passwd varchar(50))')
+			
+			# creates root and demo users IF NOT EXISTS
+			try:	
+				cur.execute("insert into admin values('A0001','root','System Administrator','root')")
+				cur.execute("insert into employees values('E0001','demo','Demonstration Agent','demo')")
+				# cur.execute("insert into users values('U00001','Demonstration User','demo@abc.com','1234567890','demo','demo')")
+			except:
+				pass
+			
+			con.commit()
+		
+		def prconnect():																		# Initialises printer.
+			# ensure printer status variable is global (i.e. accessible across the entire program, and not confined to a single function)
 			global isPrintingEnabled
 			isPrintingEnabled=False
 
-			if pr_con_type.get()=='U':
-				pr_choice='U'
-				isPrintingEnabled=True
-			elif pr_con_type.get()=='N':
-				pr_choice='N'
-				isPrintingEnabled=True
-			elif pr_con_type.get()=='D':
-				messagebox.showinfo('Info','The printing functionality will be disabled.')
+			# Enables or disables printer support
+			if pr_con_type.get()=='N':	
+				if not printer_ip_input.get()=='' and not printer_ip_input.get().isspace():
+					global pr_ip
+					pr_ip=printer_ip_input.get()
+					try:										# Test connection to printer, disable printing if connection fails.
+						pr=Network(pr_ip)
+						isPrintingEnabled=True
+						pr.close()
+					except:
+						messagebox.showerror('Error','Unable to connect to printer.\nThe printing functionality will be disabled.',parent=ibs_init_win)
+						isPrintingEnabled=False
+				else:											# Disables printing if IP address for printer is left blank
+					messagebox.showerror('Error','No IP address for printer specified.\nThe printing functionality will be disabled.',parent=ibs_init_win)
+					isPrintingEnabled=False
+
+			elif pr_con_type.get()=='D':							
+				messagebox.showinfo('Info','The printing functionality will be disabled.',parent=ibs_init_win)
 				isPrintingEnabled=False
-			
-		def dbconnect():
-			hostname=inp_host.get()
-			uname=inp_uname.get()
-			passwd=inp_passwd.get()
-			initdb(hostname,uname,passwd)
 
-		if str(login_type.get())=='U':
-			if pr_con_type.get() in ['U','N','D']:
-				dbconnect()
-				prconnect()
-				user_main()
-				con.close()
-			else:
-				messagebox.showerror('Error','Please select printer connection option.')
-
-		elif str(login_type.get())=='E':
-			if pr_con_type.get() in ['U','N','D']:
-				dbconnect()
-				prconnect()
-				emp_main()
-				con.close()
-			else:
-				messagebox.showerror('Error','Please select printer connection option.')
-
+		if pr_con_type.get() in ['N','D']:														# Invokes init functions if printer choice is correct.
+			prconnect()
+			initdb()
+			emp_main()
+			con.close()
 		else:
-			messagebox.showerror('Error','Please select login option.')
+			messagebox.showerror('Error','Please select printer connection option.')
 
-	def enable_dbmsentries():
-		inp_host.configure(state='normal')
-		inp_host.update()
+	# Disable/enables N/W printer IP address  entry box
+	def disable_nw_ip():
+		printer_ip_input.configure(state='disabled')
+		printer_ip_input.update()
 
-		inp_uname.configure(state='normal')
-		inp_uname.update()
+	def enable_nw_ip():
+		printer_ip_input.configure(state='normal')
+		printer_ip_input.update()
 
-		inp_passwd.configure(state='normal')
-		inp_passwd.update()
-
-	init_window=tk.Tk()
-	init_window.title('Program Configuration')
-	init_window.resizable(False, False)
+	ibs_init_win=tk.Tk()
+	ibs_init_win.title('ABC-IBS Configuration')
+	ibs_init_win.resizable(False, False)
 	icon=tk.PhotoImage(file='img/icon.png')
-	init_window.iconphoto(False,icon)
+	ibs_init_win.iconphoto(False,icon)
 
-	tk.Label(init_window,text='Program Configuration',font=h1fnt,justify=tk.LEFT).grid(column=0,row=0,padx=10,columnspan=2,sticky=tk.W)
+	tk.Label(ibs_init_win,text='IBS configuration options',font=h1fnt,justify=tk.LEFT).grid(column=0,row=0,padx=10,columnspan=2,sticky=tk.W)
 	
-	tk.Label(init_window,text='RDBMS Configuration',font=h2fnt,justify=tk.LEFT).grid(column=0,row=1,padx=10,columnspan=2,sticky=tk.W)
-	tk.Label(init_window,text='If no RDBMS login credentials are specified,\nit will fall back to those of root@localhost.',font=menufnt,justify=tk.LEFT).grid(column=0,row=4,padx=10,pady=10,columnspan=2,sticky=tk.W)
+	tk.Label(ibs_init_win,text='RDBMS Configuration',font=h2fnt,justify=tk.LEFT).grid(column=0,row=1,padx=10,columnspan=2,sticky=tk.W)
+	tk.Label(ibs_init_win,text='If no RDBMS login credentials are specified,\nit will fall back to those of root@localhost.',font=menufnt,justify=tk.LEFT).grid(column=0,row=4,padx=10,pady=10,columnspan=2,sticky=tk.W)
 
-	login_type = tk.StringVar(init_window)
-	ttk.Radiobutton(init_window, text = 'User Portal',variable = login_type,value = 'U',command=enable_dbmsentries).grid(column=1,row=5,sticky=tk.W,padx=10)
-	ttk.Radiobutton(init_window, text = 'Employee Portal',variable = login_type,value = 'E',command=enable_dbmsentries).grid(column=1,row=6,sticky=tk.W,padx=10)
-		
-	tk.Label(init_window,text='Host',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
-	inp_host=tk.Entry(init_window,font=fnt,state='disabled')
+	tk.Label(ibs_init_win,text='Host',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
+	inp_host=tk.Entry(ibs_init_win,font=fnt)
 	inp_host.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
 
-	tk.Label(init_window,text='User',font=fnt).grid(column=0,row=9,sticky=tk.E,padx=10,pady=10)
-	inp_uname=tk.Entry(init_window,font=fnt,state='disabled')
+	tk.Label(ibs_init_win,text='User',font=fnt).grid(column=0,row=9,sticky=tk.E,padx=10,pady=10)
+	inp_uname=tk.Entry(ibs_init_win,font=fnt)
 	inp_uname.grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
 
-	tk.Label(init_window,text='Password',font=fnt).grid(column=0,row=10,sticky=tk.E,padx=10,pady=10)
-	inp_passwd=tk.Entry(init_window,show='*',font=fnt,state='disabled')
+	tk.Label(ibs_init_win,text='Password',font=fnt).grid(column=0,row=10,sticky=tk.E,padx=10,pady=10)
+	inp_passwd=tk.Entry(ibs_init_win,show='*',font=fnt)
 	inp_passwd.grid(column=1,row=10,sticky=tk.EW,padx=10,pady=10)
 
-	tk.Label(init_window,text='Printer Configuration',font=h2fnt,justify=tk.LEFT).grid(column=0,row=12,padx=10,columnspan=2,sticky=tk.W)
-	tk.Label(init_window,text='If connection to printer cannot be made,\nprinting functionality will be automatically disabled.',font=menufnt,justify=tk.LEFT).grid(column=0,row=13,padx=10,pady=10,columnspan=2,sticky=tk.W)
+	tk.Label(ibs_init_win,text='ESC/POS Printer Configuration',font=h2fnt,justify=tk.LEFT).grid(column=0,row=12,padx=10,columnspan=2,sticky=tk.W)
+	tk.Label(ibs_init_win,text='If connection to printer cannot be made,\nprinting functionality will be automatically disabled.',font=menufnt,justify=tk.LEFT).grid(column=0,row=13,padx=10,pady=10,columnspan=2,sticky=tk.W)
 
-	pr_con_type=tk.StringVar(init_window)
-	ttk.Radiobutton(init_window, text = 'USB',variable = pr_con_type,value = 'U').grid(column=1,row=14,sticky=tk.W,padx=10)
+	pr_con_type=tk.StringVar(ibs_init_win)
+	# ttk.Radiobutton(init_window, text = 'USB',variable = pr_con_type,value = 'U',command=disable_nw_ip).grid(column=0,row=14,sticky=tk.W,padx=10)
 	
-	ttk.Radiobutton(init_window, text = 'Network (192.168.1.124)',variable = pr_con_type,value = 'N').grid(column=1,row=15,sticky=tk.W,padx=10)
-	
-	ttk.Radiobutton(init_window, text = 'Disable printing',variable = pr_con_type,value = 'D').grid(column=1,row=16,sticky=tk.W,padx=10)
+	ttk.Radiobutton(ibs_init_win, text = 'Network (enter IP address: )',variable = pr_con_type,value = 'N',command=enable_nw_ip).grid(column=0,row=15,sticky=tk.W,padx=10)
+	printer_ip_input=tk.Entry(ibs_init_win,font=fnt,state='disabled')
+	printer_ip_input.grid(column=1,row=15,sticky=tk.EW,padx=10,pady=10)
 
-	submit=tk.Button(init_window,text='Continue',command=db,font=fntit)
-	submit.grid(column=1,row=20,padx=10,pady=10,sticky=tk.W)
-	init_window.bind('<Return>',lambda event:db())
+	ttk.Radiobutton(ibs_init_win, text = 'Disable printing',variable = pr_con_type,value = 'D',command=disable_nw_ip).grid(column=0,row=16,sticky=tk.W,padx=10)
 
-	init_window.mainloop()
+	submit=tk.Button(ibs_init_win,text='Continue',command=init_program,font=fntit)
+	submit.grid(column=1,row=20,padx=10,pady=10,sticky=tk.E)
+	ibs_init_win.bind('<Return>',lambda event:init_program())
 
-def about():	#About page
-	#Build number
+	submit=tk.Button(ibs_init_win,text='About ABC-IBS',command=about,font=fntit)
+	submit.grid(column=0,row=20,padx=10,pady=10,sticky=tk.W)
+
+	ibs_init_win.bind('<Return>',lambda event:init_program())
+
+	ibs_init_win.mainloop()
+
+def about():																		# About page
 
 	credits_txt='''
 Developed by
@@ -210,9 +198,9 @@ for ABC Lines
 	icon=tk.PhotoImage(file='img/icon.png')
 	about.iconphoto(False,icon)
 
-	#Labels
-	tk.Label(about,text='About',font=h1fnt).grid(column=0,row=0,columnspan=3)
-	tk.Label(about,text=('Build '+build+'\n('+build_timestamp+')'),font=fnt).grid(column=0,row=1,columnspan=3)
+	# Headings
+	tk.Label(about,text='Integrated Booking System (IBS)',font=h1fnt).grid(column=0,row=0,columnspan=3)
+	tk.Label(about,text=(''+build+'\n('+build_timestamp+')'),font=fnt).grid(column=0,row=1,columnspan=3)
 	
 	logo_img=tk.PhotoImage(file='img/amadeus.png')
 	logo=tk.Label(about,image=logo_img)
@@ -224,6 +212,7 @@ for ABC Lines
 	
 	Separator(about,orient='horizontal').grid(column=0,row=5,sticky=tk.EW,padx=10,pady=10,columnspan=3)
 	
+	# Platform information
 	pyimgsrc=tk.PhotoImage(file='img/python.png')
 	pyimg=tk.Label(about,image=pyimgsrc)
 	pyimg.image=pyimgsrc
@@ -231,11 +220,14 @@ for ABC Lines
 
 	tk.Label(about,text=('Python',pf.python_version()),font=fnt).grid(column=0,row=7,padx=10)
 	tk.Label(about,text=('Tkinter',tk.TkVersion),font=fnt).grid(column=0,row=8,padx=10)
-	tk.Label(about,text=('MySQL',con.get_server_info()),font=fnt).grid(column=0,row=9,padx=10)
-	
+	try:
+		tk.Label(about,text=('MySQL',con.get_server_info()),font=fnt).grid(column=0,row=9,padx=10)
+	except:
+		tk.Label(about,text=('MySQL server is inactive.'),font=fntit).grid(column=0,row=9,padx=10)
+
 	if pf.system()=='Windows':
 		src=tk.PhotoImage(file='img/win.png')
-	elif pf.system()=='Darwin':		#Darwin - macOS
+	elif pf.system()=='Darwin':										# Darwin - macOS
 		src=tk.PhotoImage(file='img/macos.png')	
 	elif pf.system()=='Linux':
 		src=tk.PhotoImage(file='img/linux.png')
@@ -244,15 +236,13 @@ for ABC Lines
 	osimg.image=src
 	osimg.grid(column=2,row=6,padx=10,pady=10)
 
-	#System info
-	if pf.system()=='Windows':		#Additional info - Windows systems ONLY
+	# OS info
+	if pf.system()=='Windows':										# Additional info - Windows ONLY
 		tk.Label(about,text=(pf.system()+' '+pf.release()+'\n(Build '+pf.version()+')'),font=fntb).grid(column=2,row=7,padx=10)
 	else:
 		tk.Label(about,text=(pf.system(),pf.release()),font=fntb).grid(column=2,row=7,padx=10)
 	
-	#Additional distribution info - Linux ONLY
-
-	if pf.system()=='Linux':
+	if pf.system()=='Linux':										# Additional distribution info - Linux ONLY
 		try:
 			linux=pf.freedesktop_os_release()
 			tk.Label(about,text=(linux['NAME']+' '+linux['VERSION']),font=fntit).grid(column=2,row=8,padx=10)
@@ -263,313 +253,433 @@ for ABC Lines
 
 	Separator(about,orient='horizontal').grid(column=0,row=10,sticky=tk.EW,padx=10,pady=10,columnspan=3)
 	
-	#Hostname and CPU type (e.g.i386 (32-bit); AMD64/x86_64 (64-bit) etc.)
+	# Hostname and CPU type (e.g.i386 (32-bit); AMD64/x86_64 (64-bit) etc.)
 	tk.Label(about,text=pf.node(),font=fntbit).grid(column=0,row=11,columnspan=3,padx=10)
 	tk.Label(about,text=(pf.machine()+' system'),font=fnt).grid(column=0,row=12,columnspan=3,padx=10)
 	Separator(about,orient='horizontal').grid(column=0,row=16,sticky=tk.EW,padx=10,pady=10,columnspan=3)
 	
-	dbinfohdg=tk.Label(about,text='MySQL database details:',font=fntbit)
-	dbinfohdg.grid(column=0,row=18,columnspan=3,padx=10)
-	
-	dbinfo=tk.Label(about,text='Connected to database \''+con.database+'\''+' on '+con.server_host,font=fnt)
-	dbinfo.grid(column=0,row=19,columnspan=3,padx=10)
-	
+	# Database additional details
+	try:
+		dbinfohdg=tk.Label(about,text='MySQL database details:',font=fntbit)
+		dbinfohdg.grid(column=0,row=18,columnspan=3,padx=10)
+		
+		dbinfo=tk.Label(about,text='Connected to database \''+con.database+'\''+' on '+con.server_host,font=fnt)
+		dbinfo.grid(column=0,row=19,columnspan=3,padx=10)
+	except:
+		dbinfohdg=tk.Label(about,text='MySQL database inactive',font=fntbit)
+		dbinfohdg.grid(column=0,row=18,columnspan=3,padx=10)
+		
+		dbinfo=tk.Label(about,text='Database details not available!',font=fnt)
+		dbinfo.grid(column=0,row=19,columnspan=3,padx=10)
 	Separator(about,orient='horizontal').grid(column=0,row=24,sticky=tk.EW,padx=10,pady=10,columnspan=3)
-	
-	#Closes the window
-	def close():
-		about.destroy()
 
 	img1=tk.PhotoImage(file='icons/close.png')
-	cls=tk.Button(about,font=fnt,text='Close',image=img1,command=close)
+	cls=tk.Button(about,font=fnt,text='Close',image=img1,command=about.destroy)
 	cls.grid(column=0,row=25,padx=10,pady=10,columnspan=3)
 	cls.image=img1
 
-def bus_booking():		#Bus booking
-	id='B'+str(rd.randint(10000,99999))
-	bus_type=['','Standard','Express','Premium']
+def bus_booking():																	# Bus booking
 
+	# Initialising the bus booking function
+	busbkg_id='B'+str(rd.randint(10000,99999))													# Booking ID
+	bus_type=['','Standard','Express','Premium']										# Bus type
+
+	# Defining the window
 	busbkg_win=tk.Toplevel()
-
 	busbkg_win.title('Bus Booking')
 	busbkg_win.resizable(False, False)
 	icon=tk.PhotoImage(file='img/icon.png')
 	busbkg_win.iconphoto(False,icon)
 
-	def start_payment():	
-		#Taking of inputs
-		start_inp=start.get().capitalize()
-		end_inp=end.get().capitalize()
-		date_inp=date.get()
-		time_inp=time.get()
-		bustype_inp=n.get()
-		passno=q.get()
+	def payment():									# The payment function
+		
+		# Taking of inputs
+		origin=from_inp.get().capitalize()
+		destination=to_inp.get().capitalize()
+		date_of_journey=date_inp.get()
+		time_of_journey=time_inp.get()
+		bus_type=bustype_inp.get()
+		passno=passno_inp.get()
 
-		format='%Y-%m-%d %H:%M'												# YYYY-MM-DD HH:MM; MySQL datetime format
-		x=datetime.now()+timedelta(minutes=45)								# minimum bkg time - 45 min from current time
-		mbtime_str=x.strftime(format)										# Converts above datetime to string to MySQL date format
-		min_bkgtime=datetime.strptime(mbtime_str,format)					# Converts string back to datetime object for comparision
-		inpdt_str=date_inp+' '+time_inp									# Combines date and time inputs into correct format for comparision purpose
+		# Conversion and checking of datetime
+		datetime_format='%Y-%m-%d %H:%M'												# YYYY-MM-DD HH:MM; MySQL datetime format
+		x=datetime.now()+timedelta(minutes=45)											# minimum bkg time - 45 min from current time
+		min_bkgtime_str=x.strftime(datetime_format)										# Converts above datetime to string to MySQL date format
+		min_bkgtime=datetime.strptime(min_bkgtime_str,datetime_format)					# Converts string back to datetime object for comparision
+		inpdate_str=date_of_journey+' '+time_of_journey														# Combines date and time inputs into correct format for comparision purpose
 
 		isInpDateinFormat=True	
-		try:
-			isInpDateinFormat=bool(datetime.strptime(inpdt_str,format))  	#Is date and time inputted in format?
+		try:																			# is date and time inputted in format?
+			isInpDateinFormat=bool(datetime.strptime(inpdate_str,datetime_format))  	
 		except ValueError:		
 			isInpDateinFormat=False
 
 		if isInpDateinFormat==True:		
-			inp_dt=datetime.strptime(inpdt_str,format)					# Converts combined input to datetime for comparision
+			inp_dt=datetime.strptime(inpdate_str,datetime_format)						# Converts combined input to datetime for comparision
 
-			if inp_dt >= min_bkgtime:										# Minimum bkg time - 45 min from now
+			if inp_dt >= min_bkgtime:													# Minimum bkg time - 45 min from now
 				isNotPast=True
 			else:
 				isNotPast=False
 
-			if inp_dt <= min_bkgtime+timedelta(days=1096):				# 3-year limit on dates entered
+			if inp_dt <= min_bkgtime+timedelta(days=1096):								# 3-year limit on dates entered
 				isNotDistFuture=True
 			else:
 				isNotDistFuture=False
 
 		# Checking of user inputs before proceeding to payment function
-		if (not start_inp=='' and not start_inp.isspace()) and (not end_inp=='' and not end_inp.isspace()) and (not date_inp=='' and not date_inp.isspace()) and (not time_inp=='' and not time_inp.isspace()) and (not bustype_inp=='' and not bustype_inp.isspace()):
-			if start_inp in locations and end_inp in locations:		
-				if not start_inp == end_inp:
-					if isInpDateinFormat==True and len(date_inp)==10 and len(time_inp)==5: 
+		if (not origin=='' and not origin.isspace()) and (not destination=='' and not destination.isspace()) and (not date_of_journey=='' and not date_of_journey.isspace()) and (not time_of_journey=='' and not time_of_journey.isspace()) and (not bus_type=='' and not bus_type.isspace()):
+			if origin in locations and destination in locations:		
+				if not origin == destination:
+					if isInpDateinFormat==True and len(date_of_journey)==10 and len(time_of_journey)==5: 
 						if isNotPast==True and isNotDistFuture==True:
-							def payment():		#Payment function
-								#Takes inputs of payment details
-								paytype_inp=m.get()
-								cardno_inp=card_no.get()
-								cardname_inp=card_name.get()
-								expyear_inp=exp_year.get()
-								expmonth_inp=exp_month.get()
-								cvv_inp=cvv_no.get()
-								
-								#Gets current month and year for card expiry date checking
-								cur_dt=datetime.now()
-								cur_mth=cur_dt.month
-								cur_yr=cur_dt.year
+							if payment_method.get() in ['R','C']:
+							
+								# calculation of fare on basis of type
+								if bustype_inp.get()=='Standard':
+									rate=5
+								elif bustype_inp.get()=='Express':
+									rate=10
+								elif bustype_inp.get()=='Premium':
+									rate=15
 
-								def transaction():
+								payment_id='P'+str(rd.randint(10000,99999))	
 
-									def add_bkg():	#Adds booking to DB		
-										bkg_time=datetime.now()									#timestamp to mark bookings
-										bkg_timestamp=bkg_time.strftime('%Y-%m-%d %H:%M:%S')	#Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
-									
-										sql='insert into bus_bkgs values (%s,%s,%s,%s,%s,%s,%s,%s)'
-										val=(id,bkg_timestamp,passno,start_inp,end_inp,date_inp,time_inp,bustype_inp)
-										cur.execute(sql,val)
-										con.commit()
+								o=from_inp.get()
+								d=to_inp.get()
+								distance=abs((locations.index(d))-(locations.index(o)))*4	#distance between locations - 4 km.
+								total_fare=(rate*distance)*passno
 
-										#Confirmation message
-										submit_message=tk.Toplevel()
-										submit_message.resizable(False,False)
-										submit_message.title('Booking successful')
+								# is it card (R) or cash?
+								if payment_method.get()=='R':
 
-										tk.Label(submit_message,text='The booking has been\nsuccessfully made.',font=h1fnt,justify=tk.LEFT).grid(row=0,column=0,sticky=tk.W,padx=10,pady=10)
-
-										cardtype=''
-										if cardno_inp[0] == '3':
-											cardtype='AMEX'
-										elif cardno_inp[0] == '4':
-											cardtype='VISA'
-										elif cardno_inp[0] == '5':
-											cardtype='MASTER'
-										elif cardno_inp[0] == '6':
-											cardtype='DISCOVER'
-
-										booking_summary=scrolledtext.ScrolledText(submit_message,font=fnt,width=30,height=8)
-										booking_summary.grid(column=0,row=3,sticky=tk.EW,padx=10,pady=10,columnspan=2)
-
-										text2='\nBus Booking\n-----------\n\nBooking ID: '+id+'\nBooking Timestamp: \n'+bkg_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+n.get()+'\n\nDate: '+date_inp+'\nTime: '+time_inp+'\n\nRate: $'+str(rate)+' per km\nDistance: '+str(distance)+' km\nNumber of passengers: '+str(passno)+'\n\nTotal fare: $'+str(total_fare)+'\n\nPayment\n-------\n\n'+'Payment ID: '+payment_id+'\nPaid by: '+m.get()+'\nCardholder name: '+card_name.get()+'\nCard number: XXXX-XXXX-XXXX-'+card_no.get()[-4:]+'\nCard type: '+cardtype+'\nAmount paid: $'+str(total_fare)+'\n\n------------------'+'\nPAYMENT SUCCESSFUL'+'\n------------------\n'
-										booking_summary.insert(tk.INSERT,text2)
-										booking_summary.configure(state='disabled')
+									def card_payment():		# Card payment function
+										# Takes inputs of payment details
+										card_type=cardtype_inp.get()
+										card_no=cardno_inp.get()
+										card_name=cardname_inp.get()
+										exp_year=expyear_inp.get()
+										exp_month=expmonth_inp.get()
+										cvv=cvv_inp.get()
 										
-										def clipboard():
-											submit_message.clipboard_clear()
-											submit_message.clipboard_append(text2)
-											btn1.configure(fg='green',text='Copied!')
-										
-										def exit():
-											submit_message.destroy()
-											pay_win.destroy()
-											busbkg_win.destroy()
+										# Gets current month and year for card expiry date checking
+										cur_dt=datetime.now()
+										cur_mth=cur_dt.month
+										cur_yr=cur_dt.year
 
-										btn1=tk.Button(submit_message,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
-										btn1.grid(row=5,column=0,padx=10,pady=10)
-										
-										if isPrintingEnabled==True:
+										def bkg_confirmed():
 
-											def send_to_printer():
+											def clipboard():
+												confirmmsg_win.clipboard_clear()
+												confirmmsg_win.clipboard_append(summary_text)
+												clipbd_btn.configure(fg='green',text='Copied!')
+											
+											def exit():
+												confirmmsg_win.destroy()
+												cardpay_window.destroy()
+												busbkg_win.destroy()
 
-												def stp():
-													pr.image('img/icon-2.png')
-													pr.text(text2)
-													pr.barcode(bar_no, 'EAN13')
-													pr.text('\n')
-													pr.text('Powered by Amadeus')
-													pr.text('\n')
-													pr.text('Version: '+build+' ('+build_timestamp+')')
-													pr.text('\n')
+											card_brand=''
+											if card_no[0] == '3':
+												card_brand='AMEX'
+											elif card_no[0] == '4':
+												card_brand='VISA'
+											elif card_no[0] == '5':
+												card_brand='MASTER'
+											elif card_no[0] == '6':
+												card_brand='DISCOVER'
+
+											# Adding booking details to database
+											bkg_time=datetime.now()									# 	Timestamp to mark bookings
+											bkg_timestamp=bkg_time.strftime('%Y-%m-%d %H:%M:%S')	#	Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
+											
+											sql='insert into bus_bkgs values (%s,%s,%s,%s,%s,%s,%s,%s)'
+											val=(busbkg_id,bkg_timestamp,passno,origin,destination,date_of_journey,time_of_journey,bus_type)
+											cur.execute(sql,val)
+											con.commit()
+
+											# Adds payment details to database
+											pay_time=datetime.now()									#	Timestamp to mark payment
+											pay_timestamp=pay_time.strftime('%Y-%m-%d %H:%M:%S')	#	Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
+											
+											sql=('insert into payment_details values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)')
+											val=(payment_id,pay_timestamp,busbkg_id,total_fare,card_type,card_no,card_name,cvv,exp_month,exp_year)
+											cur.execute(sql,val)
+											con.commit()
+
+											# Confirmation popup
+											confirmmsg_win=tk.Toplevel()
+											confirmmsg_win.resizable(False,False)
+											confirmmsg_win.title('Booking successful')
+											icon=tk.PhotoImage(file='img/icon.png')
+											confirmmsg_win.iconphoto(False,icon)
+
+											tk.Label(confirmmsg_win,text='The booking has been\nsuccessfully made.',font=h1fnt,justify=tk.LEFT).grid(row=0,column=0,sticky=tk.W,padx=10,pady=10)
+
+											summary=scrolledtext.ScrolledText(confirmmsg_win,font=fnt,width=30,height=8)
+											summary.grid(column=0,row=3,sticky=tk.EW,padx=10,pady=10,columnspan=2)
+
+											summary_text='\nBus Booking\n-----------\n\nBooking ID: '+busbkg_id+'\nBooking Timestamp: \n'+bkg_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+bustype_inp.get()+'\n\nDate: '+date_of_journey+'\nTime: '+time_of_journey+'\n\nRate: $'+str(rate)+' per km\nDistance: '+str(distance)+' km\nNumber of passengers: '+str(passno)+'\n\nTotal fare: $'+str(total_fare)+'\n\nPayment\n-------\n\n'+'Payment ID: '+payment_id+'\nPaid by: '+cardtype_inp.get()+'\nCardholder name: '+cardname_inp.get()+'\nCard number: XXXX-XXXX-XXXX-'+cardno_inp.get()[-4:]+'\nCard type: '+card_brand+'\nAmount paid: $'+str(total_fare)+'\n\n------------------'+'\nPAYMENT SUCCESSFUL'+'\n------------------\n'
+											summary.insert(tk.INSERT,summary_text)
+											summary.configure(state='disabled')
+
+											clipbd_btn=tk.Button(confirmmsg_win,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
+											clipbd_btn.grid(row=5,column=0,padx=10,pady=10)
+											
+											if isPrintingEnabled==True:
+
+												def receipt():
+
+													def print_receipt():
+														
+														tkt_time=datetime.now()									#timestamp to mark ticket
+														tkt_timestamp=tkt_time.strftime('%Y-%m-%d %H:%M:%S')	#Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
+														
+														bar_no=str(rd.randint(1000000000000,9999999999999))
+														tktid='TKT'+str(rd.randint(100000,999999))														
+																		# title										# ticket details									# journey																																												# fare
+														receipt_text='\nBus Booking '+busbkg_id+'\n\nTicket '+tktid+'\n('+tkt_timestamp+')\n\nNumber of passengers: '+str(passno)+'\nFrom: '+o+' To: '+d+'\nType: '+bustype_inp.get()+'\n\nDate: '+date_of_journey+' Time: '+time_of_journey+'\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)+'\nPaid by: '+cardtype_inp.get()+'\n\nEnjoy your journey!\nThank you for choosing ABC LINES!'
+														
+														sql=('insert into tkt_details values(%s,%s,%s)')
+														#print(tktid,busbkg_id,tkt_timestamp)
+														val=(tktid,busbkg_id,tkt_timestamp)
+														cur.execute(sql,val)
+														con.commit()
+
+														pr.image('img/icon-2.png')
+														pr.text(receipt_text)
+														pr.text('\n')
+														pr.barcode(bar_no, 'EAN13')
+														pr.text('\n')
+														pr.text('Powered by Amadeus')
+														pr.text('\n')
+														pr.text('Version: '+build+' ('+build_timestamp+')')
+														pr.text('\n')
+														
+														if pf.system()=='Windows':
+															pr.text('Platform: '+pf.system()+' '+pf.version())
+														elif pf.system()=='Linux':
+															pr.text('Platform: '+pf.system()+' '+pf.release())
+
+														pr.cut()
 													
-													if pf.system()=='Windows':
-														pr.text('Platform: '+pf.system()+' '+pf.version())
-													elif pf.system()=='Linux':
-														pr.text('Platform: '+pf.system()+' '+pf.release())
-
-													pr.cut()
-													pr.close()
-
-												bar_no=str(rd.randint(1000000000000,9999999999999))
-
-												if pr_choice=='U':
 													try:
-														pr = Usb(idVendor=0x0483,idProduct=0x5720,timeout=0,in_ep=0x81,out_ep=0x03)
-														stp()
+														pr = Network(pr_ip)
+														for i in range(passno):
+															print_receipt()
+														pr.close()
 													except:
-														messagebox.showerror('Error','Unable to connect to printer via USB.',parent=submit_message)
+														messagebox.showerror('Error','Unable to print receipt.',parent=confirmmsg_win)
 
-												elif pr_choice=='N':
-													try:
-														pr = Network('192.168.1.124')
-														stp()
-													except:
-														messagebox.showerror('Error','Unable to connect to printer via network.',parent=submit_message)
+												print_btn=tk.Button(confirmmsg_win,text='Print...',font=fnt,command=receipt,justify=tk.CENTER)
+												print_btn.grid(row=6,column=0,padx=10,pady=10)
 
-											btn3=tk.Button(submit_message,text='Print...',font=fnt,command=send_to_printer,justify=tk.CENTER)
-											btn3.grid(row=6,column=0,padx=10,pady=10)
+											ok_btn=tk.Button(confirmmsg_win,text='OK',font=fnt,command=exit,justify=tk.CENTER)
+											ok_btn.grid(row=8,column=0,padx=10,pady=10)
+											confirmmsg_win.bind('<Return>',lambda event:exit())		
+										
+										#Payment details input checking
+										if (not card_type=='' and not card_type.isspace()) and (not card_no=='' and not card_no.isspace()) and (not card_name=='' and not card_name.isspace()) and (not exp_year=='' and not exp_year.isspace()) and (not exp_month=='' and not exp_month.isspace()) and (not cvv=='' and not cvv.isspace()):
+											if len(card_no) == 16 and card_no[0] in '3456':
+												if len(exp_year) == 4 and int(exp_year) >= cur_yr:
+													if int(exp_year) == cur_yr:						# If expiry year is same as current year
+														if (len(exp_month) == 2) and (int(exp_month)>= 1 and int(exp_month) <= 12) and (int(exp_month) > cur_mth):
+															if len(cvv)==3:
+																bkg_confirmed()
+															else:
+																messagebox.showerror('Error','CVV must be a 3-digit number.',parent=cardpay_window)
+														else:
+															messagebox.showerror('Error','Invalid expiry month.',parent=cardpay_window)
+													elif int(exp_year) > cur_yr:					# If expiry year is ahead of current year			
+														if (len(exp_month) == 2) and (int(exp_month)>= 1 and int(exp_month) <= 12):
+															if len(cvv)==3:
+																bkg_confirmed()
+															else:
+																messagebox.showerror('Error','CVV must be a 3-digit number.',parent=cardpay_window)
+														else:
+															messagebox.showerror('Error','Invalid expiry month.',parent=cardpay_window)
+													else:
+														pass
+												else:
+													messagebox.showerror('Error','Invalid expiry year.',parent=cardpay_window)
+											else:
+												messagebox.showerror('Error','Invalid card number.',parent=cardpay_window)
+										else:
+											messagebox.showerror('Error','Please enter all required\npayment details.',parent=cardpay_window)
 
-										btn2=tk.Button(submit_message,text='OK',font=fnt,command=exit,justify=tk.CENTER)
-										btn2.grid(row=8,column=0,padx=10,pady=10)
-										submit_message.bind('<Return>',lambda event:exit())		
+									cardpay_window=tk.Toplevel()
+									cardpay_window.title('Payment Gateway')
+									cardpay_window.resizable(False,False)
+									icon=tk.PhotoImage(file='img/icon.png')
+									cardpay_window.iconphoto(False,icon)
 
-									#timestamp to mark transaction
-									pay_time=datetime.now()
-									pay_timestamp=pay_time.strftime('%Y-%m-%d %H:%M:%S')	#Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
+									f3=tk.Frame(cardpay_window)
+									f3.grid(row=0,column=0)
+
+									img1=tk.PhotoImage(file='icons/make-payment.png')
+									img=tk.Label(f3,image=img1,font=h1fnt)
+									img.grid(column=0,row=0,padx=10,pady=10)
+									img.image=img1
+
+									tk.Label(f3,text='Payment',font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
+
+									f4=tk.Frame(cardpay_window)
+									f4.grid(row=1,column=0)
+
+									payment_summary=scrolledtext.ScrolledText(f4,font=fnt,width=25,height=5)
+									payment_summary.grid(column=1,row=2,sticky=tk.EW,padx=10,pady=10)
+
+									text='Booking ID: '+busbkg_id+'\nFrom: '+o+'\nTo: '+d+'\nType: '+bustype_inp.get()+'\n\nDate: '+date_of_journey+'\nTime: '+time_of_journey+'\n\nRate: $'+str(rate)+' per km\nDistance: '+str(distance)+' km\nNumber of passengers: '+str(passno)+'\n\nTotal fare: $'+str(total_fare)
+									payment_summary.insert(tk.INSERT,text)
+									payment_summary.configure(state='disabled')
+
+									tk.Label(f4,text='Payment ID',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
+									payid=tk.Label(f4,text=payment_id,font=fnt)
+									payid.grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
+
+									cardtype_inp=tk.StringVar()
+									tk.Label(f4,text='Pay by',font=fnt).grid(column=0,row=4,sticky=tk.E,padx=10,pady=10)
+									card=('','Debit card','Credit card')
+									pay_type=ttk.OptionMenu(f4,cardtype_inp,*card)
+									pay_type.grid(column=1,row=4,sticky=tk.W,padx=10,pady=10)
+
+									tk.Label(f4,text='Accepted cards',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
 									
-									sql=('insert into payment_details values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)')
-									val=(payment_id,pay_timestamp,id,total_fare,paytype_inp,cardno_inp,cardname_inp,cvv_inp,expmonth_inp,expyear_inp)
+									img2=tk.PhotoImage(file='img/cards.png')
+									cards_images=tk.Label(f4,image=img2,font=fnt)
+									cards_images.grid(column=1,row=5,sticky=tk.W,padx=10,pady=10)
+									cards_images.image=img2
+
+									tk.Label(f4,text='Card number',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
+									cardno_inp=tk.Entry(f4,font=fnt)
+									cardno_inp.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
+
+									tk.Label(f4,text='Cardholder name',font=fnt).grid(column=0,row=7,sticky=tk.E,padx=10,pady=10)
+									cardname_inp=tk.Entry(f4,font=fnt)
+									cardname_inp.grid(column=1,row=7,sticky=tk.EW,padx=10,pady=10)
+
+									tk.Label(f4,text='Expiry Year and Month\n[YYYY-MM]',font=fnt,justify=tk.RIGHT).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
+									expyear_inp=tk.Entry(f4,font=fnt,width=10)
+									expyear_inp.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
+
+									tk.Label(f4,text='-',font=fnt).grid(column=2,row=8,sticky=tk.EW,padx=10,pady=10)
+									expmonth_inp=tk.Entry(f4,font=fnt,width=10)
+									expmonth_inp.grid(column=3,row=8,sticky=tk.W,padx=10,pady=10)
+
+									tk.Label(f4,text='CVV number',font=fnt).grid(column=0,row=9,sticky=tk.E,padx=10,pady=10)
+									cvv_inp=tk.Entry(f4,font=fnt)
+									cvv_inp.grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
+
+									submit_button=tk.Button(f4,font=fntit,text='Pay',command=card_payment,fg='green');submit_button.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
+									
+									return_icon=tk.PhotoImage(file='icons/return.png')
+									return_button=tk.Button(f4,font=fnt,image=return_icon,command=cardpay_window.destroy)
+									return_button.grid(column=0,row=15,padx=10,pady=10,sticky=tk.SW)
+									return_button.img=return_icon
+
+									cardpay_window.bind('<Return>',lambda event:card_payment())		
+
+								elif payment_method.get()=='C':
+									
+									def clipboard():
+										confirmmsg_win.clipboard_clear()
+										confirmmsg_win.clipboard_append(summary_text)
+										clipbd_btn.configure(fg='green',text='Copied!')
+									
+									def exit():
+										confirmmsg_win.destroy()
+										busbkg_win.destroy()
+
+									# Adding booking details to database
+									bkg_time=datetime.now()									#	Timestamp to mark bookings
+									bkg_timestamp=bkg_time.strftime('%Y-%m-%d %H:%M:%S')	#	Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
+								
+									sql='insert into bus_bkgs values (%s,%s,%s,%s,%s,%s,%s,%s)'
+									val=(busbkg_id,bkg_timestamp,passno,origin,destination,date_of_journey,time_of_journey,bus_type)
 									cur.execute(sql,val)
 									con.commit()
-								
-									add_bkg()
-						
-								#Payment details input checking
-								if (not paytype_inp=='' and not paytype_inp.isspace()) and (not cardno_inp=='' and not cardno_inp.isspace()) and (not cardname_inp=='' and not cardname_inp.isspace()) and (not expyear_inp=='' and not expyear_inp.isspace()) and (not expmonth_inp=='' and not expmonth_inp.isspace()) and (not cvv_inp=='' and not cvv_inp.isspace()):
-									if len(cardno_inp) == 16 and cardno_inp[0] in '3456':
-										if len(expyear_inp) == 4 and int(expyear_inp) >= cur_yr:
-											if int(expyear_inp) == cur_yr:
-												if (len(expmonth_inp) == 2) and (int(expmonth_inp)>= 1 and int(expmonth_inp) <= 12) and (int(expmonth_inp) > cur_mth):
-													if len(cvv_inp)==3:
-														transaction()
-													else:
-														messagebox.showerror('Error','CVV must be a 3-digit number.',parent=pay_win)
-												else:
-													messagebox.showerror('Error','Invalid expiry month.',parent=pay_win)
-											elif int(expyear_inp) > cur_yr:							
-												if (len(expmonth_inp) == 2) and (int(expmonth_inp)>= 1 and int(expmonth_inp) <= 12):
-													if len(cvv_inp)==3:
-														transaction()
-													else:
-														messagebox.showerror('Error','CVV must be a 3-digit number.',parent=pay_win)
-												else:
-													messagebox.showerror('Error','Invalid expiry month.',parent=pay_win)
-											else:
-												pass
-										else:
-											messagebox.showerror('Error','Invalid expiry year.',parent=pay_win)
-									else:
-										messagebox.showerror('Error','Invalid card number.',parent=pay_win)
-								else:
-									messagebox.showerror('Error','Please enter all required\npayment details.',parent=pay_win)
 
-							pay_win=tk.Toplevel()
-							pay_win.title('Payment Gateway')
-							pay_win.resizable(False,False)
-							icon=tk.PhotoImage(file='img/icon.png')
-							pay_win.iconphoto(False,icon)
+									# Adds payment details to database
+									pay_time=datetime.now()									# 	Timestamp to mark payment
+									pay_timestamp=pay_time.strftime('%Y-%m-%d %H:%M:%S')	#	Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
+									
+									sql=('insert into payment_details values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)')
+									val=(payment_id,pay_timestamp,busbkg_id,total_fare,'Cash',None,None,None,None,None)
+									cur.execute(sql,val)
+									con.commit()
 
-							f3=tk.Frame(pay_win)
-							f3.grid(row=0,column=0)
+									# Confirmation popup
+									confirmmsg_win=tk.Toplevel()
+									confirmmsg_win.resizable(False,False)
+									confirmmsg_win.title('Booking successful')
+									icon=tk.PhotoImage(file='img/icon.png')
+									confirmmsg_win.iconphoto(False,icon)
 
-							img1=tk.PhotoImage(file='icons/make-payment.png')
-							img=tk.Label(f3,image=img1,font=h1fnt)
-							img.grid(column=0,row=0,padx=10,pady=10)
-							img.image=img1
-							icon=tk.PhotoImage(file='img/icon.png')
-							pay_win.iconphoto(False,icon)
+									tk.Label(confirmmsg_win,text='The booking has been\nsuccessfully made.',font=h1fnt,justify=tk.LEFT).grid(row=0,column=0,sticky=tk.W,padx=10,pady=10)
 
-							tk.Label(f3,text='Payment',font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
+									summary=scrolledtext.ScrolledText(confirmmsg_win,font=fnt,width=30,height=8)
+									summary.grid(column=0,row=3,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 
-							f4=tk.Frame(pay_win)
-							f4.grid(row=1,column=0)
+									summary_text='\nBus Booking\n-----------\n\nBooking ID: '+busbkg_id+'\nBooking Timestamp: \n'+bkg_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+bustype_inp.get()+'\n\nDate: '+date_of_journey+'\nTime: '+time_of_journey+'\n\nRate: $'+str(rate)+' per km\nDistance: '+str(distance)+' km\nNumber of passengers: '+str(passno)+'\n\nTotal fare: $'+str(total_fare)+'\n\nPayment\n-------\n\n'+'Payment ID: '+payment_id+'\nPaid by: Cash'+'\nAmount paid: $'+str(total_fare)+'\n\n------------------'+'\nPAYMENT SUCCESSFUL'+'\n------------------\n'
+									summary.insert(tk.INSERT,summary_text)
+									summary.configure(state='disabled')
+									
+									clipbd_btn=tk.Button(confirmmsg_win,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
+									clipbd_btn.grid(row=5,column=0,padx=10,pady=10)
+									
+									# Printing function
+									if isPrintingEnabled==True:
+										def receipt():
 
-							payment_summary=scrolledtext.ScrolledText(f4,font=fnt,width=25,height=5)
-							payment_summary.grid(column=1,row=2,sticky=tk.EW,padx=10,pady=10)
-		
-							if n.get()=='Standard':
-								rate=5
-							elif n.get()=='Express':
-								rate=10
-							elif n.get()=='Premium':
-								rate=15
+											def print_receipt():
+												tkt_time=datetime.now()									#timestamp to mark ticket
+												tkt_timestamp=tkt_time.strftime('%Y-%m-%d %H:%M:%S')	#Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
 
-							o=start.get()
-							d=end.get()
-							distance=abs((locations.index(d))-(locations.index(o)))*4	#distance between locations - 4 km.
-							total_fare=(rate*distance)*passno
+												bar_no=str(rd.randint(1000000000000,9999999999999))
+												tktid='TKT'+str(rd.randint(100000,999999))
+															# title										# ticket details										# journey																																									# fare																																						
+												receipt_text='\nBus Booking '+busbkg_id+'\n\nTicket '+tktid+'\n('+tkt_timestamp+')\n\nNumber of passengers: '+str(passno)+'\nFrom: '+o+' To: '+d+'\nType: '+bustype_inp.get()+'\n\nDate: '+date_of_journey+' Time: '+time_of_journey+'\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)+'\nPaid by: Cash'+'\n\nEnjoy your journey!\nThank you for choosing ABC LINES!'
+												
+												sql=('insert into tkt_details values(%s,%s,%s)')
+												#print(tktid,busbkg_id,tkt_timestamp)
+												val=(tktid,busbkg_id,tkt_timestamp)
+												cur.execute(sql,val)
+												con.commit()
 
-							text='Booking ID: '+id+'\nFrom: '+o+'\nTo: '+d+'\nType: '+n.get()+'\n\nDate: '+date_inp+'\nTime: '+time_inp+'\n\nRate: $'+str(rate)+' per km\nDistance: '+str(distance)+' km\nNumber of passengers: '+str(passno)+'\n\nTotal fare: $'+str(total_fare)
-							payment_summary.insert(tk.INSERT,text)
-							payment_summary.configure(state='disabled')
+												pr.image('img/icon-2.png')
+												pr.text(receipt_text)
+												pr.text('\n')
+												pr.barcode(bar_no, 'EAN13')
+												pr.text('\n')
+												pr.text('Powered by Amadeus')
+												pr.text('\n')
+												pr.text('Version: '+build+' ('+build_timestamp+')')
+												pr.text('\n')
+												
+												if pf.system()=='Windows':
+													pr.text('Platform: '+pf.system()+' '+pf.version())
+												elif pf.system()=='Linux':
+													pr.text('Platform: '+pf.system()+' '+pf.release())
 
-							tk.Label(f4,text='Payment ID',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
-							payment_id='P'+str(rd.randint(10000,99999))
-							payid=tk.Label(f4,text=payment_id,font=fnt)
-							payid.grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
+												pr.cut()
+												
+											try:
+												pr = Network(pr_ip)
+												for i in range(passno):
+													print_receipt()
+												pr.close()
+											except:
+												messagebox.showerror('Error','Unable to print receipt.',parent=confirmmsg_win)
 
-							m=tk.StringVar()
-							tk.Label(f4,text='Pay by',font=fnt).grid(column=0,row=4,sticky=tk.E,padx=10,pady=10)
-							card=('','Debit card','Credit card')
-							pay_type=ttk.OptionMenu(f4,m,*card)
-							pay_type.grid(column=1,row=4,sticky=tk.W,padx=10,pady=10)
+										print_btn=tk.Button(confirmmsg_win,text='Print...',font=fnt,command=receipt,justify=tk.CENTER)
+										print_btn.grid(row=6,column=0,padx=10,pady=10)
 
-							tk.Label(f4,text='Accepted cards',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
-							
-							img2=tk.PhotoImage(file='img/cards.png')
-							card_image=tk.Label(f4,image=img2,font=fnt)
-							card_image.grid(column=1,row=5,sticky=tk.W,padx=10,pady=10)
-							card_image.image=img2
+									ok_btn=tk.Button(confirmmsg_win,text='OK',font=fnt,command=exit,justify=tk.CENTER)
+									ok_btn.grid(row=10,column=0,padx=10,pady=10)
+									confirmmsg_win.bind('<Return>',lambda event:exit())		
 
-							tk.Label(f4,text='Card number',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
-							card_no=tk.Entry(f4,font=fnt)
-							card_no.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
-
-							tk.Label(f4,text='Cardholder name',font=fnt).grid(column=0,row=7,sticky=tk.E,padx=10,pady=10)
-							card_name=tk.Entry(f4,font=fnt)
-							card_name.grid(column=1,row=7,sticky=tk.EW,padx=10,pady=10)
-
-							tk.Label(f4,text='Expiry Year and Month\n[YYYY-MM]',font=fnt,justify=tk.RIGHT).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
-							exp_year=tk.Entry(f4,font=fnt,width=10)
-							exp_year.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
-
-							tk.Label(f4,text='-',font=fnt).grid(column=2,row=8,sticky=tk.EW,padx=10,pady=10)
-							exp_month=tk.Entry(f4,font=fnt,width=10)
-							exp_month.grid(column=3,row=8,sticky=tk.W,padx=10,pady=10)
-
-							tk.Label(f4,text='CVV number',font=fnt).grid(column=0,row=9,sticky=tk.E,padx=10,pady=10)
-							cvv_no=tk.Entry(f4,font=fnt)
-							cvv_no.grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
-
-							btn=tk.Button(f4,font=fntit,text='Pay',command=payment,fg='green');btn.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
-							
-							retimg=tk.PhotoImage(file='icons/return.png')
-							btn4=tk.Button(f4,font=fnt,image=retimg,command=pay_win.destroy)
-							btn4.grid(column=0,row=15,padx=10,pady=10,sticky=tk.SW)
-							btn4.img=retimg
-
-							pay_win.bind('<Return>',lambda event:payment())
-
+							else:
+								messagebox.showerror('Error','Please select payment method',parent=busbkg_win)	
 						else:
 							messagebox.showerror('Error','Invalid timing entered.',parent=busbkg_win)
 					else:
@@ -593,100 +703,107 @@ def bus_booking():		#Bus booking
 
 	#Booking ID
 	tk.Label(f2,text='ID',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
-	bkgid=tk.Label(f2,text=id,font=fnt)
-	bkgid.grid(column=1,row=5,sticky=tk.W,padx=10,pady=10)
+	bkgid_label=tk.Label(f2,text=busbkg_id,font=fnt)
+	bkgid_label.grid(column=1,row=5,sticky=tk.W,padx=10,pady=10)
 
 	#Input fields
 	tk.Label(f2,text='Number of passengers',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
-	q=tk.IntVar()
-	pass_no=tk.Scale(f2,from_=1,to=100,orient='horizontal',variable=q,font=fnt)
+	passno_inp=tk.IntVar()
+	pass_no=tk.Scale(f2,from_=1,to=10,orient='horizontal',variable=passno_inp,font=fnt)
 	pass_no.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
 
-	n=tk.StringVar()
+	bustype_inp=tk.StringVar()
 	tk.Label(f2,text='Bus Type',font=fnt).grid(column=0,row=7,sticky=tk.E,padx=10,pady=10)
-	bustype=ttk.OptionMenu(f2,n,*bus_type)
+	bustype=ttk.OptionMenu(f2,bustype_inp,*bus_type)
 	bustype.grid(column=1,row=7,sticky=tk.W,padx=10,pady=10)
 
 	tk.Label(f2,text='From',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
 	l=tk.StringVar()
-	start=ttk.Combobox(f2,textvariable=l,font=fnt,width=19,state='readonly')
-	start.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
-	start['values']=locations
+	from_inp=ttk.Combobox(f2,textvariable=l,font=fnt,width=19,state='readonly')
+	from_inp.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
+	from_inp['values']=locations
 
 	tk.Label(f2,text='To',font=fnt).grid(column=0,row=9,sticky=tk.E,padx=10,pady=10)
 	m=tk.StringVar()
-	end=ttk.Combobox(f2,textvariable=m,font=fnt,width=19,state='readonly')
-	end.grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
-	end['values']=locations
+	to_inp=ttk.Combobox(f2,textvariable=m,font=fnt,width=19,state='readonly')
+	to_inp.grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
+	to_inp['values']=locations
 
 	tk.Label(f2,text='Date',font=fnt).grid(column=0,row=10,sticky=tk.E,padx=10,pady=10)
-	date=tk.Entry(f2,font=fnt)
-	date.grid(column=1,row=10,sticky=tk.EW,padx=10,pady=10)
+	date_inp=tk.Entry(f2,font=fnt)
+	date_inp.grid(column=1,row=10,sticky=tk.EW,padx=10,pady=10)
 	tk.Label(f2,text='[YYYY-MM-DD]',font=fnt).grid(column=2,row=10,padx=10,pady=10)
 
 	tk.Label(f2,text='Time',font=fnt).grid(column=0,row=11,sticky=tk.E,padx=10,pady=10)
-	time=tk.Entry(f2,font=fnt)
-	time.grid(column=1,row=11,sticky=tk.EW,padx=10,pady=10)
+	time_inp=tk.Entry(f2,font=fnt)
+	time_inp.grid(column=1,row=11,sticky=tk.EW,padx=10,pady=10)
 	tk.Label(f2,text='24h [HH:MM]',font=fnt).grid(column=2,row=11,padx=10,pady=10)
 
-	Separator(f2,orient='horizontal').grid(row=14,column=0,columnspan=3,sticky=tk.EW)
+	Separator(f2,orient='horizontal').grid(row=14,column=0,columnspan=3,sticky=tk.EW,pady=10)
 
-	tk.Label(f2,text='Proceed to checkout',font=fnt,justify=tk.RIGHT).grid(column=0,row=15,sticky=tk.E,padx=10,pady=10)
-	subimg=tk.PhotoImage(file='icons/checkout.png')
-	btn=tk.Button(f2,font=fnt,text='Continue to Payment',image=subimg,command=start_payment)
-	btn.grid(column=1,row=15,padx=10,pady=10,sticky=tk.W)
-	btn.image=subimg
+	# Payment method - Card or cash?
+	payment_method=tk.StringVar(f2)	
+	tk.Label(f2,text='Payment method',font=fnt).grid(column=0,row=15,sticky=tk.E,padx=10,pady=10)
+	ttk.Radiobutton(f2, text = 'Credit/Debit Card',variable = payment_method,value = 'R').grid(column=1,row=15,sticky=tk.W,padx=10)
+	ttk.Radiobutton(f2, text = 'Cash',variable = payment_method,value = 'C').grid(column=1,row=16,sticky=tk.W,padx=10)
 
-	#Binds enter key to submit function
-	busbkg_win.bind('<Return>',lambda event:start_payment())
+	# Submit
+	tk.Label(f2,text='Proceed to checkout',font=fnt,justify=tk.RIGHT).grid(column=0,row=20,sticky=tk.E,padx=10,pady=10)
+	submit_icon=tk.PhotoImage(file='icons/checkout.png')
+	submit_btn=tk.Button(f2,font=fnt,text='Continue to Payment',image=submit_icon,command=payment)
+	submit_btn.grid(column=1,row=20,padx=10,pady=10,sticky=tk.W)
+	submit_btn.image=submit_icon
 
-def taxi_booking():		#Taxi booking
+	busbkg_win.bind('<Return>',lambda event:payment()) 							# Binds enter key to submit function
+
+def taxi_booking():																	# Taxi booking
+	
 	#definitions
-	id='T'+str(rd.randint(10000,99999))	#random number for ID
+	taxibkg_id='T'+str(rd.randint(10000,99999))	#random number for ID
 	ctype=['','Standard','XL','Luxury']	#defines coach type
 
 	#timestamp to mark bookings
 	t=datetime.now()
 
-	#GUI
+	# Defining the window
 	taxibkg_win=tk.Toplevel()
-
-	#Main Window parameters
 	taxibkg_win.title('Taxi Booking')
 	taxibkg_win.resizable(False, False)
 	icon=tk.PhotoImage(file='img/icon.png')
 	taxibkg_win.iconphoto(False,icon)
 
-	def start_payment():	#Payment function
+	def payment():																	# The payment function
 		
-		inpdt_str=''
+		# Defining 'today' and 'tomorrow'
+		inpdate_str=''
 		if 'Today' in p.get():
-			inpdt_str=today.strftime('%Y-%m-%d')
+			inpdate_str=today.strftime('%Y-%m-%d')
 		elif 'Tomorrow' in p.get():
-			inpdt_str=tomrw.strftime('%Y-%m-%d')
+			inpdate_str=tomrw.strftime('%Y-%m-%d')
 		else:
 			pass
+		
+		# Taking of inputs
+		origin=from_inp.get().capitalize()
+		destination=to_inp.get().capitalize()
+		date_of_journey=inpdate_str
+		time_of_journey=time.get()
+		taxi_type=n.get()
 
-		start_inp=start.get().capitalize()
-		end_inp=end.get().capitalize()
-		date_inp=inpdt_str
-		time_inp=time.get()
-		taxitype_inp=n.get()
-
-		format='%Y-%m-%d %H:%M'							# YYYY-MM-DD HH:MM; MySQL datetime format
-		x=datetime.now()+timedelta(minutes=10)	# timestamp for reference - 10 min from current time
-		mbtime_str=x.strftime(format)				# Converts datetime to string in MySQL time format 
-		min_bkgtime=datetime.strptime(mbtime_str,format)				# Converts string back to datetime object for comparision
-		inpdt_str=date_inp+' '+time_inp
+		datetime_format='%Y-%m-%d %H:%M'								# YYYY-MM-DD HH:MM; MySQL datetime format
+		x=datetime.now()+timedelta(minutes=10)				# timestamp for reference - 10 min from current time
+		min_bkgtime_str=x.strftime(datetime_format)						# Converts datetime to string in MySQL time format 
+		min_bkgtime=datetime.strptime(min_bkgtime_str,datetime_format)	# Converts string back to datetime object for comparision
+		inpdate_str=date_of_journey+' '+time_of_journey
 
 		isInpDateinFormat=True
 		try:
-			isInpDateinFormat=bool(datetime.strptime(inpdt_str,format))		#Is date and time inputted in correct format?
+			isInpDateinFormat=bool(datetime.strptime(inpdate_str,datetime_format))		#Is date and time inputted in correct format?
 		except ValueError:
 			isInpDateinFormat=False
 
 		if isInpDateinFormat==True:
-			inp_dt=datetime.strptime(inpdt_str,format)		#Converts inputs to datetime format
+			inp_dt=datetime.strptime(inpdate_str,datetime_format)		#Converts inputs to datetime format
 
 			if inp_dt >= min_bkgtime:							#Is input in the past?
 				isNotPast=True
@@ -698,251 +815,366 @@ def taxi_booking():		#Taxi booking
 			else:
 				isNotDistFuture=False
 
-		if (not start_inp=='' and not start_inp.isspace()) and (not end_inp=='' and not end_inp.isspace()) and (not date_inp=='' and not date_inp.isspace()) and (not time_inp=='' and not time_inp.isspace()) and (not taxitype_inp=='' and not taxitype_inp.isspace()):
-			if start_inp in locations and end_inp in locations:
-				if not start_inp == end_inp:
-					if isInpDateinFormat==True and len(date_inp)==10 and len(time_inp)==5:
+		# Checking of user inputs before proceeding to payment function
+		if (not origin=='' and not origin.isspace()) and (not destination=='' and not destination.isspace()) and (not date_of_journey=='' and not date_of_journey.isspace()) and (not time_of_journey=='' and not time_of_journey.isspace()) and (not taxi_type=='' and not taxi_type.isspace()):
+			if origin in locations and destination in locations:
+				if not origin == destination:
+					if isInpDateinFormat==True and len(date_of_journey)==10 and len(time_of_journey)==5:
 						if isNotPast==True and isNotDistFuture==True:
-							pay_win=tk.Toplevel()
-							pay_win.title('Payment Gateway')
-							pay_win.resizable(False,False)
+							if payment_method.get() in ['R','C']:
 
-							def payment():		#Payment window
-								paytype_inp=m.get()
-								cardno_inp=card_no.get()
-								cardname_inp=card_name.get()
-								expyear_inp=exp_year.get()
-								expmonth_inp=exp_month.get()
-								cvv_inp=cvv_no.get()
+								# calculation of fare on basis of type
+								if n.get()=='Standard':
+									base_rate=15
+								elif n.get()=='XL':
+									base_rate=25
+								elif n.get()=='Luxury':
+									base_rate=40
+								
+								if n.get()=='Standard':
+									rate=3
+								elif n.get()=='XL':
+									rate=5
+								elif n.get()=='Luxury':
+									rate=10
+								
+								payment_id='P'+str(rd.randint(10000,99999))
 
-								cur_dt=datetime.now()
-								cur_mth=cur_dt.month
-								cur_yr=cur_dt.year
+								o=from_inp.get()
+								d=to_inp.get()
+								distance=abs((locations.index(d))-(locations.index(o)))*4	#distance between locations - 4 km.
+								if distance > 5:
+									total_fare=(base_rate+(rate*(distance-5)))
+								else:
+									total_fare=(base_rate+0)
 
-								def transaction():		#Makes payment
+								# is it card (R) or cash?
+								if payment_method.get()=='R':
 
-									def add_bkg():		#Adds booking to DB
-										#timestamp to mark bookings
-										bkg_time=datetime.now()
-										bkg_timestamp=bkg_time.strftime('%Y-%m-%d %H:%M:%S')	#Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
-										
-										sql='insert into taxi_bkgs values (%s,%s,%s,%s,%s,%s,%s)'
-										val=(id,bkg_timestamp,start_inp,end_inp,date_inp,time_inp,taxitype_inp)
-										cur.execute(sql,val)
-										con.commit()
+									def card_payment():		# Card payment function
+										# Takes inputs of payment details
+										card_type=cardtype_inp.get()
+										card_no=cardno_inp.get()
+										card_name=cardname_inp.get()
+										exp_year=expyear_inp.get()
+										exp_month=expmonth_inp.get()
+										cvv=cvv_inp.get()
 
-										submit_message=tk.Toplevel()
-										submit_message.resizable(False,False)
-										submit_message.title('Booking successful')
+										# Gets current month and year for card expiry date checking
+										cur_dt=datetime.now()
+										cur_mth=cur_dt.month
+										cur_yr=cur_dt.year
 
-										tk.Label(submit_message,text='The booking has been\nsuccessfully made.',font=h1fnt,justify=tk.LEFT).grid(row=0,column=0,sticky=tk.W,padx=10,pady=10)
-										
-										if cardno_inp[0] == '3':
-											cardtype='AMEX'
-										elif cardno_inp[0] == '4':
-											cardtype='VISA'
-										elif cardno_inp[0] == '5':
-											cardtype='MASTER'
-										elif cardno_inp[0] == '6':
-											cardtype='DISCOVER'
+										def bkg_confirmed():		
 
-										booking_summary=scrolledtext.ScrolledText(submit_message,font=fnt,width=30,height=8)
-										booking_summary.grid(column=0,row=3,sticky=tk.EW,padx=10,pady=10,columnspan=2)
+											def clipboard():
+												confirmmsg_win.clipboard_clear()
+												confirmmsg_win.clipboard_append(summary_text)
+												clipbd_button.configure(fg='green',text='Copied!')
+																										
+											def exit():
+												confirmmsg_win.destroy()
+												cardpay_window.destroy()
+												taxibkg_win.destroy()
 
-										text2='\nTaxi Booking\n------------\n\nBooking ID: '+id+'\nBooking Timestamp: \n'+bkg_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+n.get()+'\n\nDate: '+date_inp+'\nTime: '+time_inp+'\n\nBase rate: $'+str(base_rate)+' for first 5 km\n$'+str(rate)+' per additional km\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)+'\n\nPayment\n-------\n\n'+'Payment ID: '+payment_id+'\nPaid by: '+m.get()+'\nCardholder name: '+card_name.get()+'\nCard number: XXXX-XXXX-XXXX-'+card_no.get()[-4:]+'\nCard type: '+cardtype+'\nAmount paid: $'+str(total_fare)+'\n\n------------------'+'\nPAYMENT SUCCESSFUL'+'\n------------------\n'
-										booking_summary.insert(tk.INSERT,text2)
-										booking_summary.configure(state='disabled')
-										
-										def clipboard():
-											submit_message.clipboard_clear()
-											submit_message.clipboard_append(text2)
-											btn1.configure(fg='green',text='Copied!')
-																									
-										def exit():
-											submit_message.destroy()
-											pay_win.destroy()
-											taxibkg_win.destroy()
-										
-										
-										btn1=tk.Button(submit_message,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
-										btn1.grid(row=5,column=0,padx=10,pady=10)
-										
-										if isPrintingEnabled==True:
+											card_brand=''
+											if card_no[0] == '3':
+												card_brand='AMEX'
+											elif card_no[0] == '4':
+												card_brand='VISA'
+											elif card_no[0] == '5':
+												card_brand='MASTER'
+											elif card_no[0] == '6':
+												card_brand='DISCOVER'
 
-											def send_to_printer():
+											# Adding booking details to database
+											bkg_time=datetime.now()
+											bkg_timestamp=bkg_time.strftime('%Y-%m-%d %H:%M:%S')	#Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
+											
+											sql='insert into taxi_bkgs values (%s,%s,%s,%s,%s,%s,%s)'
+											val=(taxibkg_id,bkg_timestamp,origin,destination,date_of_journey,time_of_journey,taxi_type)
+											cur.execute(sql,val)
+											con.commit()
+
+											# Adds payment details to database
+											pay_time=datetime.now()
+											pay_timestamp=pay_time.strftime('%Y-%m-%d %H:%M:%S')	#Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
+
+											sql=('insert into payment_details values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)')
+											val=(payment_id,pay_timestamp,taxibkg_id,total_fare,card_type,card_no,card_name,cvv,exp_month,exp_year)
+											cur.execute(sql,val)
+											con.commit()
+
+											# Confirmation popup
+											confirmmsg_win=tk.Toplevel()
+											confirmmsg_win.resizable(False,False)
+											confirmmsg_win.title('Booking successful')
+											icon=tk.PhotoImage(file='img/icon.png')
+											confirmmsg_win.iconphoto(False,icon)
+
+											tk.Label(confirmmsg_win,text='The booking has been\nsuccessfully made.',font=h1fnt,justify=tk.LEFT).grid(row=0,column=0,sticky=tk.W,padx=10,pady=10)
+
+											summary=scrolledtext.ScrolledText(confirmmsg_win,font=fnt,width=30,height=8)
+											summary.grid(column=0,row=3,sticky=tk.EW,padx=10,pady=10,columnspan=2)
+
+											summary_text='\nTaxi Booking\n------------\n\nBooking ID: '+taxibkg_id+'\nBooking Timestamp: \n'+bkg_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+taxi_type+'\n\nDate: '+date_of_journey+'\nTime: '+time_of_journey+'\n\nBase rate: $'+str(base_rate)+' for first 5 km\n$'+str(rate)+' per additional km\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)+'\n\nPayment\n-------\n\n'+'Payment ID: '+payment_id+'\nPaid by: '+cardtype_inp.get()+'\nCardholder name: '+cardname_inp.get()+'\nCard number: XXXX-XXXX-XXXX-'+cardno_inp.get()[-4:]+'\nCard type: '+card_brand+'\nAmount paid: $'+str(total_fare)+'\n\n------------------'+'\nPAYMENT SUCCESSFUL'+'\n------------------\n'
+											summary.insert(tk.INSERT,summary_text)
+											summary.configure(state='disabled')
+											
+											clipbd_button=tk.Button(confirmmsg_win,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
+											clipbd_button.grid(row=5,column=0,padx=10,pady=10)
+											
+											if isPrintingEnabled==True:
 												
-												def stp():
-													pr.image('img/icon-2.png')
-													pr.text(text2)
-													pr.barcode(bar_no, 'EAN13')
-													pr.text('\n')
-													pr.text('Powered by Amadeus')
-													pr.text('\n')
-													pr.text('Version: '+build+' ('+build_timestamp+')')
-													pr.text('\n')
+												def receipt():
 													
-													if pf.system()=='Windows':
-														pr.text('Platform: '+pf.system()+' '+pf.version())
-													elif pf.system()=='Linux':
-														pr.text('Platform: '+pf.system()+' '+pf.release())
+													def print_receipt():
 
-													pr.cut()
-													pr.close()
+														tkt_time=datetime.now()									#timestamp to mark ticket
+														tkt_timestamp=tkt_time.strftime('%Y-%m-%d %H:%M:%S')	#Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
+														
+														bar_no=str(rd.randint(1000000000000,9999999999999))
+														tktid='TKT'+str(rd.randint(100000,999999))														
+																		# title									# ticket details									# journey																																			# fare
+														receipt_text='\nTaxi Booking '+taxibkg_id+'\n\nTicket '+tktid+'\n('+tkt_timestamp+')\n\nFrom: '+o+' To: '+d+'\nType: '+taxi_type+'\n\nDate: '+date_of_journey+' Time: '+time_of_journey+'\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)+'\nPaid by: '+cardtype_inp.get()+'\n\nEnjoy your journey!\nThank you for choosing ABC LINES!'
+														
+														sql=('insert into tkt_details values(%s,%s,%s)')
+														#print(tktid,taxibkg_id,tkt_timestamp)
+														val=(tktid,taxibkg_id,tkt_timestamp)
+														cur.execute(sql,val)
+														con.commit()
 
-												bar_no=str(rd.randint(1000000000000,9999999999999))
+														pr.image('img/icon-2.png')
+														pr.text(receipt_text)
+														pr.text('\n')
+														pr.barcode(bar_no, 'EAN13')
+														pr.text('\n')
+														pr.text('Powered by Amadeus')
+														pr.text('\n')
+														pr.text('Version: '+build+' ('+build_timestamp+')')
+														pr.text('\n')
+														
+														if pf.system()=='Windows':
+															pr.text('Platform: '+pf.system()+' '+pf.version())
+														elif pf.system()=='Linux':
+															pr.text('Platform: '+pf.system()+' '+pf.release())
 
-												if pr_choice=='U':
+														pr.cut()
+														pr.close()
+
 													try:
-														pr = Usb(idVendor=0x0483,idProduct=0x5720,timeout=0,in_ep=0x81,out_ep=0x03)
-														stp()
+														pr = Network(pr_ip)
+														print_receipt()
 													except:
-														messagebox.showerror('Error','Unable to connect to printer via USB.',parent=submit_message)
+														messagebox.showerror('Error','Unable to connect to printer via network.',parent=confirmmsg_win)
 
-												elif pr_choice=='N':
-													try:
-														pr = Network('192.168.1.124')
-														stp()
-													except:
-														messagebox.showerror('Error','Unable to connect to printer via network.',parent=submit_message)
+												print_btn=tk.Button(confirmmsg_win,text='Print...',font=fnt,command=receipt,justify=tk.CENTER)
+												print_btn.grid(row=6,column=0,padx=10,pady=10)
 
-											btn3=tk.Button(submit_message,text='Print...',font=fnt,command=send_to_printer,justify=tk.CENTER)
-											btn3.grid(row=6,column=0,padx=10,pady=10)
+											ok_btn=tk.Button(confirmmsg_win,text='OK',font=fnt,command=exit,justify=tk.CENTER)
+											ok_btn.grid(row=8,column=0,padx=10,pady=10)
+											confirmmsg_win.bind('<Return>',lambda event:exit())
 
-										btn2=tk.Button(submit_message,text='OK',font=fnt,command=exit,justify=tk.CENTER)
-										btn2.grid(row=8,column=0,padx=10,pady=10)
-										submit_message.bind('<Return>',lambda event:exit())
 
-									#timestamp to mark transaction
-									pay_time=datetime.now()
-									pay_timestamp=pay_time.strftime('%Y-%m-%d %H:%M:%S')	#Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
+										if (not card_type=='' and not card_type.isspace()) and (not card_no=='' and not card_no.isspace()) and (not card_name=='' and not card_name.isspace()) and (not exp_year=='' and not exp_year.isspace()) and (not exp_month=='' and not exp_month.isspace()) and (not cvv=='' and not cvv.isspace()):
+											if len(card_no) == 16 and card_no[0] in '3456':
+												if len(exp_year) == 4 and int(exp_year) >= cur_yr:
+													if int(exp_year) == cur_yr:
+														if (len(exp_month) == 2) and (int(exp_month)>= 1 and int(exp_month) <= 12) and (int(exp_month) > cur_mth):
+															if len(cvv)==3:
+																bkg_confirmed()
+															else:
+																messagebox.showerror('Error','CVV must be a 3-digit number.',parent=cardpay_window)
+														else:
+															messagebox.showerror('Error','Invalid expiry month.',parent=cardpay_window)
+													elif int(exp_year) > cur_yr:							
+														if (len(exp_month) == 2) and (int(exp_month)>= 1 and int(exp_month) <= 12):
+															if len(cvv)==3:
+																bkg_confirmed()
+															else:
+																messagebox.showerror('Error','CVV must be a 3-digit number.',parent=cardpay_window)
+														else:
+															messagebox.showerror('Error','Invalid expiry month..',parent=cardpay_window)
+													else:
+														pass
+												else:
+													messagebox.showerror('Error','Invalid expiry year.',parent=cardpay_window)
+											else:
+												messagebox.showerror('Error','Invalid card number.',parent=cardpay_window)
+										else:
+											messagebox.showerror('Error','Please enter all required\npayment details.',parent=cardpay_window)
+									
+									cardpay_window=tk.Toplevel()
+									cardpay_window.title('Payment Gateway')
+									cardpay_window.resizable(False,False)
+									icon=tk.PhotoImage(file='img/icon.png')
+									cardpay_window.iconphoto(False,icon)
 
-									sql=('insert into payment_details values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)')
-									val=(payment_id,pay_timestamp,id,total_fare,paytype_inp,cardno_inp,cardname_inp,cvv_inp,expmonth_inp,expyear_inp)
+									f3=tk.Frame(cardpay_window)
+									f3.grid(row=0,column=0)
+
+									img1=tk.PhotoImage(file='icons/make-payment.png')
+									img=tk.Label(f3,image=img1,font=h1fnt)
+									img.grid(column=0,row=0,padx=10,pady=10)
+									img.image=img1
+
+									tk.Label(f3,text='Payment',font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
+
+									f4=tk.Frame(cardpay_window)
+									f4.grid(row=1,column=0)
+
+									payment_summary=scrolledtext.ScrolledText(f4,font=fnt,width=25,height=5)
+									payment_summary.grid(column=1,row=2,sticky=tk.EW,padx=10,pady=10)
+
+									text='Booking ID: '+taxibkg_id+'\nFrom: '+o+'\nTo: '+d+'\nType: '+n.get()+'\n\nDate: '+date_of_journey+'\nTime: '+time_of_journey+'\n\nBase rate: $'+str(base_rate)+' for first 5 km\n$'+str(rate)+' per additional km\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)
+									payment_summary.insert(tk.INSERT,text)
+									payment_summary.configure(state='disabled')
+
+									tk.Label(f4,text='Payment ID',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
+									payid=tk.Label(f4,text=payment_id,font=fnt)
+									payid.grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
+
+									cardtype_inp=tk.StringVar()
+									tk.Label(f4,text='Pay by',font=fnt).grid(column=0,row=4,sticky=tk.E,padx=10,pady=10)
+									card=('','Debit card','Credit card')
+									pay_type=ttk.OptionMenu(f4,cardtype_inp,*card)
+									pay_type.grid(column=1,row=4,sticky=tk.W,padx=10,pady=10)
+									
+									tk.Label(f4,text='Accepted cards',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
+									
+									img2=tk.PhotoImage(file='img/cards.png')
+									card_image=tk.Label(f4,image=img2,font=fnt)
+									card_image.grid(column=1,row=5,sticky=tk.W,padx=10,pady=10)
+									card_image.image=img2
+
+									tk.Label(f4,text='Card number',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
+									cardno_inp=tk.Entry(f4,font=fnt)
+									cardno_inp.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
+
+									tk.Label(f4,text='Cardholder name',font=fnt).grid(column=0,row=7,sticky=tk.E,padx=10,pady=10)
+									cardname_inp=tk.Entry(f4,font=fnt)
+									cardname_inp.grid(column=1,row=7,sticky=tk.EW,padx=10,pady=10)
+
+									tk.Label(f4,text='Expiry Year and Month\n[YYYY-MM]',font=fnt,justify=tk.RIGHT).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
+									expyear_inp=tk.Entry(f4,font=fnt,width=10)
+									expyear_inp.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
+
+									tk.Label(f4,text='-',font=fnt).grid(column=2,row=8,sticky=tk.EW,padx=10,pady=10)
+									expmonth_inp=tk.Entry(f4,font=fnt,width=10)
+									expmonth_inp.grid(column=3,row=8,sticky=tk.W,padx=10,pady=10)
+
+									tk.Label(f4,text='CVV number',font=fnt).grid(column=0,row=9,sticky=tk.E,padx=10,pady=10)
+									cvv_inp=tk.Entry(f4,font=fnt)
+									cvv_inp.grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
+
+									btn=tk.Button(f4,font=fntit,text='Pay',command=card_payment,fg='green');btn.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
+
+									retimg=tk.PhotoImage(file='icons/return.png')
+									btn4=tk.Button(f4,font=fnt,image=retimg,command=cardpay_window.destroy)
+									btn4.grid(column=0,row=15,padx=10,pady=10,sticky=tk.SW)
+									btn4.img=retimg
+
+									cardpay_window.bind('<Return>',lambda event:card_payment())
+								
+								elif payment_method.get()=='C':
+									
+									def clipboard():
+										confirmmsg_win.clipboard_clear()
+										confirmmsg_win.clipboard_append(summary_text)
+										clipbd_btn.configure(fg='green',text='Copied!')
+									
+									def exit():
+										confirmmsg_win.destroy()
+										taxibkg_win.destroy()
+
+									# Adding booking details to database
+									bkg_time=datetime.now()									#	Timestamp to mark bookings
+									bkg_timestamp=bkg_time.strftime('%Y-%m-%d %H:%M:%S')	#	Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
+								
+									sql='insert into taxi_bkgs values (%s,%s,%s,%s,%s,%s,%s)'
+									val=(taxibkg_id,bkg_timestamp,origin,destination,date_of_journey,time_of_journey,taxi_type)
 									cur.execute(sql,val)
 									con.commit()
-								
-									add_bkg()
 
-								if (not paytype_inp=='' and not paytype_inp.isspace()) and (not cardno_inp=='' and not cardno_inp.isspace()) and (not cardname_inp=='' and not cardname_inp.isspace()) and (not expyear_inp=='' and not expyear_inp.isspace()) and (not expmonth_inp=='' and not expmonth_inp.isspace()) and (not cvv_inp=='' and not cvv_inp.isspace()):
-									if len(cardno_inp) == 16 and cardno_inp[0] in '3456':
-										if len(expyear_inp) == 4 and int(expyear_inp) >= cur_yr:
-											if int(expyear_inp) == cur_yr:
-												if (len(expmonth_inp) == 2) and (int(expmonth_inp)>= 1 and int(expmonth_inp) <= 12) and (int(expmonth_inp) > cur_mth):
-													if len(cvv_inp)==3:
-														transaction()
-													else:
-														messagebox.showerror('Error','CVV must be a 3-digit number.',parent=pay_win)
-												else:
-													messagebox.showerror('Error','Invalid expiry month.',parent=pay_win)
-											elif int(expyear_inp) > cur_yr:							
-												if (len(expmonth_inp) == 2) and (int(expmonth_inp)>= 1 and int(expmonth_inp) <= 12):
-													if len(cvv_inp)==3:
-														transaction()
-													else:
-														messagebox.showerror('Error','CVV must be a 3-digit number.',parent=pay_win)
-												else:
-													messagebox.showerror('Error','Invalid expiry month..',parent=pay_win)
-											else:
-												pass
-										else:
-											messagebox.showerror('Error','Invalid expiry year.',parent=pay_win)
-									else:
-										messagebox.showerror('Error','Invalid card number.',parent=pay_win)
-								else:
-									messagebox.showerror('Error','Please enter all required\npayment details.',parent=pay_win)
+									# Adds payment details to database
+									pay_time=datetime.now()									# 	Timestamp to mark payment
+									pay_timestamp=pay_time.strftime('%Y-%m-%d %H:%M:%S')	#	Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
+									
+									sql=('insert into payment_details values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)')
+									val=(payment_id,pay_timestamp,taxibkg_id,total_fare,'Cash',None,None,None,None,None)
+									cur.execute(sql,val)
+									con.commit()
 
-							f3=tk.Frame(pay_win)
-							f3.grid(row=0,column=0)
+									# Confirmation popup
+									confirmmsg_win=tk.Toplevel()
+									confirmmsg_win.resizable(False,False)
+									confirmmsg_win.title('Booking successful')
+									icon=tk.PhotoImage(file='img/icon.png')
+									confirmmsg_win.iconphoto(False,icon)
 
-							img1=tk.PhotoImage(file='icons/make-payment.png')
-							img=tk.Label(f3,image=img1,font=h1fnt)
-							img.grid(column=0,row=0,padx=10,pady=10)
-							img.image=img1
-							icon=tk.PhotoImage(file='img/icon.png')
-							pay_win.iconphoto(False,icon)
+									tk.Label(confirmmsg_win,text='The booking has been\nsuccessfully made.',font=h1fnt,justify=tk.LEFT).grid(row=0,column=0,sticky=tk.W,padx=10,pady=10)
 
-							tk.Label(f3,text='Payment',font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
+									summary=scrolledtext.ScrolledText(confirmmsg_win,font=fnt,width=30,height=8)
+									summary.grid(column=0,row=3,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 
-							f4=tk.Frame(pay_win)
-							f4.grid(row=1,column=0)
+									summary_text='\nBus Booking\n-----------\n\nBooking ID: '+taxibkg_id+'\nBooking Timestamp: \n'+bkg_timestamp+'\n\nFrom: '+o+'\nTo: '+d+'\nType: '+taxi_type+'\n\nDate: '+date_of_journey+'\nTime: '+time_of_journey+'\n\nRate: $'+str(rate)+' per km\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)+'\n\nPayment\n-------\n\n'+'Payment ID: '+payment_id+'\nPaid by: Cash'+'\nAmount paid: $'+str(total_fare)+'\n\n------------------'+'\nPAYMENT SUCCESSFUL'+'\n------------------\n'
+									summary.insert(tk.INSERT,summary_text)
+									summary.configure(state='disabled')
+									
+									clipbd_btn=tk.Button(confirmmsg_win,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
+									clipbd_btn.grid(row=5,column=0,padx=10,pady=10)
+									
+									# Printing function
+									if isPrintingEnabled==True:
+										def receipt():
 
-							payment_summary=scrolledtext.ScrolledText(f4,font=fnt,width=25,height=5)
-							payment_summary.grid(column=1,row=2,sticky=tk.EW,padx=10,pady=10)
-		
-							if n.get()=='Standard':
-								base_rate=15
-							elif n.get()=='XL':
-								base_rate=25
-							elif n.get()=='Luxury':
-								base_rate=40
-							
-							if n.get()=='Standard':
-								rate=3
-							elif n.get()=='XL':
-								rate=5
-							elif n.get()=='Luxury':
-								rate=10
+											def print_receipt():
+												tkt_time=datetime.now()									#timestamp to mark ticket
+												tkt_timestamp=tkt_time.strftime('%Y-%m-%d %H:%M:%S')	#Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
 
-							o=start.get()
-							d=end.get()
-							distance=abs((locations.index(d))-(locations.index(o)))*4	#distance between locations - 4 km.
-							if distance > 5:
-								total_fare=(base_rate+(rate*(distance-5)))
+												bar_no=str(rd.randint(1000000000000,9999999999999))
+												tktid='TKT'+str(rd.randint(100000,999999))
+															# title									# ticket details									# journey																																		# fare																																						
+												receipt_text='\nBus Booking '+taxibkg_id+'\n\nTicket '+tktid+'\n('+tkt_timestamp+')\n\nFrom: '+o+' To: '+d+'\nType: '+taxi_type+'\n\nDate: '+date_of_journey+' Time: '+time_of_journey+'\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)+'\nPaid by: Cash'+'\n\nEnjoy your journey!\nThank you for choosing ABC LINES!'
+												
+												sql=('insert into tkt_details values(%s,%s,%s)')
+												#print(tktid,taxibkg_id,tkt_timestamp)
+												val=(tktid,taxibkg_id,tkt_timestamp)
+												cur.execute(sql,val)
+												con.commit()
+
+												pr.image('img/icon-2.png')
+												pr.text(receipt_text)
+												pr.text('\n')
+												pr.barcode(bar_no, 'EAN13')
+												pr.text('\n')
+												pr.text('Powered by Amadeus')
+												pr.text('\n')
+												pr.text('Version: '+build+' ('+build_timestamp+')')
+												pr.text('\n')
+												
+												if pf.system()=='Windows':
+													pr.text('Platform: '+pf.system()+' '+pf.version())
+												elif pf.system()=='Linux':
+													pr.text('Platform: '+pf.system()+' '+pf.release())
+
+												pr.cut()
+												pr.close()
+
+											try:
+												pr = Network(pr_ip)
+												print_receipt()
+											except:
+												messagebox.showerror('Error','Unable to print receipt.',parent=confirmmsg_win)
+
+										print_btn=tk.Button(confirmmsg_win,text='Print...',font=fnt,command=receipt,justify=tk.CENTER)
+										print_btn.grid(row=6,column=0,padx=10,pady=10)
+
+									ok_btn=tk.Button(confirmmsg_win,text='OK',font=fnt,command=exit,justify=tk.CENTER)
+									ok_btn.grid(row=10,column=0,padx=10,pady=10)
+									confirmmsg_win.bind('<Return>',lambda event:exit())
 							else:
-								total_fare=(base_rate+0)
-
-							text='Booking ID: '+id+'\nFrom: '+o+'\nTo: '+d+'\nType: '+n.get()+'\n\nDate: '+date_inp+'\nTime: '+time_inp+'\n\nBase rate: $'+str(base_rate)+' for first 5 km\n$'+str(rate)+' per additional km\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)
-							payment_summary.insert(tk.INSERT,text)
-							payment_summary.configure(state='disabled')
-
-
-							tk.Label(f4,text='Payment ID',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
-							payment_id='P'+str(rd.randint(10000,99999))
-							payid=tk.Label(f4,text=payment_id,font=fnt)
-							payid.grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
-
-							m=tk.StringVar()
-							tk.Label(f4,text='Pay by',font=fnt).grid(column=0,row=4,sticky=tk.E,padx=10,pady=10)
-							card=('','Debit card','Credit card')
-							pay_type=ttk.OptionMenu(f4,m,*card)
-							pay_type.grid(column=1,row=4,sticky=tk.W,padx=10,pady=10)
-							
-							tk.Label(f4,text='Accepted cards',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
-							
-							img2=tk.PhotoImage(file='img/cards.png')
-							card_image=tk.Label(f4,image=img2,font=fnt)
-							card_image.grid(column=1,row=5,sticky=tk.W,padx=10,pady=10)
-							card_image.image=img2
-
-							tk.Label(f4,text='Card number',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
-							card_no=tk.Entry(f4,font=fnt)
-							card_no.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
-
-							tk.Label(f4,text='Cardholder name',font=fnt).grid(column=0,row=7,sticky=tk.E,padx=10,pady=10)
-							card_name=tk.Entry(f4,font=fnt)
-							card_name.grid(column=1,row=7,sticky=tk.EW,padx=10,pady=10)
-
-							tk.Label(f4,text='Expiry Year and Month\n[YYYY-MM]',font=fnt,justify=tk.RIGHT).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
-							exp_year=tk.Entry(f4,font=fnt,width=10)
-							exp_year.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
-
-							tk.Label(f4,text='-',font=fnt).grid(column=2,row=8,sticky=tk.EW,padx=10,pady=10)
-							exp_month=tk.Entry(f4,font=fnt,width=10)
-							exp_month.grid(column=3,row=8,sticky=tk.W,padx=10,pady=10)
-
-							tk.Label(f4,text='CVV number',font=fnt).grid(column=0,row=9,sticky=tk.E,padx=10,pady=10)
-							cvv_no=tk.Entry(f4,font=fnt)
-							cvv_no.grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
-
-							btn=tk.Button(f4,font=fntit,text='Pay',command=payment,fg='green');btn.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
-
-							retimg=tk.PhotoImage(file='icons/return.png')
-							btn4=tk.Button(f4,font=fnt,image=retimg,command=pay_win.destroy)
-							btn4.grid(column=0,row=15,padx=10,pady=10,sticky=tk.SW)
-							btn4.img=retimg
-
-							pay_win.bind('<Return>',lambda event:payment())
-
+								messagebox.showerror('Error','Please select payment method',parent=taxibkg_win)	
 						else:
 							messagebox.showerror('Error','Invalid timing entered.',parent=taxibkg_win)
 					else:
@@ -960,16 +1192,16 @@ def taxi_booking():		#Taxi booking
 
 	tk.Label(f1,text='TAXI BOOKING',font=h1fnt,bg='yellow').grid(column=1,row=0,padx=10,pady=10)
 
-	
 	#FRAME 2
 	f2=tk.Frame(taxibkg_win)
 	f2.grid(row=1,column=0)
 
-	#Input fields
+	#Booking ID
 	tk.Label(f2,text='ID',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
-	bkgid=tk.Label(f2,text=id,font=fnt)
+	bkgid=tk.Label(f2,text=taxibkg_id,font=fnt)
 	bkgid.grid(column=1,row=5,sticky=tk.W,padx=10,pady=10)
 
+	#Input fields
 	n=tk.StringVar()
 	tk.Label(f2,text='Taxi Type',font=fnt).grid(column=0,row=7,sticky=tk.E,padx=10,pady=10)
 	taxitype=ttk.OptionMenu(f2,n,*ctype)
@@ -977,15 +1209,15 @@ def taxi_booking():		#Taxi booking
 
 	tk.Label(f2,text='From',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
 	l=tk.StringVar()
-	start=ttk.Combobox(f2,textvariable=l,font=fnt,width=19,state='readonly')
-	start.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
-	start['values']=locations
+	from_inp=ttk.Combobox(f2,textvariable=l,font=fnt,width=19,state='readonly')
+	from_inp.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
+	from_inp['values']=locations
 
 	tk.Label(f2,text='To',font=fnt).grid(column=0,row=9,sticky=tk.E,padx=10,pady=10)
 	m=tk.StringVar()
-	end=ttk.Combobox(f2,textvariable=m,font=fnt,width=19,state='readonly')
-	end.grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
-	end['values']=locations
+	to_inp=ttk.Combobox(f2,textvariable=m,font=fnt,width=19,state='readonly')
+	to_inp.grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
+	to_inp['values']=locations
 
 	today=(t+timedelta(minutes=10))				#today
 	tomrw=(t+timedelta(days=1,minutes=10))		#tomorrow
@@ -1003,770 +1235,25 @@ def taxi_booking():		#Taxi booking
 
 	Separator(f2,orient='horizontal').grid(row=14,column=0,columnspan=3,sticky=tk.EW)
 
-	tk.Label(f2,text='Proceed to checkout',font=fnt,justify=tk.RIGHT).grid(column=0,row=15,sticky=tk.E,padx=10,pady=10)
-	subimg=tk.PhotoImage(file='icons/checkout.png')
-	btn=tk.Button(f2,font=fnt,text='Continue to Payment',image=subimg,command=start_payment)
-	btn.grid(column=1,row=15,padx=10,pady=10,sticky=tk.W)
-	btn.image=subimg
-
-	taxibkg_win.bind('<Return>',lambda event:start_payment())
-
-def user_main():		#User main functions
-	#Initialise the UI
-	welcome=tk.Tk()
-	welcome.title('Welcome to ABC Lines')
-	try:
-		welcome.state('zoomed')
-	except:		
-		w,h=welcome.winfo_screenwidth(),welcome.winfo_screenheight()
-		welcome.geometry(str(w)+'x'+str(h))
-	icon=tk.PhotoImage(file='img/icon.png')
-	welcome.iconphoto(False,icon)
-
-	tk.Grid.columnconfigure(welcome,0,weight=1)
-
-	# definitions
-	def bookings():		#make bookings			
-		#init GUI
-		logwin=tk.Tk()
-		logwin.title('Make bookings')
-
-		icon=tk.PhotoImage(file='img/icon.png')
-		logwin.iconphoto(False,icon)
-
-		#Maximises windows
-		try:
-			logwin.state('zoomed')
-		except:		
-			w,h=logwin.winfo_screenwidth(),logwin.winfo_screenheight()
-			logwin.geometry(str(w)+'x'+str(h))
-
-		#login
-		def login():
-			#Main menu
-			def main():
-
-				def logout():	#Logs out and returns to the start page.
-					main_user_menu.destroy()
-					user_main()
-
-				main_user_menu=tk.Tk()
-				main_user_menu.title('Main Menu')
-				icon=tk.PhotoImage(file='img/icon.png')
-				main_user_menu.iconphoto(False,icon)
-				try:
-					main_user_menu.state('zoomed')
-				except:
-					w,h=main_user_menu.winfo_screenwidth(),main_user_menu.winfo_screenheight()
-					main_user_menu.geometry(str(w)+'x'+str(h))
-
-				menubar=tk.Menu(main_user_menu)
-
-				more=tk.Menu(menubar,tearoff=0)
-				menubar.add_cascade(label='Info',menu=more,font=menufnt)
-				more.add_command(label='About this program...',command=about,font=menufnt,underline=0)
-				main_user_menu.config(menu=menubar)
-
-				tk.Grid.columnconfigure(main_user_menu,0,weight=1)
-
-				#FRAME 1
-				tk.Grid.rowconfigure(main_user_menu,0,weight=1)
-				f1=tk.Frame(main_user_menu,bg='#283593')
-				f1.grid(row=0,column=0,sticky=tk.NSEW)
-
-				#frame 1 grid
-				tk.Grid.columnconfigure(f1,0,weight=1)
-
-				cur.execute('select uname,fname from users')
-				a=dict(cur.fetchall())
-				cur.execute('select uname,uuid from users')
-				uuidlist=dict(cur.fetchall())
-
-				tk.Grid.rowconfigure(f1,0,weight=1)
-				tk.Grid.rowconfigure(f1,1,weight=1)
-				tk.Grid.rowconfigure(f1,2,weight=1)
-
-				logo_img=tk.PhotoImage(file='img/logo.png')
-				logo=tk.Label(f1,image=logo_img,fg='white',bg='#283593')
-				logo.grid(column=0,row=0,padx=10,pady=10,sticky=tk.EW)
-				logo.image=logo_img
-
-				tk.Label(f1,text='Welcome, '+a[uname_inp],font=h1fnt,fg='white',bg='#283593').grid(column=0,row=1)
-				tk.Label(f1,text=('ID: '+uuidlist[uname_inp]),font=h2fnt,fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
-				
-				Separator(f1,orient='horizontal').grid(column=0,row=3,sticky=tk.EW,padx=10,pady=10)
-
-				#FRAME 2
-				tk.Grid.rowconfigure(main_user_menu,1,weight=1)
-				f2=tk.Frame(main_user_menu)
-				f2.grid(row=1,column=0,padx=10,pady=10,sticky=tk.NSEW)
-
-				#frame 2 grid
-				tk.Grid.columnconfigure(f2,0,weight=1)
-				tk.Grid.columnconfigure(f2,1,weight=1)
-				tk.Grid.columnconfigure(f2,2,weight=1)
-				tk.Grid.columnconfigure(f2,3,weight=1)
-
-				tk.Label(f2,text=('You can:'),font=fntit).grid(column=1,row=2,padx=10,pady=10,sticky=tk.W)
-
-				tk.Grid.rowconfigure(f2,5,weight=1)
-				#Book Taxi
-				img6=tk.PhotoImage(file='icons/taxi.png')
-				bkgbtn=tk.Button(f2,text='Book taxi',image=img6,font=fnt,command=taxi_booking)
-				bkgbtn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
-				tk.Label(f2,text='Book a taxi.',font=fnt,bg='yellow').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
-
-				#Book Bus
-				img4=tk.PhotoImage(file='icons/bus.png')
-				passbtn=tk.Button(f2,text='Book Bus',image=img4,command=bus_booking)
-				passbtn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
-				tk.Label(f2,text='Book a bus.',font=fnt,fg='blue').grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
-
-				tk.Label(f2,text=('or:'),font=fntit).grid(column=1,row=9,padx=10,sticky=tk.W)
-
-				tk.Grid.rowconfigure(f2,11,weight=1)
-				#Logout
-				img7=tk.PhotoImage(file='icons/logout.png')
-				logoutbtn=tk.Button(f2,text='Logout',font=fnt,image=img7,command=logout)
-				logoutbtn.grid(column=0,row=11,padx=10,pady=10,sticky=tk.E)
-				tk.Label(f2,text='Logout',font=fnt).grid(column=1,row=11,padx=10,pady=10,sticky=tk.W)
-
-				#Logout and Exit
-				img8=tk.PhotoImage(file='icons/close.png')
-				exitbtn=tk.Button(f2,text='Logout and exit',font=fnt,image=img8,command=main_user_menu.destroy)
-				exitbtn.grid(column=2,row=11,padx=10,pady=10,sticky=tk.E)
-				tk.Label(f2,text='Logout and exit',font=fnt,fg='red').grid(column=3,row=11,padx=10,pady=10,sticky=tk.W)
-
-				tk.Grid.rowconfigure(f2,12,weight=1)
-				main_user_menu.mainloop()
-
-			uname_inp=login_uname.get()
-			passwd_inp=login_passwd.get()
-			cur.execute('select uname,passwd from users')
-			op=dict(cur.fetchall())
-
-			cur.execute('select uname,fname from users')
-			fnamelist=dict(cur.fetchall())
-
-			if (not uname_inp=='' and not uname_inp.isspace()) and (not passwd_inp=='' and not passwd_inp.isspace()):
-				if uname_inp not in op.keys():
-					messagebox.showerror('Error','Username \''+uname_inp+'\' does not exist.')
-				else:
-					if not passwd_inp == op[uname_inp]:
-						messagebox.showerror('Error','Invalid password entered for '+fnamelist[uname_inp]+'.')
-					else:
-						logwin.destroy()
-						main()
-			else:
-				messagebox.showerror('Error','Please do not leave any fields blank.')
-
-		#Register user
-		def register():
-			uuid='U'+str(rd.randint(10000,99999))
-			#Adds user to DB
-			def reguser():
-				
-				reg_fname_inp=reg_fname.get()
-				reg_email_inp=reg_email.get()
-				reg_num_inp=reg_num.get()
-				reg_uname_inp=reg_uname.get().lower()
-				reg_passwd_inp=reg_passwd.get()
-
-				cur.execute('select uname from users')
-				users=cur.fetchall()
-
-				b=(reg_uname_inp,)
-				if (not reg_fname_inp.isspace()==True and not reg_fname_inp=='') and (not reg_email_inp.isspace()==True and not reg_email_inp=='') and (not reg_num_inp.isspace()==True and not reg_num_inp=='') and (not reg_uname_inp.isspace()==True and not reg_uname_inp=='') and (not reg_passwd_inp.isspace()==True and not reg_passwd_inp==''):		#checks if inputs are not empty or contains spaces
-					if b not in users:
-						if '@' in reg_email_inp and '.' in reg_email_inp:
-							if len(reg_num_inp) == 10:
-								regsql='insert into users values(%s,%s,%s,%s,%s,%s)'
-								regval=(uuid,reg_fname_inp,reg_email_inp,reg_num_inp,reg_uname_inp,reg_passwd_inp)
-
-								cur.execute(regsql,regval)
-								con.commit()
-
-								messagebox.showinfo('','The new user '+reg_fname_inp+'\nhas been successfully registered.',parent=logwin)
-								logwin.destroy()
-							else:
-								messagebox.showerror('Error','Invalid phone number entered.',parent=logwin)
-						else:
-							messagebox.showerror('Error','Invalid electronic mail ID entered.',parent=logwin)		
-					else:
-						messagebox.showerror('Error','Username '+reg_uname_inp+'\nalready exists.',parent=logwin)
-					
-				else:
-					messagebox.showerror('Error','Please do not leave any fields blank.',parent=logwin)
-			
-			logwin=tk.Toplevel()
-			logwin.title('Register')
-			logwin.resizable(False, False)
-			icon=tk.PhotoImage(file='img/icon.png')
-			logwin.iconphoto(False,icon)
-
-			tk.Label(logwin,text='Register',font=h1fnt).grid(column=0,row=0,padx=10,pady=10,columnspan=2,sticky=tk.EW)
-			
-			tk.Label(logwin,text='ID',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
-			tk.Label(logwin,text=uuid,font=fnt).grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
-			
-			tk.Label(logwin,text='1. Personal info',font=fntit).grid(column=0,row=5,sticky=tk.W,padx=10,pady=10)
-
-			tk.Label(logwin,text='Name',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
-			reg_fname=tk.Entry(logwin,font=fnt)
-			reg_fname.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
-
-			tk.Label(logwin,text='Electronic mail ID',font=fnt).grid(column=0,row=7,sticky=tk.E,padx=10,pady=10)
-			reg_email=tk.Entry(logwin,font=fnt)
-			reg_email.grid(column=1,row=7,sticky=tk.EW,padx=10,pady=10)
-
-			tk.Label(logwin,text='Phone number',font=fnt).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
-			reg_num=tk.Entry(logwin,font=fnt)
-			reg_num.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
-
-			tk.Label(logwin,text='2. Login info',font=fntit).grid(column=0,row=10,sticky=tk.W,padx=10,pady=10)
-
-			tk.Label(logwin,text='Username',font=fnt).grid(column=0,row=11,sticky=tk.E,padx=10,pady=10)
-			reg_uname=tk.Entry(logwin,font=fnt)
-			reg_uname.grid(column=1,row=11,sticky=tk.EW,padx=10,pady=10)
-
-			tk.Label(logwin,text='Password',font=fnt).grid(column=0,row=12,sticky=tk.E,padx=10,pady=10)
-			reg_passwd=tk.Entry(logwin,show='*',font=fnt)
-			reg_passwd.grid(column=1,row=12,sticky=tk.EW,padx=10,pady=10)
-
-			regsubmit=tk.Button(logwin,text='Register',command=reguser,font=fntit)
-			regsubmit.grid(column=1,row=14,padx=10,pady=10,sticky=tk.W)
-			logwin.bind('<Return>',lambda event:reguser())
-		
-		#Opens manage profile window
-		def manage_profile():
-			logwin.destroy()
-			manage_user_profile()
-
-		#Window
-		tk.Grid.columnconfigure(logwin,0,weight=1)
-
-		#FRAME 1
-		tk.Grid.rowconfigure(logwin,0,weight=1)
-		f1=tk.Frame(logwin,bg='#283593')
-		f1.grid(row=0,column=0,sticky=tk.NSEW)
-
-		#frame 1 grid
-		tk.Grid.columnconfigure(f1,0,weight=1)
-
-		tk.Grid.rowconfigure(f1,0,weight=1)
-		tk.Label(f1,text='Login',font=h1fnt,fg='white',bg='#283593').grid(column=0,row=0)
-		Separator(f1,orient='horizontal').grid(row=1,column=0,sticky=tk.EW,padx=10,pady=10)
-
-		#FRAME 2
-		tk.Grid.rowconfigure(logwin,1,weight=1)
-		f2=tk.Frame(logwin)
-		f2.grid(row=1,column=0,padx=10,pady=10,sticky=tk.NSEW)
-
-		#frame 2 grid
-		tk.Grid.columnconfigure(f2,0,weight=1)
-		tk.Grid.columnconfigure(f2,1,weight=1)
-
-		tk.Label(f2,text='Username',font=fnt).grid(column=0,row=3,padx=10,pady=10,sticky=tk.E)
-		login_uname=tk.Entry(f2,font=fnt)
-		login_uname.grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
-
-		tk.Label(f2,text='Password',font=fnt).grid(column=0,row=4,padx=10,pady=10,sticky=tk.E)
-		login_passwd=tk.Entry(f2,show='*',font=fnt)
-		login_passwd.grid(column=1,row=4,sticky=tk.W,padx=10,pady=10)
-
-		img1=tk.PhotoImage(file='icons/login.png')
-		logsubmit=tk.Button(f2,text='Login...',image=img1,command=login)
-		logsubmit.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
-
-		tk.Grid.rowconfigure(f2,12,weight=2)
-		tk.Label(f2,text='New here?\nClick here to register.',font=fntit,justify=tk.RIGHT,fg='#283593').grid(column=0,row=12,padx=10,pady=10,sticky=tk.E)
-		img2=tk.PhotoImage(file='icons/adduser.png')
-		reg=tk.Button(f2,text='Register',image=img2,command=register)
-		reg.grid(column=1,row=12,padx=10,pady=10,sticky=tk.W)
-
-		manage=tk.Button(f2,text='Manage your profile...',font=fntit,command=manage_profile)
-		manage.grid(column=1,row=11,padx=10,pady=10,columnspan=2,sticky=tk.W)
-
-		logwin.bind('<Return>',lambda event:login())
-		logwin.mainloop()
-
-	def manage_user_profile():		#manages profile
-		#init GUI
-		login_win=tk.Tk()
-		login_win.title('Manage profile')
-		icon=tk.PhotoImage(file='img/icon.png')
-		login_win.iconphoto(False,icon)
-
-		try:
-			login_win.state('zoomed')
-		except:
-			w,h=login_win.winfo_screenwidth(),login_win.winfo_screenheight()
-			login_win.geometry(str(w)+'x'+str(h))
-
-		def bookings_login():
-			login_win.destroy()
-			bookings()
-		
-		def login():
-			def manage(): #Manage user window
-
-				def delete_profile():	#Delete function
-					cur.execute('select uname,fname from users')
-					a=cur.fetchall()
-					user_namelist=dict(a)				
-					def deluser():	#Delete user from DB
-						cur.execute('select uname,passwd from users')
-						b=cur.fetchall()
-						upass=dict(b)
-						p=del_passwd.get()
-						
-						if not p=='' and not p.isspace():
-							if p == upass[uname_inp]:
-								confirm=messagebox.askyesno('','Really delete your user profile?',parent=delwin)
-								if confirm==True:
-									sql="delete from users where uname =%s"
-									val=(uname_inp,)
-									cur.execute(sql,val)
-									con.commit()
-									messagebox.showinfo('','User '+user_namelist[uname_inp]+' deleted.\nYou will be returned to the start page.',parent=delwin)
-									delwin.destroy()
-									mguser_win.destroy()
-									user_main()
-								else:
-									pass
-							else:
-								messagebox.showerror('Error','Invalid password entered.',parent=delwin)
-						else:
-							messagebox.showerror('Error','Please enter a password.',parent=delwin)
-					
-					delwin=tk.Toplevel()
-					delwin.title('Delete User')
-					delwin.resizable(False,False)
-					tk.Label(delwin,text='Delete User',font=h1fnt).grid(column=0,row=0,padx=10,pady=10)
-
-					tk.Label(delwin,text='Please enter the password.',font=fnt).grid(column=0,row=4,sticky=tk.W,padx=10,pady=10)
-					del_passwd=tk.Entry(delwin,show='*',font=fnt);del_passwd.grid(column=0,row=5,sticky=tk.EW,padx=10,pady=10)
-
-					delsubmit=tk.Button(delwin,text='Delete User',command=deluser,font=fntit,fg='red');delsubmit.grid(column=0,row=6,padx=10,pady=10)
-					delwin.bind('<Return>',lambda event:deluser())
-					
-				def passwd():	#Change password function
-					def chpasswd():		#Changes passwd in DB.
-						cur.execute('select uname,passwd from users')
-						b=cur.fetchall()
-						upass=dict(b)
-						op=old_pass.get()
-						np=new_pass.get()
-						if (not np=='' and not np.isspace()) and (not op=='' and not op.isspace()):
-							if op == upass[uname_inp]:
-								confirm=messagebox.askyesno('','Really change your password?',parent=passwin)
-								if confirm==True:
-									sql="update users set passwd=%s where uname=%s"
-									val=(np,uname_inp)
-									cur.execute(sql,val)
-									con.commit()
-									messagebox.showinfo('','Password updated.',parent=passwin)
-									passwin.destroy()
-								else:
-									pass
-							else:
-								messagebox.showerror('Error','Invalid old password entered.',parent=passwin)
-						else:
-							messagebox.showerror('Error','Please do not leave any fields blank.',parent=passwin)
-
-					passwin=tk.Toplevel()
-					passwin.title('Change Password')
-					passwin.resizable(False,False)
-					icon=tk.PhotoImage(file='img/icon.png')
-					passwin.iconphoto(False,icon)
-
-
-					tk.Label(passwin,text='Changing password for '+fnamelist[uname_inp],font=(h1fnt,18)).grid(column=1,row=0,padx=10,pady=10)
-
-					tk.Label(passwin,text='Current Password',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
-					old_pass=tk.Entry(passwin,show='*',font=fnt);old_pass.grid(column=1,row=5,sticky=tk.EW,padx=10,pady=10)
-					
-					tk.Label(passwin,text='New Password',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
-					new_pass=tk.Entry(passwin,show='*',font=fnt);new_pass.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
-					
-					passsubmit=tk.Button(passwin,text='Change password',command=chpasswd,font=fntit)
-					passsubmit.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
-					passwin.bind('<Return>',lambda event:chpasswd())
-					
-				def logout():	#Logs out
-					mguser_win.destroy()
-					user_main()
-				
-				def info():		#Changes personal information.
-					chinfo_home=tk.Toplevel()
-					chinfo_home.resizable(False,False)
-					chinfo_home.title('Change personal information')
-					icon=tk.PhotoImage(file='img/icon.png')
-					chinfo_home.iconphoto(False,icon)
-
-					tk.Label(chinfo_home,text=('Change your\npersonal information'),font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,sticky=tk.W)
-					
-					def name():		#Change full (display) name
-						def chname():		#Changes full name in DB
-							new_name=en1.get()
-
-							if not new_name=='' and not new_name.isspace():
-								sql="update users set fname=%s where uname like %s"
-								val=(new_name,uname_inp)
-
-								cur.execute(sql,val)
-								con.commit()
-
-								messagebox.showinfo('','Name successfully changed from '+fnamelist[uname_inp]+' to '+new_name+'.\nPlease log out for any changes to take effect.',parent=chinfo_name)
-								tk.Label(chinfo_name,text='Please log out for\nany changes to take effect.',font=fnt,justify=tk.LEFT).grid(row=8,column=1,sticky=tk.W,padx=10,pady=10)
-								chinfo_name.destroy()
-							else:
-								messagebox.showerror('','No new name has been specified.',parent=chinfo_name)
-						chinfo_name=tk.Toplevel()
-						chinfo_name.resizable(False,False)
-						chinfo_name.title('Change display name...')
-						icon=tk.PhotoImage(file='img/icon.png')
-						chinfo_name.iconphoto(False,icon)
-
-						tk.Label(chinfo_name,text=('Change your display (full) name'),font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,sticky=tk.W)
-						
-						tk.Label(chinfo_name,text='Current name',font=fnt).grid(row=5,column=0,sticky=tk.E,padx=10,pady=10)
-						tk.Label(chinfo_name,text=fnamelist[uname_inp],font=fnt).grid(row=5,column=1,sticky=tk.W,padx=10,pady=10)
-
-						tk.Label(chinfo_name,text='New name',font=fnt).grid(row=6,column=0,sticky=tk.E,padx=10,pady=10)
-						en1=tk.Entry(chinfo_name,font=fnt)
-						en1.grid(row=6,column=1,sticky=tk.W,padx=10,pady=10)
-
-						btn3=tk.Button(chinfo_name,text='Make changes',font=fntit,command=chname)
-						btn3.grid(row=10,column=1,padx=10,pady=10,sticky=tk.W)
-
-						#Binds Enter key to submit function
-						chinfo_name.bind('<Return>',lambda event:chname())
-
-					def contacts():		#Change contact info
-						def chcontacts():	#Changes email or phone number in DB
-							new_email=en2.get()
-							new_num=en3.get()
-						
-							def changes_confirmed():
-								chinfo_contacts.destroy()
-								
-							if (not new_num=='' and not new_num.isspace()) or (not new_email=='' and not new_email.isspace()):
-								if new_num=='' or new_num.isspace():
-									if '@' in new_email and '.' in new_email:
-										sql='update users set email=%s where uname like %s' 
-										val=(new_email,uname_inp)
-										cur.execute(sql,val)
-										con.commit()
-										messagebox.showinfo('','Electronic mail address changed successfully to '+new_email+'.',parent=chinfo_contacts)
-										changes_confirmed()							
-									else:
-										messagebox.showerror('Error','Invalid electronic mail entered.',parent=chinfo_contacts)
-								elif new_email=='' or new_email.isspace():
-									if len(new_num)==10:
-										sql='update users set num=%s where uname like %s' 
-										val=(new_num,uname_inp)
-										cur.execute(sql,val)
-										con.commit()
-										messagebox.showinfo('','Phone number changed successfully to '+new_num+'.',parent=chinfo_contacts)
-										changes_confirmed()						
-									else:
-										messagebox.showerror('Error','Invalid phone number entered.',parent=chinfo_contacts)
-								elif (not new_num=='' and not new_num.isspace()) and (not new_email=='' and not new_email.isspace()):
-									if ('@' in new_email and '.' in new_email) and (len(new_num)==10):
-										sql='update users set email=%s where uname like %s' 
-										val=(new_email,uname_inp)
-										cur.execute(sql,val)
-										con.commit()
-
-										sql='update users set num=%s where uname like %s' 
-										val=(new_num,uname_inp)
-										cur.execute(sql,val)
-										con.commit()
-										messagebox.showinfo('','Electronic mail address and phone number changed successfully to '+new_email+' and '+new_num+', respectively.',parent=chinfo_contacts)
-										changes_confirmed()							
-									else:
-										messagebox.showerror('Error','Invalid electronic mail or phone number entered.',parent=chinfo_contacts)
-							else:
-								messagebox.showerror('Error','Please fill at least one field.',parent=chinfo_contacts)
-
-						cur.execute('select uname,email from users')
-						a=dict(cur.fetchall())
-
-						cur.execute('select uname,num from users')
-						b=dict(cur.fetchall())
-
-						chinfo_contacts=tk.Toplevel()
-						chinfo_contacts.resizable(False,False)
-						icon=tk.PhotoImage(file='img/icon.png')
-						chinfo_contacts.iconphoto(False,icon)
-
-						chinfo_contacts.title('Change contact details...')
-						tk.Label(chinfo_contacts,text=('Change your contact details'),font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,sticky=tk.W)
-						tk.Label(chinfo_contacts,text='If you do not wish to change a\nparticular contact, then leave the\ncorresponding field blank.',font=fnt,justify=tk.LEFT).grid(row=2,column=1,sticky=tk.W,padx=10,pady=10)
-						tk.Label(chinfo_contacts,text='Current\nelectronic mail address',font=fnt,justify=tk.RIGHT).grid(row=5,column=0,sticky=tk.E,padx=10,pady=10)
-						tk.Label(chinfo_contacts,text=a[uname_inp],font=fnt).grid(row=5,column=1,sticky=tk.W,padx=10,pady=10)
-
-						tk.Label(chinfo_contacts,text='New\nelectronic mail address',font=fnt,justify=tk.RIGHT).grid(row=6,column=0,sticky=tk.E,padx=10,pady=10)
-						en2=tk.Entry(chinfo_contacts,font=fnt)
-						en2.grid(row=6,column=1,sticky=tk.EW,padx=10,pady=10)
-
-						tk.Label(chinfo_contacts,text='Current phone number',font=fnt).grid(row=7,column=0,sticky=tk.E,padx=10,pady=10)
-						tk.Label(chinfo_contacts,text=b[uname_inp],font=fnt).grid(row=7,column=1,sticky=tk.W,padx=10,pady=10)
-
-						tk.Label(chinfo_contacts,text='New phone number',font=fnt).grid(row=8,column=0,sticky=tk.E,padx=10,pady=10)
-						en3=tk.Entry(chinfo_contacts,font=fnt)
-						en3.grid(row=8,column=1,sticky=tk.EW,padx=10,pady=10)
-
-						btn3=tk.Button(chinfo_contacts,text='Make changes',font=fntit,command=chcontacts)
-						btn3.grid(row=15,column=1,padx=10,pady=10,sticky=tk.W)
-
-						#Binds Enter key to submit function
-						chinfo_contacts.bind('<Return>',lambda event:chcontacts())
-
-					img1=tk.PhotoImage(file='icons/user.png')
-					btn1=tk.Button(chinfo_home,text='Name',image=img1,command=name)
-					btn1.image=img1
-					btn1.grid(column=0,row=3,padx=10,pady=10,sticky=tk.E)
-					tk.Label(chinfo_home,text='Change your display (full) name',font=fnt,justify=tk.LEFT).grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
-
-					img2=tk.PhotoImage(file='icons/contacts-2.png')
-					btn2=tk.Button(chinfo_home,text='Contact',image=img2,command=contacts)
-					btn2.image=img2
-					btn2.grid(column=0,row=6,padx=10,pady=10,sticky=tk.E)
-					tk.Label(chinfo_home,text='Change your contact details',font=fnt).grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
-
-				cur.execute('select uname,uuid from users')
-				uuidlist=dict(cur.fetchall())
-				cur.execute('select uname,fname from users')
-				fnamelist=dict(cur.fetchall())
-				
-				login_win.destroy()
-
-				mguser_win=tk.Tk()
-				mguser_win.title('Manage profile')
-				icon=tk.PhotoImage(file='img/icon.png')
-				mguser_win.iconphoto(False,icon)
-
-				try:
-					mguser_win.state('zoomed')
-				except:
-					w,h=mguser_win.winfo_screenwidth(),mguser_win.winfo_screenheight()
-					mguser_win.geometry(str(w)+'x'+str(h))
-				
-				#Menubar
-				menubar=tk.Menu(mguser_win)
-				more=tk.Menu(menubar,tearoff=0)
-				menubar.add_cascade(label='Info',menu=more,font=menufnt)
-				more.add_command(label='About this program...',command=about,font=menufnt,underline=0)
-				mguser_win.config(menu=menubar)
-
-				tk.Grid.columnconfigure(mguser_win,0,weight=1)
-				
-				#FRAME 1
-				tk.Grid.rowconfigure(mguser_win,0,weight=1)
-				f1=tk.Frame(mguser_win,bg='#283593')
-				f1.grid(row=0,column=0,sticky=tk.NSEW)
-
-				#frame 1 grid
-				tk.Grid.columnconfigure(f1,0,weight=1)
-				
-				tk.Grid.rowconfigure(f1,0,weight=1)
-				tk.Grid.rowconfigure(f1,1,weight=1)
-				tk.Grid.rowconfigure(f1,2,weight=1)
-				tk.Grid.rowconfigure(f1,3,weight=1)
-
-				logo_img=tk.PhotoImage(file='img/logo.png')
-				logo=tk.Label(f1,image=logo_img,fg='white',bg='#283593')
-				logo.grid(column=0,row=0,padx=10,pady=10,sticky=tk.EW)
-				logo.image=logo_img
-
-				tk.Label(f1,text=('Welcome, '+fnamelist[uname_inp]),font=h1fnt,fg='white',bg='#283593').grid(column=0,row=1,padx=10,sticky=tk.EW)
-				tk.Label(f1,text=('ID: '+uuidlist[uname_inp]),font=h2fnt,fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
-				tk.Label(f1,text=('Manage your profile'),font=h2fnt,fg='white',bg='#283593').grid(column=0,row=3,padx=10,sticky=tk.EW)
-				
-				Separator(f1,orient='horizontal').grid(column=0,row=4,sticky=tk.EW,padx=10,pady=10,columnspan=2)
-				#FRAME 2
-				tk.Grid.rowconfigure(mguser_win,1,weight=1)
-				f2=tk.Frame(mguser_win)
-				f2.grid(row=1,column=0,padx=10,pady=10,sticky=tk.NSEW)
-
-				#frame 2 grid
-				tk.Grid.columnconfigure(f2,0,weight=1)
-				tk.Grid.columnconfigure(f2,1,weight=1)
-				tk.Grid.columnconfigure(f2,2,weight=1)
-				tk.Grid.columnconfigure(f2,3,weight=1)
-
-				tk.Label(f2,text=('You can:'),font=fntit).grid(column=1,row=2,padx=10,pady=10,sticky=tk.W)
-				
-				tk.Grid.rowconfigure(f2,5,weight=1)
-				img4=tk.PhotoImage(file='icons/passwd.png')
-				passbtn=tk.Button(f2,text='Change Password',image=img4,command=passwd)
-				passbtn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
-				tk.Label(f2,text='Change your password.',font=fnt).grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
-
-				img9=tk.PhotoImage(file='icons/user.png')
-				delusrbtn=tk.Button(f2,text='Manage Personal Info',image=img9,command=info)
-				delusrbtn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
-				tk.Label(f2,text='Change your personal information.',font=fnt,fg='green').grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
-
-				tk.Grid.rowconfigure(f2,6,weight=1)
-				img3=tk.PhotoImage(file='icons/ban_user.png')
-				delusrbtn=tk.Button(f2,text='Remove User',image=img3,command=delete_profile)
-				delusrbtn.grid(column=0,row=6,padx=10,pady=10,sticky=tk.E)
-				tk.Label(f2,text='Delete your profile.',font=fnt,fg='red').grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
-				
-				tk.Label(f2,text=('or:'),font=fntit).grid(column=1,row=9,padx=10,sticky=tk.W)
-
-				tk.Grid.rowconfigure(f2,11,weight=1)
-				img7=tk.PhotoImage(file='icons/logout.png')
-				logoutbtn=tk.Button(f2,text='Logout',font=fnt,image=img7,command=logout)
-				logoutbtn.grid(column=0,row=11,padx=10,pady=10,sticky=tk.E)
-				tk.Label(f2,text='Logout',font=fnt).grid(column=1,row=11,padx=10,pady=10,sticky=tk.W)
-
-				img8=tk.PhotoImage(file='icons/close.png')
-				exitbtn=tk.Button(f2,text='Logout and exit',font=fnt,image=img8,command=mguser_win.destroy)
-				exitbtn.grid(column=2,row=11,padx=10,pady=10,sticky=tk.E)
-				tk.Label(f2,text='Logout and exit',font=fnt,fg='red').grid(column=3,row=11,padx=10,pady=10,sticky=tk.W)
-				
-				mguser_win.mainloop()
-
-			uname_inp=login_uname.get()
-			passwd_inp=login_passwd.get()
-			cur.execute('select uname,passwd from users')
-			op=dict(cur.fetchall())
-
-			cur.execute('select uname,fname from users')
-			fnamelist=dict(cur.fetchall())
-
-			if (not uname_inp=='' and not uname_inp.isspace()) and (not passwd_inp=='' and not passwd_inp.isspace()):
-				if uname_inp not in op.keys():
-					messagebox.showerror('Error','Username \''+uname_inp+'\' does not exist.')
-				else:
-					if not passwd_inp == op[uname_inp]:
-						messagebox.showerror('Error','Invalid password entered for '+fnamelist[uname_inp]+'.')
-					else:
-						manage()
-			else:
-				messagebox.showerror('Error','Please do not leave any fields blank.')
-
-		tk.Grid.columnconfigure(login_win,0,weight=1)
-
-		#FRAME 3
-		tk.Grid.rowconfigure(login_win,0,weight=1)
-		f3=tk.Frame(login_win,bg='#283593')
-		f3.grid(row=0,column=0,sticky=tk.NSEW)
-
-		#frame 3 grid
-		tk.Grid.columnconfigure(f3,0,weight=1)
-
-		tk.Grid.rowconfigure(f3,0,weight=1)
-		tk.Label(login_win,text='Login',font=h1fnt,fg='white',bg='#283593').grid(column=0,row=0)
-		Separator(f3,orient='horizontal').grid(row=1,column=0,sticky=tk.EW,padx=10,pady=10)
-
-		#FRAME 4
-		tk.Grid.rowconfigure(login_win,1,weight=1)
-		f4=tk.Frame(login_win)
-		f4.grid(row=1,column=0,sticky=tk.NSEW,padx=10,pady=10)
-
-		#frame 4 grid
-		tk.Grid.columnconfigure(f4,0,weight=1)
-		tk.Grid.columnconfigure(f4,1,weight=1)
-
-		tk.Label(f4,text='Username',font=fnt).grid(column=0,row=3,padx=10,pady=10,sticky=tk.E)
-		login_uname=tk.Entry(f4,font=fnt)
-		login_uname.grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
-
-		tk.Label(f4,text='Password',font=fnt).grid(column=0,row=4,padx=10,pady=10,sticky=tk.E)
-		login_passwd=tk.Entry(f4,show='*',font=fnt)
-		login_passwd.grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
-
-		img1=tk.PhotoImage(file='icons/login.png')
-		logsubmit=tk.Button(f4,text='Login...',image=img1,command=login)
-		logsubmit.grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
-
-		tk.Grid.rowconfigure(f4,6,weight=1)
-		tk.Label(f4,text='Want to make bookings?\nClick here to continue.',font=fntit,justify=tk.RIGHT,bg='#00e676').grid(column=0,row=6,padx=10,pady=10,sticky=tk.E)
-		img6=tk.PhotoImage(file='icons/booking.png')
-		bkgbtn=tk.Button(f4,text='Booking',image=img6,font=fnt,command=bookings_login)
-		bkgbtn.grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
-
-		#Binds enter key to login function
-		login_win.bind('<Return>',lambda event:login())
-		login_win.mainloop()
-
-	menubar=tk.Menu(welcome)
-
-	more=tk.Menu(menubar,tearoff=0)
-	menubar.add_cascade(label='Info',menu=more,font=menufnt)
-	more.add_command(label='About this program...',command=about,font=menufnt,underline=0)
-	welcome.config(menu=menubar)
-
-	tk.Grid.columnconfigure(welcome,0,weight=1)
-
-	#FRAME 1
-	tk.Grid.rowconfigure(welcome,0,weight=1)
-	f1=tk.Frame(welcome,bg='#283593')
-	f1.grid(row=0,column=0,sticky=tk.NSEW)
-
-	#frame 1 grid
-	tk.Grid.columnconfigure(f1,0,weight=1)
-	tk.Grid.rowconfigure(f1,0,weight=1)
-
-	logo_img=tk.PhotoImage(file='img/logo.png')
-	logo=tk.Label(f1,image=logo_img,font=h1fnt,fg='white',bg='#283593')
-	logo.grid(column=0,row=0,padx=10,pady=10,sticky=tk.EW)
-	logo.image=logo_img
-
-	Separator(f1,orient='horizontal').grid(column=0,row=1,sticky=tk.EW,padx=10,pady=10,columnspan=2)
-
-	#FRAME 2
-	tk.Grid.rowconfigure(welcome,1,weight=1)
-
-	f2=tk.Frame(welcome)
-	f2.grid(row=1,column=0,padx=10,pady=10,sticky=tk.NSEW)
-
-	#frame 2 grid
-	tk.Grid.columnconfigure(f2,0,weight=1)
-	tk.Grid.columnconfigure(f2,1,weight=1)
-
-	def open_bookings():
-		welcome.destroy()
-		bookings()
-
-	def open_manage():
-		welcome.destroy()
-		manage_user_profile()
-
-	#Bookings
-	tk.Grid.rowconfigure(f2,5,weight=1)
-	img6=tk.PhotoImage(file='icons/booking.png')
-	bkgbtn=tk.Button(f2,text='Booking',image=img6,font=fnt,command=open_bookings)
-	bkgbtn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
-	tk.Label(f2,text='Make a booking...',font=fnt,bg='#00e676').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
-
-	#Manage Profile
-	tk.Grid.rowconfigure(f2,6,weight=1)	
-	img4=tk.PhotoImage(file='icons/manage_accts.png')
-	passbtn=tk.Button(f2,text='Profile',image=img4,command=open_manage)
-	passbtn.grid(column=0,row=6,padx=10,pady=10,sticky=tk.E)
-	tk.Label(f2,text='Manage user profile...',font=fnt).grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
-
-	#Exit
-	tk.Grid.rowconfigure(f2,7,weight=1)	
-	img5=tk.PhotoImage(file='icons/close.png')
-	passbtn=tk.Button(f2,text='Exit',image=img5,command=welcome.destroy)
-	passbtn.grid(column=0,row=7,padx=10,pady=10,sticky=tk.E)
-	tk.Label(f2,text='Exit',font=fnt,fg='red').grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
-
-	tk.Grid.rowconfigure(f2,8,weight=1)	
-
-	welcome.mainloop()
-
-def emp_main():			#Corporate functions
+	# Payment method - Card or cash?
+	payment_method=tk.StringVar(f2)	
+	tk.Label(f2,text='Payment method',font=fnt).grid(column=0,row=15,sticky=tk.E,padx=10,pady=10)
+	ttk.Radiobutton(f2, text = 'Credit/Debit Card',variable = payment_method,value = 'R').grid(column=1,row=15,sticky=tk.W,padx=10)
+	ttk.Radiobutton(f2, text = 'Cash',variable = payment_method,value = 'C').grid(column=1,row=16,sticky=tk.W,padx=10)
+
+	# Submit
+	tk.Label(f2,text='Proceed to checkout',font=fnt,justify=tk.RIGHT).grid(column=0,row=20,sticky=tk.E,padx=10,pady=10)
+	submit_icon=tk.PhotoImage(file='icons/checkout.png')
+	submit_btn=tk.Button(f2,font=fnt,text='Continue to Payment',image=submit_icon,command=payment)
+	submit_btn.grid(column=1,row=20,padx=10,pady=10,sticky=tk.W)
+	submit_btn.image=submit_icon
+
+	taxibkg_win.bind('<Return>',lambda event:payment())
+
+def emp_main():																		
 	#main window
 	emp_login_win=tk.Tk()
-	emp_login_win.title('Employee login')
+	emp_login_win.title('ABC IBS')
 	icon=tk.PhotoImage(file='img/icon.png')
 	emp_login_win.iconphoto(False,icon)
 
@@ -1777,18 +1264,17 @@ def emp_main():			#Corporate functions
 		w,h=emp_login_win.winfo_screenwidth(),emp_login_win.winfo_screenheight()
 		emp_login_win.geometry(str(w)+'x'+str(h))
 
-	#functions
-	def login():	#action on login
+	def on_login():																	# Action on login
 
-		def manage_busbkg():	#manage bus bookings
+		# Main functions
+		def manage_busbkg():														# Manage bus bookings
 
-			managebusbkgs=tk.Toplevel()
-			managebusbkgs.title('Manage bus bookings')
+			manage_bbkg_win=tk.Toplevel()
+			manage_bbkg_win.title('Manage bus bookings')
 			icon=tk.PhotoImage(file='img/icon.png')
-			managebusbkgs.iconphoto(False,icon)
+			manage_bbkg_win.iconphoto(False,icon)
 
-
-			def viewbkg_all():	#View all bookings
+			def viewbkg_all():															# View all bookings
 				viewall_win=tk.Toplevel()
 				viewall_win.title('All bus bookings')
 				viewall_win.resizable(False,False)
@@ -1797,28 +1283,29 @@ def emp_main():			#Corporate functions
 				
 				header=('Booking ID','Timestamp','Number of Passengers','Origin','Destination','Date','Time','Bus Type')
 
-				sql2=str('select * from bus_bkgs')			#getting data from table
+				sql2=str('select * from bus_bkgs')										# getting data from table
 
 				cur.execute(sql2)
-				data=[header]+cur.fetchall()						#appending header to data
+				data=[header]+cur.fetchall()											# appending header to data
 				
 				rows=len(data)
 				cols=len(data[0])
 
-				for i in range(rows):							#drawing the table in GUI
+				for i in range(rows):													# drawing the table in GUI
 					for j in range(cols):
 						entry = tk.Label(viewall_win,borderwidth=1,relief='solid',padx=10,height=2,font=fnt)
 						entry.grid(row=i, column=j,padx=2,pady=2,sticky=tk.EW)
 						entry.configure(text=data[i][j])
 						if i==0:
-							entry.configure(fg='red',font=fntit)	#colors and italicises header
+							entry.configure(fg='red',font=fntit)							# colors and italicises header
 
-			def viewbkg_single():	#View single booking
+			def viewbkg_single():
+																			# View single booking
 				def get_busbkginfo():
-					if not bkgid.get()=='' and not bkgid.get().isspace():
-						if bkgid.get() in bus_bkgid_list:
+					if not bkgid_input.get()=='' and not bkgid_input.get().isspace():
+						if bkgid_input.get() in bus_bkgid_list:
 							sql='select * from bus_bkgs where bkgid=%s'
-							val=(bkgid.get(),)
+							val=(bkgid_input.get(),)
 							cur.execute(sql,val)
 							c=cur.fetchall()
 							bkg_id=c[0][0]
@@ -1830,23 +1317,24 @@ def emp_main():			#Corporate functions
 							bkg_time=c[0][6]
 							bkg_type=c[0][7]
 							
-							e=[('Booking ID',bkg_id),('Timestamp',bkg_ts),('Number of passengers',bkg_passno),('Origin',bkg_org),('Destination',bkg_dest),('Date',bkg_date),('Time',bkg_time),('Bus Type',bkg_type)]
+							data=[('Booking ID',bkg_id),('Timestamp',bkg_ts),('Number of passengers',bkg_passno),('Origin',bkg_org),('Destination',bkg_dest),('Date',bkg_date),('Time',bkg_time),('Bus Type',bkg_type)]
 							
 							
-							rows=len(e)
-							cols=len(e[0])
+							rows=len(data)
+							cols=len(data[0])
 							tk.Label(frame3,font=fntit,text='Data').grid(row=0,column=0,sticky=tk.W)
-							for i in range(rows):							#drawing the table in GUI
+							for i in range(rows):											#drawing the table in GUI
 								for j in range(cols):
 									entry = tk.Label(frame2,borderwidth=1,relief='solid',padx=10,width=30,height=2,font=fnt)
 									entry.grid(row=i,column=j,padx=2,pady=2,sticky=tk.EW)
-									entry.configure(text=e[i][j])
+									entry.configure(text=data[i][j])
 									if j==0:
-										entry.configure(fg='red',font=fntit) #colors and italicises header
+										entry.configure(fg='red',font=fntit) 				#colors and italicises header
 						else:
-							messagebox.showerror('Error','Booking \''+bkgid.get()+'\' does not exist.',parent=viewone_win)
+							messagebox.showerror('Error','Booking \''+bkgid_input.get()+'\' does not exist.',parent=viewone_win)
 					else:
 						messagebox.showerror('Error','Please enter the booking.',parent=viewone_win)
+				
 				viewone_win=tk.Toplevel()
 				viewone_win.title('View bus booking')
 				viewone_win.resizable(False,False)
@@ -1868,84 +1356,91 @@ def emp_main():			#Corporate functions
 				for i in a:
 					bus_bkgid_list.append(i[0])
 
-				img14=tk.PhotoImage(file='icons/searchusr.png')
-				img=tk.Label(frame1,image=img14,font=h1fnt)
-				img.grid(column=0,row=0,padx=10,pady=10)
-				img.image=img14
+				search_icon=tk.PhotoImage(file='icons/searchusr.png')
+				search_btn=tk.Label(frame1,image=search_icon,font=h1fnt)
+				search_btn.grid(column=0,row=0,padx=10,pady=10)
+				search_btn.image=search_icon
 
 				tk.Label(frame1,font=h1fnt,text='View bus booking details').grid(row=0,column=1,padx=10,pady=10,sticky=tk.W)
 
 				tk.Label(frame1,font=fnt,text='Enter booking ID.').grid(row=4,column=1,padx=10,pady=10,sticky=tk.W)
-				n=tk.StringVar()
-				bkgid=ttk.Combobox(frame1,textvariable=n,font=fnt)
-				bkgid.grid(row=5,column=1,padx=10,pady=10,sticky=tk.EW)
-				bkgid['values']=bus_bkgid_list
+				bkgid=tk.StringVar()
+				bkgid_input=ttk.Combobox(frame1,textvariable=bkgid,font=fnt)
+				bkgid_input.grid(row=5,column=1,padx=10,pady=10,sticky=tk.EW)
+				bkgid_input['values']=bus_bkgid_list
 				
-				submit=tk.Button(frame1,font=fntit,text='Submit',command=get_busbkginfo)
-				submit.grid(row=5,column=2,padx=10,pady=10)
+				submit_btn=tk.Button(frame1,font=fntit,text='Submit',command=get_busbkginfo)
+				submit_btn.grid(row=5,column=2,padx=10,pady=10)
 				viewone_win.bind('<Return>',lambda event:get_busbkginfo())
 
-			def delbkg():	#Delete booking
-				delone_win=tk.Toplevel()
-				delone_win.resizable(False,False)
-				delone_win.title('Delete bus booking')
+			def delbkg():
+																						# Delete booking menu
+				delete_win=tk.Toplevel()
+				delete_win.resizable(False,False)
+				delete_win.title('Delete bus booking')
 				icon=tk.PhotoImage(file='img/icon.png')
-				delone_win.iconphoto(False,icon)
+				delete_win.iconphoto(False,icon)
 
 				cur.execute('select bkgid,pay_id from payment_details')
-				e=dict(cur.fetchall())
+				bkgid_list=dict(cur.fetchall())
 				
-				def delete_busbkg():
-					if not bkgid.get()=='' and not bkgid.get().isspace():
-						if bkgid.get() in bus_bkgid_list:
-							messagebox.showwarning('','This operation will delete\nthe booking selected permanently.\nContinue?',parent=delone_win)
-							confirm=messagebox.askyesno('','Do you wish to delete the booking '+bkgid.get()+'?',parent=delone_win)
+				def delete_busbkg():															# Delete booking function
+					if not bkgid_inp.get()=='' and not bkgid_inp.get().isspace():
+						if bkgid_inp.get() in bus_bkgid_list:
+							messagebox.showwarning('','This operation will delete\nthe booking selected permanently.\nContinue?',parent=delete_win)
+							confirm=messagebox.askyesno('','Do you wish to delete the booking '+bkgid_inp.get()+'?',parent=delete_win)
 							if confirm == True:
-								sql='delete from bus_bkgs where bkgid =%s'
-								val=(bkgid.get(),)
+								sql='delete from bus_bkgs where bkgid =%s'						# Deletes booking from database
+								val=(bkgid_inp.get(),)
 								cur.execute(sql,val)
-								sql2='delete from payment_details where bkgid=%s'
+								
+								sql2='delete from payment_details where bkgid=%s'				# Deletes payment details from database
 								cur.execute(sql2,val)
 								con.commit()
-								messagebox.showinfo('','Booking '+bkgid.get()+' deleted;\nTransaction '+e[bkgid.get()]+' cancelled.',parent=delone_win)
-								delone_win.destroy()
+								
+								sql3='delete from tkt_details where bkgid=%s'					# Deletes ticket info from database
+								cur.execute(sql3,val)
+								con.commit()
+								
+								messagebox.showinfo('','Booking '+bkgid_inp.get()+' deleted;\nTransaction '+bkgid_list[bkgid_inp.get()]+' cancelled, and corresponding tickets deleted.',parent=delete_win)
+								delete_win.destroy()
 							else:
-								messagebox.showinfo('','Booking '+bkgid.get()+' not deleted.\nThe database has not been modified.',parent=delone_win)
+								messagebox.showinfo('','Booking '+bkgid_inp.get()+' not deleted.\nThe database has not been modified.',parent=delete_win)
 						else:
-							messagebox.showerror('Error','Booking \''+bkgid.get()+'\' does not exist.',parent=delone_win)
+							messagebox.showerror('Error','Booking \''+bkgid_inp.get()+'\' does not exist.',parent=delete_win)
 					else:
-						messagebox.showerror('','Please enter the booking ID.',parent=delone_win)
+						messagebox.showerror('','Please enter the booking ID.',parent=delete_win)
 					
-				img14=tk.PhotoImage(file='icons/delete_bkgs.png')
-				img=tk.Label(delone_win,image=img14,font=h1fnt)
-				img.grid(column=0,row=0,padx=10,pady=10)
-				img.image=img14
+				delete_icon2=tk.PhotoImage(file='icons/delete_bkgs.png')
+				header_img=tk.Label(delete_win,image=delete_icon2,font=h1fnt)
+				header_img.grid(column=0,row=0,padx=10,pady=10)
+				header_img.image=delete_icon2
 
-				tk.Label(delone_win,text='Delete bus booking',font=h1fnt).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
+				tk.Label(delete_win,text='Delete bus booking',font=h1fnt).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
 
 				cur.execute('select bkgid from bus_bkgs')
-				d=cur.fetchall()
+				bkgid_list2=cur.fetchall()
 				bus_bkgid_list=[]
-				for i in d:
+				for i in bkgid_list2:
 					bus_bkgid_list.append(str(i[0]))
 
-				tk.Label(delone_win,text='Select the booking to be deleted.',font=fntit).grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
-				tk.Label(delone_win,text='NOTE: The corresponding transaction will\nalso be cancelled.',font=('Cascadia Mono',12,'bold italic'),justify=tk.LEFT).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
+				tk.Label(delete_win,text='Select the booking to be deleted.',font=fntit).grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
+				tk.Label(delete_win,text='NOTE: The corresponding transaction will\nalso be cancelled.',font=('Cascadia Mono',12,'bold italic'),justify=tk.LEFT).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
 
-				n=tk.StringVar()
-				bkgid=ttk.Combobox(delone_win,textvariable=n,font=fnt,width=19)
-				bkgid.grid(column=1,row=5,sticky=tk.EW,padx=10,pady=10)
-				bkgid['values']=bus_bkgid_list
+				bkgid=tk.StringVar()
+				bkgid_inp=ttk.Combobox(delete_win,textvariable=bkgid,font=fnt,width=19)
+				bkgid_inp.grid(column=1,row=5,sticky=tk.EW,padx=10,pady=10)
+				bkgid_inp['values']=bus_bkgid_list
 
-				delbtn=tk.Button(delone_win,text='Delete',font=fntit,command=delete_busbkg,fg='red')
-				delbtn.grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
-				delone_win.bind('<Return>',lambda event:delete_busbkg())
+				delete_btn=tk.Button(delete_win,text='Delete',font=fntit,command=delete_busbkg,fg='red')
+				delete_btn.grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
+				delete_win.bind('<Return>',lambda event:delete_busbkg())
 
-			tk.Grid.columnconfigure(managebusbkgs,0,weight=1)
+			tk.Grid.columnconfigure(manage_bbkg_win,0,weight=1)
 
 			#FRAME 1
-			tk.Grid.rowconfigure(managebusbkgs,0,weight=1)
-			f1=tk.Frame(managebusbkgs)
+			tk.Grid.rowconfigure(manage_bbkg_win,0,weight=1)
+			f1=tk.Frame(manage_bbkg_win)
 			f1.grid(row=0,column=0,sticky=tk.NSEW)
 
 			#frame 1 grid
@@ -1953,16 +1448,16 @@ def emp_main():			#Corporate functions
 			tk.Grid.columnconfigure(f1,1,weight=1)
 
 			tk.Grid.rowconfigure(f1,0,weight=1)
-			img6=tk.PhotoImage(file='icons/bus.png')
-			himg=tk.Label(f1,image=img6)
-			himg.grid(column=0,row=0,sticky=tk.E,padx=10,pady=10)
-			himg.image=img6
+			bus_icon=tk.PhotoImage(file='icons/bus.png')
+			header_img=tk.Label(f1,image=bus_icon)
+			header_img.grid(column=0,row=0,sticky=tk.E,padx=10,pady=10)
+			header_img.image=bus_icon
 			tk.Label(f1,text=('Manage the bus booking...'),font=h1fnt).grid(column=1,row=0,sticky=tk.W,padx=10,pady=10)
 			tk.Label(f1,text=('Connected to database: '+con.database),font=h2fnt,justify=tk.LEFT,fg='green').grid(column=1,row=1,sticky=tk.W,padx=10,pady=10)
 			ttk.Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 			#FRAME 2
-			tk.Grid.rowconfigure(managebusbkgs,1,weight=1)
-			f2=tk.Frame(managebusbkgs)
+			tk.Grid.rowconfigure(manage_bbkg_win,1,weight=1)
+			f2=tk.Frame(manage_bbkg_win)
 			f2.grid(row=1,column=0,padx=10,pady=10,sticky=tk.NSEW)
 
 			#frame 2 grid
@@ -1974,23 +1469,23 @@ def emp_main():			#Corporate functions
 			tk.Label(f2,text='You can:',font=fntit,justify=tk.LEFT).grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
 
 			tk.Grid.rowconfigure(f2,5,weight=1)
-			img8=tk.PhotoImage(file='icons/preview.png')
-			tbviewbtn=tk.Button(f2,text='view all',image=img8,font=fnt,command=viewbkg_all)
-			tbviewbtn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
-			tbviewbtn.image=img8
+			viewall_icon=tk.PhotoImage(file='icons/preview.png')
+			viewall_btn=tk.Button(f2,text='view all',image=viewall_icon,font=fnt,command=viewbkg_all)
+			viewall_btn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
+			viewall_btn.image=viewall_icon
 			tk.Label(f2,text='View all booking details.',font=fnt,fg='blue').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 
-			img10=tk.PhotoImage(file='icons/search_bkgs.png')
-			viewbtn=tk.Button(f2,text='viewone',image=img10,font=fnt,command=viewbkg_single)
-			viewbtn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
-			viewbtn.image=img10
+			viewone_icon=tk.PhotoImage(file='icons/search_bkgs.png')
+			viewone_btn=tk.Button(f2,text='viewone',image=viewone_icon,font=fnt,command=viewbkg_single)
+			viewone_btn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
+			viewone_btn.image=viewone_icon
 			tk.Label(f2,text='View a single booking details.',font=fnt).grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
 
 			tk.Grid.rowconfigure(f2,7,weight=1)
-			img12=tk.PhotoImage(file='icons/delete_bkgs.png')
-			delbtn=tk.Button(f2,text='del',image=img12,font=fnt,command=delbkg)
-			delbtn.grid(column=0,row=7,padx=10,pady=10,sticky=tk.E)
-			delbtn.image=img12
+			delete_icon=tk.PhotoImage(file='icons/delete_bkgs.png')
+			delete_btn=tk.Button(f2,text='del',image=delete_icon,font=fnt,command=delbkg)
+			delete_btn.grid(column=0,row=7,padx=10,pady=10,sticky=tk.E)
+			delete_btn.image=delete_icon
 			tk.Label(f2,text='Delete a booking.',font=fnt,fg='red').grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
 			tk.Grid.rowconfigure(f2,8,weight=1)
 			tk.Message(f2,text='WARNING: This will delete\nthe booking selected\nfrom the system permanently.',width=500,font=fnt,fg='white',bg='red').grid(column=1,row=8,padx=10,pady=10,sticky=tk.NW)
@@ -1998,13 +1493,13 @@ def emp_main():			#Corporate functions
 
 			tk.Grid.rowconfigure(f2,16,weight=1)
 
-		def manage_taxibkg():	#Manage taxi bookings
-			managetaxibkgs=tk.Toplevel()
-			managetaxibkgs.title('Manage taxi bookings')
+		def manage_taxibkg():														# Manage taxi bookings
+			manage_tbkg_win=tk.Toplevel()
+			manage_tbkg_win.title('Manage taxi bookings')
 			icon=tk.PhotoImage(file='img/icon.png')
-			managetaxibkgs.iconphoto(False,icon)
+			manage_tbkg_win.iconphoto(False,icon)
 
-			def viewbkg_all():  #View all bookings
+			def viewbkg_all():  													# View all bookings
 				viewall_win=tk.Toplevel()
 				viewall_win.title('All taxi bookings')
 				viewall_win.resizable(False,False)
@@ -2013,22 +1508,22 @@ def emp_main():			#Corporate functions
 				
 				header=('Booking ID','Timestamp','Origin','Destination','Date','Time','Taxi Type')
 
-				sql2=str('select * from taxi_bkgs')			#getting data from table
+				sql2=str('select * from taxi_bkgs')							# getting data from table
 				cur.execute(sql2)
-				data=[header]+cur.fetchall()						#appending header to data
+				data=[header]+cur.fetchall()								# appending header to data
 				
 				rows=len(data)
 				cols=len(data[0])
 
-				for i in range(rows):							#drawing the table in GUI
+				for i in range(rows):											#drawing the table in GUI
 					for j in range(cols):
 						entry = tk.Label(viewall_win,borderwidth=1,relief='solid',padx=10,height=2,font=fnt)
 						entry.grid(row=i, column=j,padx=2,pady=2,sticky=tk.EW)
 						entry.configure(text=data[i][j])
 						if i==0:
-							entry.configure(fg='red',font=fntit)	#colors and italicises header
+							entry.configure(fg='red',font=fntit)				#colors and italicises header
 
-			def viewbkg_single():	#View one bookings
+			def viewbkg_single():													# View a single booking
 				def get_taxibkginfo():
 					if not bkgid.get()=='' and not bkgid.get().isspace():
 						if bkgid.get() in taxi_bkgid_list:
@@ -2049,13 +1544,13 @@ def emp_main():			#Corporate functions
 							rows=len(e)
 							cols=len(e[0])
 							tk.Label(frame3,font=fntit,text='Data').grid(row=0,column=0,sticky=tk.W)
-							for i in range(rows):							#drawing the table in GUI
+							for i in range(rows):									# drawing the table in GUI
 								for j in range(cols):
 									entry = tk.Label(frame2,borderwidth=1,relief='solid',padx=10,width=30,height=2,font=fnt)
 									entry.grid(row=i,column=j,padx=2,pady=2,sticky=tk.EW)
 									entry.configure(text=e[i][j])
 									if j==0:
-										entry.configure(fg='red',font=fntit) #colors and italicises header
+										entry.configure(fg='red',font=fntit) 		# colors and italicises header
 						else:
 							messagebox.showerror('Error','Booking \''+bkgid.get()+'\' does not exist.',parent=viewone_win)
 					else:
@@ -2098,67 +1593,76 @@ def emp_main():			#Corporate functions
 				submit.grid(row=5,column=2,padx=10,pady=10)
 				viewone_win.bind('<Return>',lambda event:get_taxibkginfo())
 
-			def delbkg(): #Delete one booking.
-				delone_win=tk.Toplevel()
-				delone_win.resizable(False,False)
-				delone_win.title('Delete taxi booking')
+			def delbkg(): 															# Delete bookings menu
+				delete_win=tk.Toplevel()
+				delete_win.resizable(False,False)
+				delete_win.title('Delete taxi booking')
 				icon=tk.PhotoImage(file='img/icon.png')
-				delone_win.iconphoto(False,icon)
+				delete_win.iconphoto(False,icon)
 
 				cur.execute('select bkgid,pay_id from payment_details')
-				e=dict(cur.fetchall())
+				bkgid_list=dict(cur.fetchall())
 
-				def delete_taxi_bkg():
-					if not bkgid.get()=='' and not bkgid.get().isspace():
-						if bkgid.get() in taxi_bkgid_list:
-							messagebox.showwarning('','This operation will delete\nthe booking selected permanently.\nContinue?',parent=delone_win)
-							confirm=messagebox.askyesno('','Do you wish to delete the booking '+bkgid.get()+'?',parent=delone_win)
+				def delete_taxi_bkg():															# Delete bookings function
+					
+					if not bkgid_inp.get()=='' and not bkgid_inp.get().isspace():
+						if bkgid_inp.get() in taxi_bkgid_list:
+							messagebox.showwarning('','This operation will delete\nthe booking selected permanently.\nContinue?',parent=delete_win)
+							confirm=messagebox.askyesno('','Do you wish to delete the booking '+bkgid_inp.get()+'?',parent=delete_win)
 							if confirm == True:
-								sql='delete from taxi_bkgs where bkgid =%s'
-								val=(bkgid.get(),)
+								
+								sql='delete from taxi_bkgs where bkgid =%s'						# Deletes booking from database
+								val=(bkgid_inp.get(),)
 								cur.execute(sql,val)
-								sql2='delete from payment_details where bkgid=%s'
+								
+								sql2='delete from payment_details where bkgid=%s'				# Deletes transaction from database
 								cur.execute(sql2,val)
 								con.commit()
-								messagebox.showinfo('','Booking '+bkgid.get()+' deleted;\nTransaction '+e[bkgid.get()]+' cancelled.',parent=delone_win)
-								delone_win.destroy()
+								
+								sql3='delete from tkt_details where bkgid=%s'					# Deletes ticket info from database
+								cur.execute(sql3,val)
+								con.commit()
+								
+								messagebox.showinfo('','Booking '+bkgid_inp.get()+' deleted;\nTransaction '+bkgid_list[bkgid_inp.get()]+' cancelled, and corresponding tickets deleted.',parent=delete_win)
+								delete_win.destroy()
 							else:
-								messagebox.showinfo('','Booking '+bkgid.get()+' not deleted.\nThe database has not been modified.',parent=delone_win)
+								messagebox.showinfo('','Booking '+bkgid_inp.get()+' not deleted.\nThe database has not been modified.',parent=delete_win)
 						else:
-							messagebox.showerror('Error','Booking \''+bkgid.get()+'\' does not exist.',parent=delone_win)
+							messagebox.showerror('Error','Booking \''+bkgid_inp.get()+'\' does not exist.',parent=delete_win)
 					else:
-						messagebox.showerror('','Please enter the booking ID.',parent=delone_win)
-					
-				img14=tk.PhotoImage(file='icons/delete_bkgs.png')
-				img=tk.Label(delone_win,image=img14,font=h1fnt)
-				img.grid(column=0,row=0,padx=10,pady=10)
-				img.image=img14
+						messagebox.showerror('','Please enter the booking ID.',parent=delete_win)
+				
+				delete_icon=tk.PhotoImage(file='icons/delete_bkgs.png')
+				header_img=tk.Label(delete_win,image=delete_icon,font=h1fnt)
+				header_img.grid(column=0,row=0,padx=10,pady=10)
+				header_img.image=delete_icon
 
-				tk.Label(delone_win,text='Delete a taxi booking',font=h1fnt).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
+				tk.Label(delete_win,text='Delete a taxi booking',font=h1fnt).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
 
+				# Gets list of booking IDs
 				cur.execute('select bkgid from taxi_bkgs')
-				d=cur.fetchall()
+				bkgid_list2=cur.fetchall()
 				taxi_bkgid_list=[]
-				for i in d:
+				for i in bkgid_list2:
 					taxi_bkgid_list.append(str(i[0]))
 
-				tk.Label(delone_win,text='Select the booking to be deleted.',font=fntit).grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
-				tk.Label(delone_win,text='NOTE: The corresponding transaction will\nalso be cancelled.',font=('Cascadia Mono',12,'bold italic'),justify=tk.LEFT).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
+				tk.Label(delete_win,text='Select the booking to be deleted.',font=fntit).grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
+				tk.Label(delete_win,text='NOTE: The corresponding transaction will\nalso be cancelled.',font=('Cascadia Mono',12,'bold italic'),justify=tk.LEFT).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
 
-				n=tk.StringVar()
-				bkgid=ttk.Combobox(delone_win,textvariable=n,font=fnt,width=19)
-				bkgid.grid(column=1,row=5,sticky=tk.EW,padx=10,pady=10)
-				bkgid['values']=taxi_bkgid_list
+				bkgid=tk.StringVar()
+				bkgid_inp=ttk.Combobox(delete_win,textvariable=bkgid,font=fnt,width=19)
+				bkgid_inp.grid(column=1,row=5,sticky=tk.EW,padx=10,pady=10)
+				bkgid_inp['values']=taxi_bkgid_list
 
-				delbtn=tk.Button(delone_win,text='Delete',font=fntit,command=delete_taxi_bkg,fg='red')
-				delbtn.grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
-				delone_win.bind('<Return>',lambda event:delete_taxi_bkg())
+				delete_btn=tk.Button(delete_win,text='Delete',font=fntit,command=delete_taxi_bkg,fg='red')
+				delete_btn.grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
+				delete_win.bind('<Return>',lambda event:delete_taxi_bkg())
 
-			tk.Grid.columnconfigure(managetaxibkgs,0,weight=1)
+			tk.Grid.columnconfigure(manage_tbkg_win,0,weight=1)
 
 			#FRAME 1
-			tk.Grid.rowconfigure(managetaxibkgs,0,weight=1)
-			f1=tk.Frame(managetaxibkgs)
+			tk.Grid.rowconfigure(manage_tbkg_win,0,weight=1)
+			f1=tk.Frame(manage_tbkg_win)
 			f1.grid(row=0,column=0,sticky=tk.NSEW)
 
 			#frame 1 grid
@@ -2166,17 +1670,17 @@ def emp_main():			#Corporate functions
 			tk.Grid.columnconfigure(f1,1,weight=1)
 
 			tk.Grid.rowconfigure(f1,0,weight=1)
-			img6=tk.PhotoImage(file='icons/taxi.png')
-			himg=tk.Label(f1,image=img6)
-			himg.grid(column=0,row=0,sticky=tk.E,padx=10,pady=10)
-			himg.image=img6
+			taxi_icon=tk.PhotoImage(file='icons/taxi.png')
+			header_img=tk.Label(f1,image=taxi_icon)
+			header_img.grid(column=0,row=0,sticky=tk.E,padx=10,pady=10)
+			header_img.image=taxi_icon
 			tk.Label(f1,text=('Manage the taxi booking...'),font=h1fnt).grid(column=1,row=0,sticky=tk.W,padx=10,pady=10)
 
 			tk.Label(f1,text=('Connected to database: '+con.database),font=h2fnt,justify=tk.LEFT,fg='green').grid(column=1,row=1,sticky=tk.W,padx=10,pady=10)
 			ttk.Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 			#FRAME 2
-			tk.Grid.rowconfigure(managetaxibkgs,1,weight=1)
-			f2=tk.Frame(managetaxibkgs)
+			tk.Grid.rowconfigure(manage_tbkg_win,1,weight=1)
+			f2=tk.Frame(manage_tbkg_win)
 			f2.grid(row=1,column=0,padx=10,pady=10,sticky=tk.NSEW)
 
 			#frame 2 grid
@@ -2188,37 +1692,37 @@ def emp_main():			#Corporate functions
 			tk.Label(f2,text='You can:',font=fntit,justify=tk.LEFT).grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
 
 			tk.Grid.rowconfigure(f2,5,weight=1)
-			img8=tk.PhotoImage(file='icons/preview.png')
-			tbviewbtn=tk.Button(f2,text='view all',image=img8,font=fnt,command=viewbkg_all)
-			tbviewbtn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
-			tbviewbtn.image=img8
+			viewall_icon=tk.PhotoImage(file='icons/preview.png')
+			viewall_btn=tk.Button(f2,text='view all',image=viewall_icon,font=fnt,command=viewbkg_all)
+			viewall_btn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
+			viewall_btn.image=viewall_icon
 			tk.Label(f2,text='View all booking details.',font=fnt,fg='blue').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 
-			img10=tk.PhotoImage(file='icons/search_bkgs.png')
-			viewbtn=tk.Button(f2,text='viewone',image=img10,font=fnt,command=viewbkg_single)
-			viewbtn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
-			viewbtn.image=img10
+			viewone_icon=tk.PhotoImage(file='icons/search_bkgs.png')
+			viewone_btn=tk.Button(f2,text='viewone',image=viewone_icon,font=fnt,command=viewbkg_single)
+			viewone_btn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
+			viewone_btn.image=viewone_icon
 			tk.Label(f2,text='View a single booking details.',font=fnt).grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
 
 			tk.Grid.rowconfigure(f2,7,weight=1)
-			img12=tk.PhotoImage(file='icons/delete_bkgs.png')
-			delbtn=tk.Button(f2,text='del',image=img12,font=fnt,command=delbkg)
-			delbtn.grid(column=0,row=7,padx=10,pady=10,sticky=tk.E)
-			delbtn.image=img12
+			delete_icon=tk.PhotoImage(file='icons/delete_bkgs.png')
+			delete_btn=tk.Button(f2,text='del',image=delete_icon,font=fnt,command=delbkg)
+			delete_btn.grid(column=0,row=7,padx=10,pady=10,sticky=tk.E)
+			delete_btn.image=delete_icon
 			tk.Label(f2,text='Delete a booking.',font=fnt,fg='red').grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
 			tk.Grid.rowconfigure(f2,8,weight=1)
 			tk.Message(f2,text='WARNING: This will delete\nthe booking selected\nfrom the system permanently.',width=500,font=fnt,fg='white',bg='red').grid(column=1,row=8,padx=10,pady=10,sticky=tk.NW)
 
 			tk.Grid.rowconfigure(f2,16,weight=1)
 			
-			managetaxibkgs.mainloop()
+			manage_tbkg_win.mainloop()
 
-		def manage_payments():	#Manage payment details
+		def manage_payments():														# Manage payment details
 
-			managepayments=tk.Toplevel()
-			managepayments.title('Transaction Manager')
+			manage_pay_win=tk.Toplevel()
+			manage_pay_win.title('Transaction Manager')
 			icon=tk.PhotoImage(file='img/icon.png')
-			managepayments.iconphoto(False,icon)
+			manage_pay_win.iconphoto(False,icon)
 
 			def viewpay_all():  #View all transactions
 				viewall_win=tk.Toplevel()
@@ -2318,48 +1822,52 @@ def emp_main():			#Corporate functions
 				submit.grid(row=5,column=2,padx=10,pady=10)
 				viewone_win.bind('<Return>',lambda event:get_payinfo())
 
-			def delpay(): #Cancel single transaction.
-				delone_win=tk.Toplevel()
-				delone_win.resizable(False,False)
-				delone_win.title('Cancel transaction')
+			def delpay(): 																		# Delete transaction page
+				delete_win=tk.Toplevel()
+				delete_win.resizable(False,False)
+				delete_win.title('Cancel transaction')
 				icon=tk.PhotoImage(file='img/icon.png')
-				delone_win.iconphoto(False,icon)
+				delete_win.iconphoto(False,icon)
 				
 				cur.execute('select pay_id,bkgid from payment_details')
-				e=dict(cur.fetchall())
+				pay_bkg_dict=dict(cur.fetchall())
 				
-				def delete_transaction():
-					if not payid.get()=='' and not payid.get().isspace():
-						if payid.get() in payment_id_list:
-							messagebox.showwarning('','This operation will cancel the transaction selected.\nContinue?',parent=delone_win)
-							confirm=messagebox.askyesno('','Do you wish to cancel the transaction '+payid.get()+'?',parent=delone_win)
+				def delete_transaction():														# Delete transactions
+					if not payid_inp.get()=='' and not payid_inp.get().isspace():
+						if payid_inp.get() in payment_id_list:
+							messagebox.showwarning('','This operation will cancel the transaction selected.\nContinue?',parent=delete_win)
+							confirm=messagebox.askyesno('','Do you wish to cancel the transaction '+payid_inp.get()+'?',parent=delete_win)
 							if confirm == True:
-								sql='delete from payment_details where pay_id=%s'
-								val=(payid.get(),)
+								sql='delete from payment_details where pay_id=%s'				# Deletes payment entry from payment db
+								val=(payid_inp.get(),)
 								cur.execute(sql,val)
-								if e[payid.get()][0]=='B':
+								
+								if pay_bkg_dict[payid_inp.get()][0]=='B':							# Deletes booking entry from booking db
 									sql2='delete from bus_bkgs where bkgid=%s'
-								elif e[payid.get()][0]=='T':
+								elif pay_bkg_dict[payid_inp.get()][0]=='T':
 									sql2='delete from taxi_bkgs where bkgid=%s'
-								val2=(e[payid.get()],)
+								val2=(pay_bkg_dict[payid_inp.get()],)
 								cur.execute(sql2,val2)
 								
+								sql3='delete from tkt_details where bkgid=%s'					# Delete correpsonding ticket records
+								cur.execute(sql3,val2)
+								
 								con.commit()
-								messagebox.showinfo('','Transaction '+payid.get()+' cancelled;\nBooking '+e[payid.get()]+' cancelled.',parent=delone_win)
-								delone_win.destroy()
+								messagebox.showinfo('','Transaction '+payid_inp.get()+' reversed;\nBooking '+pay_bkg_dict[payid_inp.get()]+' cancelled, and corresponding tickets cancelled',parent=delete_win)
+								delete_win.destroy()
 							else:
-								messagebox.showinfo('','Transaction '+payid.get()+' not cancelled.\nThe database has not been modified.',parent=delone_win)
+								messagebox.showinfo('','Transaction '+payid_inp.get()+' not cancelled.\nThe database has not been modified.',parent=delete_win)
 						else:
-							messagebox.showerror('Error','Transaction \''+payid.get()+'\' does not exist.',parent=delone_win)
+							messagebox.showerror('Error','Transaction \''+payid_inp.get()+'\' does not exist.',parent=delete_win)
 					else:
-						messagebox.showerror('','Please enter the transaction (payment) ID.',parent=delone_win)
+						messagebox.showerror('','Please enter the transaction (payment) ID.',parent=delete_win)
 					
-				img14=tk.PhotoImage(file='icons/delete.png')
-				img=tk.Label(delone_win,image=img14,font=h1fnt)
-				img.grid(column=0,row=0,padx=10,pady=10)
-				img.image=img14
+				delete_icon3=tk.PhotoImage(file='icons/delete.png')
+				header_img=tk.Label(delete_win,image=delete_icon3,font=h1fnt)
+				header_img.grid(column=0,row=0,padx=10,pady=10)
+				header_img.image=delete_icon3
 
-				tk.Label(delone_win,text='Cancel a transaction',font=h1fnt).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
+				tk.Label(delete_win,text='Cancel a transaction',font=h1fnt).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
 
 				cur.execute('select pay_id from payment_details')
 				d=cur.fetchall()
@@ -2367,23 +1875,23 @@ def emp_main():			#Corporate functions
 				for i in d:
 					payment_id_list.append(str(i[0]))
 
-				tk.Label(delone_win,text='Select the transaction to be cancelled.',font=fntit,justify=tk.LEFT).grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
-				tk.Label(delone_win,text='NOTE: The corresponding booking will\nalso be deleted.',font=('Cascadia Mono',12,'bold italic'),justify=tk.LEFT).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
+				tk.Label(delete_win,text='Select the transaction to be cancelled.',font=fntit,justify=tk.LEFT).grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
+				tk.Label(delete_win,text='NOTE: The corresponding booking will\nalso be deleted.',font=('Cascadia Mono',12,'bold italic'),justify=tk.LEFT).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
 
-				n=tk.StringVar()
-				payid=ttk.Combobox(delone_win,textvariable=n,font=fnt,width=19)
-				payid.grid(column=1,row=5,sticky=tk.EW,padx=10,pady=10)
-				payid['values']=payment_id_list
+				pay_id=tk.StringVar()
+				payid_inp=ttk.Combobox(delete_win,textvariable=pay_id,font=fnt,width=19)
+				payid_inp.grid(column=1,row=5,sticky=tk.EW,padx=10,pady=10)
+				payid_inp['values']=payment_id_list
 
-				delbtn=tk.Button(delone_win,text='Delete',font=fntit,command=delete_transaction,fg='red')
-				delbtn.grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
-				delone_win.bind('<Return>',lambda event:delete_transaction())
+				delete_btn=tk.Button(delete_win,text='Delete',font=fntit,command=delete_transaction,fg='red')
+				delete_btn.grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
+				delete_win.bind('<Return>',lambda event:delete_transaction())
 
-			tk.Grid.columnconfigure(managepayments,0,weight=1)
+			tk.Grid.columnconfigure(manage_pay_win,0,weight=1)
 
 			#FRAME 1
-			tk.Grid.rowconfigure(managepayments,0,weight=1)
-			f1=tk.Frame(managepayments)
+			tk.Grid.rowconfigure(manage_pay_win,0,weight=1)
+			f1=tk.Frame(manage_pay_win)
 			f1.grid(row=0,column=0,sticky=tk.NSEW)
 
 			#frame 1 grid
@@ -2391,17 +1899,17 @@ def emp_main():			#Corporate functions
 			tk.Grid.columnconfigure(f1,1,weight=1)
 
 			tk.Grid.rowconfigure(f1,0,weight=1)
-			img6=tk.PhotoImage(file='icons/make-payment.png')
-			himg=tk.Label(f1,image=img6)
-			himg.grid(column=0,row=0,sticky=tk.E,padx=10,pady=10)
-			himg.image=img6
+			pay_icon=tk.PhotoImage(file='icons/make-payment.png')
+			header_img=tk.Label(f1,image=pay_icon)
+			header_img.grid(column=0,row=0,sticky=tk.E,padx=10,pady=10)
+			header_img.image=pay_icon
 			tk.Label(f1,text=('Manage transactions...'),font=h1fnt).grid(column=1,row=0,sticky=tk.W,padx=10,pady=10)
 
 			tk.Label(f1,text=('Connected to database: '+con.database),font=h2fnt,justify=tk.LEFT,fg='green').grid(column=1,row=1,sticky=tk.W,padx=10,pady=10)
 			ttk.Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 			#FRAME 2
-			tk.Grid.rowconfigure(managepayments,1,weight=1)
-			f2=tk.Frame(managepayments)
+			tk.Grid.rowconfigure(manage_pay_win,1,weight=1)
+			f2=tk.Frame(manage_pay_win)
 			f2.grid(row=1,column=0,padx=10,pady=10,sticky=tk.NSEW)
 
 			#frame 2 grid
@@ -2413,32 +1921,32 @@ def emp_main():			#Corporate functions
 			tk.Label(f2,text='You can:',font=fntit,justify=tk.LEFT).grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
 
 			tk.Grid.rowconfigure(f2,5,weight=1)
-			img8=tk.PhotoImage(file='icons/preview.png')
-			tbviewbtn=tk.Button(f2,text='view all',image=img8,font=fnt,command=viewpay_all)
-			tbviewbtn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
-			tbviewbtn.image=img8
+			viewall_icon=tk.PhotoImage(file='icons/preview.png')
+			viewall_btn=tk.Button(f2,text='view all',image=viewall_icon,font=fnt,command=viewpay_all)
+			viewall_btn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
+			viewall_btn.image=viewall_icon
 			tk.Label(f2,text='View all transaction details.',font=fnt,fg='blue').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 
-			img10=tk.PhotoImage(file='icons/search_bkgs.png')
-			viewbtn=tk.Button(f2,text='viewone',image=img10,font=fnt,command=viewpay_single)
-			viewbtn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
-			viewbtn.image=img10
+			viewone_icon=tk.PhotoImage(file='icons/search_bkgs.png')
+			viewone_btn=tk.Button(f2,text='viewone',image=viewone_icon,font=fnt,command=viewpay_single)
+			viewone_btn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
+			viewone_btn.image=viewone_icon
 			tk.Label(f2,text='View a single transaction\'s details.',font=fnt).grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
 
 			tk.Grid.rowconfigure(f2,7,weight=1)
-			img12=tk.PhotoImage(file='icons/delete.png')
-			delbtn=tk.Button(f2,text='del',image=img12,font=fnt,command=delpay)
-			delbtn.grid(column=0,row=7,padx=10,pady=10,sticky=tk.E)
-			delbtn.image=img12
+			delete_icon=tk.PhotoImage(file='icons/delete.png')
+			delete_btn=tk.Button(f2,text='del',image=delete_icon,font=fnt,command=delpay)
+			delete_btn.grid(column=0,row=7,padx=10,pady=10,sticky=tk.E)
+			delete_btn.image=delete_icon
 			tk.Label(f2,text='Cancel a transaction.',font=fnt,fg='red').grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
 			tk.Grid.rowconfigure(f2,8,weight=1)
 			tk.Message(f2,text='WARNING: This will cancel\nthe transaction selected\nfrom the system permanently.',width=500,font=fnt,fg='white',bg='red').grid(column=1,row=8,padx=10,pady=10,sticky=tk.NW)
 
 			tk.Grid.rowconfigure(f2,16,weight=1)
 			
-			managepayments.mainloop()
+			manage_pay_win.mainloop()
 
-		def admin_menu():	#Admin menu
+		def admin_menu():															# Admin menu
 			root=tk.Tk()
 			root.title('Admin menu')
 			icon=tk.PhotoImage(file='img/icon.png')
@@ -2455,10 +1963,7 @@ def emp_main():			#Corporate functions
 				emp_main()
 
 			def bookings():
-				agent_portal()
-
-			def manage_payments():
-				manage_payments()
+				booking_portal()
 
 			def manage_admin():	#Manage admins
 
@@ -3158,8 +2663,8 @@ def emp_main():			#Corporate functions
 				tk.Message(f2,text='WARNING: This will delete\nan agent\'s profile\nfrom the system permanently.',width=500,font=fnt,fg='white',bg='red').grid(column=1,row=8,padx=10,pady=10,sticky=tk.NW)
 
 				tk.Grid.rowconfigure(f2,16,weight=1)
-				
-			def manage_users():	#Manage users
+			
+			'''def manage_users():	#Manage users
 				manageuserwin=tk.Toplevel()
 				manageuserwin.title('User Manager')
 				icon=tk.PhotoImage(file='img/icon.png')
@@ -3532,7 +3037,7 @@ def emp_main():			#Corporate functions
 
 				tk.Grid.rowconfigure(f2,16,weight=1)
 
-				tk.Grid.rowconfigure(f2,17,weight=1)
+				tk.Grid.rowconfigure(f2,17,weight=1)'''				
 
 			def manage_db():	#Manage databases
 
@@ -3819,13 +3324,13 @@ which deletes the table structure from the database along with its contents.'''
 				def change_curadmin_passwd():
 					if not npass.get()=='' and not npass.get().isspace():
 				
-						confirm=messagebox.askyesno('','Do you wish to change the administrator password for '+a[emp_uname_inp]+' ?',parent=passwd_win)
+						confirm=messagebox.askyesno('','Do you wish to change the administrator password for '+admin_list[emp_uname]+' ?',parent=passwd_win)
 						if confirm == True:
 							sql="update admin set admin_passwd=%s where admin_uname=%s"
-							val=(npass.get(),emp_uname_inp)
+							val=(npass.get(),emp_uname)
 							cur.execute(sql,val)
 							con.commit()
-							messagebox.showinfo('','Administrator password changed for '+a[emp_uname_inp]+'.',parent=passwd_win)
+							messagebox.showinfo('','Administrator password changed for '+admin_list[emp_uname]+'.',parent=passwd_win)
 							passwd_win.destroy()
 						else:
 							messagebox.showinfo('','Administrator password has not been changed.',parent=passwd_win)
@@ -3838,7 +3343,7 @@ which deletes the table structure from the database along with its contents.'''
 				img.grid(column=0,row=0,padx=10,pady=10)
 				img.image=img14
 
-				tk.Label(passwd_win,text='Changing the administrator\npassword for '+a[emp_uname_inp],font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
+				tk.Label(passwd_win,text='Changing the administrator\npassword for '+admin_list[emp_uname],font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
 
 				tk.Label(passwd_win,text='New password',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
 				npass=tk.Entry(passwd_win,font=fnt,show='*')
@@ -3853,18 +3358,18 @@ which deletes the table structure from the database along with its contents.'''
 
 			menubar=tk.Menu(root)
 
-			user=tk.Menu(menubar,tearoff=0)
-			menubar.add_cascade(label='User',menu=user,font=menufnt)
+			user_menu=tk.Menu(menubar,tearoff=0)
+			menubar.add_cascade(label='User',menu=user_menu,font=menufnt)
 
-			user.add_command(label='Change the administrator password...',command=curadmin_passwd,font=menufnt,underline=0)
-			user.add_separator()
-			user.add_command(label='Logout',command=logout,font=menufnt,underline=0)
-			user.add_command(label='Logout and Exit',command=root.destroy,font=menufnt,underline=11)
+			user_menu.add_command(label='Change the administrator password...',command=curadmin_passwd,font=menufnt,underline=0)
+			user_menu.add_separator()
+			user_menu.add_command(label='Logout',command=logout,font=menufnt,underline=0)
+			user_menu.add_command(label='Logout and Exit',command=root.destroy,font=menufnt,underline=11)
 
-			more=tk.Menu(menubar,tearoff=0)
-			menubar.add_cascade(label='Info',menu=more,font=menufnt)
+			info_menu=tk.Menu(menubar,tearoff=0)
+			menubar.add_cascade(label='Info',menu=info_menu,font=menufnt)
 
-			more.add_command(label='About this program...',command=about,font=menufnt,underline=0)
+			info_menu.add_command(label='About this program...',command=about,font=menufnt,underline=0)
 			root.config(menu=menubar)
 
 			#FRAME 1
@@ -3876,10 +3381,10 @@ which deletes the table structure from the database along with its contents.'''
 			tk.Grid.columnconfigure(f1,0,weight=1)
 
 			cur.execute('select admin_uname,admin_name from admin')
-			a=dict(cur.fetchall())
+			admin_list=dict(cur.fetchall())
 
 			cur.execute('select admin_uname,admin_id from admin')
-			uuidlist=dict(cur.fetchall())
+			uuid_list=dict(cur.fetchall())
 			tk.Grid.rowconfigure(f1,0,weight=1)
 			tk.Grid.rowconfigure(f1,1,weight=1)
 			tk.Grid.rowconfigure(f1,2,weight=1)
@@ -3890,9 +3395,9 @@ which deletes the table structure from the database along with its contents.'''
 			logo.grid(column=0,row=0,padx=10,pady=10,sticky=tk.EW)
 			logo.image=logo_img
 			
-			tk.Label(f1,text='Welcome, '+a[emp_uname_inp],font=h1fnt,justify=tk.CENTER,fg='white',bg='#1b69bc').grid(column=0,row=1,padx=10)
+			tk.Label(f1,text='Welcome, '+admin_list[emp_uname],font=h1fnt,justify=tk.CENTER,fg='white',bg='#1b69bc').grid(column=0,row=1,padx=10)
 			
-			tk.Label(f1,text=('User ID: '+uuidlist[emp_uname_inp]),font=h2fnt,fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
+			tk.Label(f1,text=('User ID: '+uuid_list[emp_uname]),font=h2fnt,fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
 
 			tk.Label(f1,text='Administrators\' Toolbox',font=h2fnt,justify=tk.CENTER,fg='white',bg='#1b69bc').grid(column=0,row=3,padx=10)
 
@@ -3912,109 +3417,96 @@ which deletes the table structure from the database along with its contents.'''
 			tk.Label(f2,text='You can:',font=fntit).grid(column=1,row=2,sticky=tk.W,padx=10,pady=10)
 
 			tk.Grid.rowconfigure(f2,5,weight=1)
-			img6=tk.PhotoImage(file='icons/dataset.png')
-			btn1=tk.Button(f2,text='View the database',image=img6,font=fnt,command=manage_db,width=48,height=48)
-			btn1.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
-			btn1.image=img6
+			db_icon=tk.PhotoImage(file='icons/dataset.png')
+			db_btn=tk.Button(f2,text='Manage the database',image=db_icon,font=fnt,command=manage_db,width=48,height=48)
+			db_btn.grid(column=0,row=5,padx=10,pady=10,sticky=tk.E)
+			db_btn.image=db_icon
 			tk.Label(f2,text='Manage the databases.',font=fnt,fg='blue').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 
-			img9=tk.PhotoImage(file='icons/employee.png')
-			btn2=tk.Button(f2,text='Manage agents',image=img9,font=fnt,command=manage_agents)
-			btn2.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
-			btn2.image=img9
+			emp_icon=tk.PhotoImage(file='icons/employee.png')
+			emp_btn=tk.Button(f2,text='Manage agents',image=emp_icon,font=fnt,command=manage_agents)
+			emp_btn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
+			emp_btn.image=emp_icon
 			tk.Label(f2,text='Manage the agents.',font=fnt,fg='green').grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
 
 			tk.Grid.rowconfigure(f2,6,weight=1)
-			img12=tk.PhotoImage(file='icons/supervisor.png')
-			btn5=tk.Button(f2,text='Manage administrators',image=img12,font=fnt,command=manage_admin)
-			btn5.grid(column=0,row=6,padx=10,pady=10,sticky=tk.E)
-			btn5.image=img12
+			adm_icon=tk.PhotoImage(file='icons/supervisor.png')
+			adm_btn=tk.Button(f2,text='Manage administrators',image=adm_icon,font=fnt,command=manage_admin)
+			adm_btn.grid(column=0,row=6,padx=10,pady=10,sticky=tk.E)
+			adm_btn.image=adm_icon
 			tk.Label(f2,text='Manage the administrators.',font=fnt,fg='red').grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
 
-			img11=tk.PhotoImage(file='icons/people.png')
+			'''img11=tk.PhotoImage(file='icons/people.png')
 			btn4=tk.Button(f2,text='Manage users',image=img11,font=fnt,command=manage_users)
 			btn4.grid(column=2,row=6,padx=10,pady=10,sticky=tk.E)
 			btn4.image=img11
-			tk.Label(f2,text='Manage the users.',font=fnt,fg='purple').grid(column=3,row=6,padx=10,pady=10,sticky=tk.W)
+			tk.Label(f2,text='Manage the users.',font=fnt,fg='purple').grid(column=3,row=6,padx=10,pady=10,sticky=tk.W)'''
 			
 			tk.Grid.rowconfigure(f2,8,weight=1)
 
-			img10=tk.PhotoImage(file='icons/booking.png')
-			btn3=tk.Button(f2,text='Bookings',image=img10,font=fnt,command=bookings)
-			btn3.grid(column=0,row=8,padx=10,pady=10,sticky=tk.E)
-			btn3.image=img10
+			bkg_icon=tk.PhotoImage(file='icons/booking.png')
+			bkg_btn=tk.Button(f2,text='Bookings',image=bkg_icon,font=fnt,command=bookings)
+			bkg_btn.grid(column=0,row=8,padx=10,pady=10,sticky=tk.E)
+			bkg_btn.image=bkg_icon
 			tk.Label(f2,text='Make and manage bookings.',font=fnt).grid(column=1,row=8,padx=10,pady=10,sticky=tk.W)
 
-			img10=tk.PhotoImage(file='icons/make-payment.png')
-			btn3=tk.Button(f2,text='Payment',image=img10,font=fnt,command=manage_payments)
-			btn3.grid(column=2,row=8,padx=10,pady=10,sticky=tk.E)
-			btn3.image=img10
+			pay_icon=tk.PhotoImage(file='icons/make-payment.png')
+			pay_btn=tk.Button(f2,text='Payment',image=pay_icon,font=fnt,command=manage_payments)
+			pay_btn.grid(column=2,row=8,padx=10,pady=10,sticky=tk.E)
+			pay_btn.image=pay_icon
 			tk.Label(f2,text='View and manage transactions.',font=fnt).grid(column=3,row=8,padx=10,pady=10,sticky=tk.W)
 			
 			tk.Grid.rowconfigure(f2,9,weight=1)
 			
 			root.mainloop()
 
-		def agent_portal():		#Agent booking menu
-
+		def booking_portal():														# Agent booking menu
 			#functions
 			
-			def about_this_program():
-				about()
-
 			def logout():
-				main_menu.destroy()
+				home_page.destroy()
 				emp_main()
-
-			def managetaxibkgs():
-				manage_taxibkg()
-				
-			def managebusbkgs():
-				manage_busbkg()
-
-			def managepayments():
-				manage_payments()
-
-			if emptype_inp=='Agent':
-				main_menu=tk.Tk()
-				main_menu.title('Agent Portal')
-			elif emptype_inp=='Administrator':
-				main_menu=tk.Toplevel()
-				main_menu.title('Booking Portal')
+			
+			# Window properties depending on agent or admin
+			if emp_type=='Agent':
+				home_page=tk.Tk()
+				home_page.title('Agent Portal')
+			elif emp_type=='Administrator':
+				home_page=tk.Toplevel()
+				home_page.title('Booking Portal')
 			
 			icon=tk.PhotoImage(file='img/icon.png')
-			main_menu.iconphoto(False,icon)
+			home_page.iconphoto(False,icon)
 
-			if emptype_inp=='Agent':
+			if emp_type=='Agent':
 				try:
-					main_menu.state('zoomed')
+					home_page.state('zoomed')
 				except:
-					w,h=main_menu.winfo_screenwidth(),main_menu.winfo_screenheight()
-					main_menu.geometry(str(w)+'x'+str(h))
+					w,h=home_page.winfo_screenwidth(),home_page.winfo_screenheight()
+					home_page.geometry(str(w)+'x'+str(h))
 			
-			elif emptype_inp=='Administrator':
-				main_menu.geometry('960x540')
+			elif emp_type=='Administrator':
+				home_page.geometry('960x540')
 			
-			if emptype_inp=='Agent':
-				menubar=tk.Menu(main_menu)
+			if emp_type=='Agent':
+				menubar=tk.Menu(home_page)
 
 				user=tk.Menu(menubar,tearoff=0)
 				menubar.add_cascade(label='User',menu=user,font=menufnt)
 				user.add_command(label='Logout',command=logout,font=menufnt,underline=0)
-				user.add_command(label='Logout and exit',command=main_menu.destroy,font=menufnt,underline=11)
-				main_menu.config(menu=menubar)
+				user.add_command(label='Logout and exit',command=home_page.destroy,font=menufnt,underline=11)
+				home_page.config(menu=menubar)
 				
 				more=tk.Menu(menubar,tearoff=0)
 				menubar.add_cascade(label='Info',menu=more,font=menufnt)
-				more.add_command(label='About this program...',command=about_this_program,font=menufnt,underline=0)
-				main_menu.config(menu=menubar)
+				more.add_command(label='About this program...',command=about,font=menufnt,underline=0)
+				home_page.config(menu=menubar)
 
-			tk.Grid.columnconfigure(main_menu,0,weight=1)
-
+			tk.Grid.columnconfigure(home_page,0,weight=1)
 
 			#FRAME 1
-			tk.Grid.rowconfigure(main_menu,0,weight=1)
-			f1=tk.Frame(main_menu,bg='#1b69bc')
+			tk.Grid.rowconfigure(home_page,0,weight=1)
+			f1=tk.Frame(home_page,bg='#1b69bc')
 			f1.grid(row=0,column=0,sticky=tk.NSEW)
 
 			tk.Grid.columnconfigure(f1,0,weight=1)
@@ -4025,12 +3517,13 @@ which deletes the table structure from the database along with its contents.'''
 			tk.Grid.rowconfigure(f1,2,weight=1)
 
 			cur.execute('select emp_uname,emp_name from employees')
-			b=dict(cur.fetchall())
+			emp_list=dict(cur.fetchall())
 
 			cur.execute('select emp_uname,emp_id from employees')
-			uuidlist=dict(cur.fetchall())
+			emp_uuid_list=dict(cur.fetchall())
 			
-			if emptype_inp=='Agent':
+			# Heading title depending on agent or admin
+			if emp_type=='Agent':
 				tk.Grid.rowconfigure(f1,0,weight=1)
 				
 				logo_img=tk.PhotoImage(file='img/logo-150px.png')
@@ -4038,18 +3531,18 @@ which deletes the table structure from the database along with its contents.'''
 				logo.grid(column=0,row=0,padx=10,pady=10,sticky=tk.EW)
 				logo.image=logo_img
 				
-				txt='Welcome, '+b[emp_uname_inp]
-				tk.Label(f1,text=('User ID: '+uuidlist[emp_uname_inp]),font=h2fnt,fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
+				txt='Welcome, '+emp_list[emp_uname]
+				tk.Label(f1,text=('User ID: '+emp_uuid_list[emp_uname]),font=h2fnt,fg='black',bg='#00e676').grid(column=0,row=2,padx=10)
 				tk.Label(f1,text='Agent Portal',fg='white',bg='#1b69bc',font=h2fnt,justify=tk.CENTER).grid(column=0,row=3,padx=10,pady=10)
-			elif emptype_inp=='Administrator':
+			elif emp_type=='Administrator':
 				txt='Make and manage bookings'
 			
 			tk.Label(f1,text=txt,fg='white',bg='#1b69bc',font=h1fnt,justify=tk.CENTER).grid(column=0,row=1,padx=10,pady=10)
 
 			Separator(f1,orient='horizontal').grid(column=0,row=4,sticky=tk.EW,padx=10,pady=10)
 			#FRAME 2
-			tk.Grid.rowconfigure(main_menu,1,weight=1)
-			f2=tk.Frame(main_menu)
+			tk.Grid.rowconfigure(home_page,1,weight=1)
+			f2=tk.Frame(home_page)
 			f2.grid(row=1,column=0,sticky=tk.NSEW)
 
 			tk.Grid.columnconfigure(f2,0,weight=1)
@@ -4060,78 +3553,79 @@ which deletes the table structure from the database along with its contents.'''
 			tk.Label(f2,text=('You can:'),font=fntit).grid(column=1,row=2,padx=10,pady=10,sticky=tk.W)
 
 			tk.Grid.rowconfigure(f2,5,weight=1)
-			img6=tk.PhotoImage(file='icons/taxi.png')
-			bkgbtn=tk.Button(f2,text='Book taxi',image=img6,font=fnt,command=taxi_booking)
-			bkgbtn.grid(column=0,row=5,padx=10,pady=1,sticky=tk.E)
-			bkgbtn.image=img6
+			taxi_icon=tk.PhotoImage(file='icons/taxi.png')
+			taxi_btn=tk.Button(f2,text='Book taxi',image=taxi_icon,font=fnt,command=taxi_booking)
+			taxi_btn.grid(column=0,row=5,padx=10,pady=1,sticky=tk.E)
+			taxi_btn.image=taxi_icon
 			tk.Label(f2,text='Book a taxi.',font=fnt,bg='yellow').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 					
-			img4=tk.PhotoImage(file='icons/bus.png')
-			passbtn=tk.Button(f2,text='Book Bus',image=img4,command=bus_booking)
-			passbtn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
-			passbtn.image=img4
+			bus_icon=tk.PhotoImage(file='icons/bus.png')
+			bus_btn=tk.Button(f2,text='Book Bus',image=bus_icon,command=bus_booking)
+			bus_btn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
+			bus_btn.image=bus_icon
 			tk.Label(f2,text='Book a bus.',font=fnt,fg='blue').grid(column=3,row=5,padx=5,pady=10,sticky=tk.W)
 
 			tk.Label(f2,text=('or:'),font=fntit).grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
 
 			tk.Grid.rowconfigure(f2,7,weight=1)
 			
-			btn5=tk.Button(f2,text='Manage taxi bookings',font=fntit,command=managetaxibkgs)
-			btn5.grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
+			mag_tbkg_btn=tk.Button(f2,text='Manage taxi bookings',font=fntit,command=manage_taxibkg)
+			mag_tbkg_btn.grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
 
-			if emptype_inp=='Agent':
-				btn7=tk.Button(f2,text='Manage payments',font=fntit,command=managepayments)
-				btn7.grid(column=2,row=7,padx=10,pady=10,sticky=tk.W)
+			if emp_type=='Agent':
+				mag_pay_btn=tk.Button(f2,text='Manage payments',font=fntit,command=manage_payments)
+				mag_pay_btn.grid(column=2,row=7,padx=10,pady=10,sticky=tk.W)
 			
-			btn6=tk.Button(f2,text='Manage bus bookings',font=fntit,command=managebusbkgs)
-			btn6.grid(column=3,row=7,padx=10,pady=10,sticky=tk.W)
+			mag_bbkg_btn=tk.Button(f2,text='Manage bus bookings',font=fntit,command=manage_busbkg)
+			mag_bbkg_btn.grid(column=3,row=7,padx=10,pady=10,sticky=tk.W)
 
 			tk.Grid.rowconfigure(f2,10,weight=1)
 
-			if emptype_inp=='Agent':
-				main_menu.mainloop()
+			if emp_type=='Agent':
+				home_page.mainloop()
 
-		#Converts inputs to strings
-		emp_uname_inp=emp_uname.get().lower()
-		emptype_inp=n.get()
-		emp_passwd_inp=emp_passwd.get()
+
+		# Converts inputs to strings
+		emp_uname=emp_uname_inp.get().lower()
+		emp_type=emp_type_inp.get()
+		emp_passwd=emp_passwd_inp.get()
 		
-		#Checking for validity in inputs
-		if emptype_inp == 'Agent':	
-			cur.execute('select emp_uname,emp_passwd from employees')		#list of agent usernames and passwords
+		# Checking for validity in inputs
+		if emp_type == 'Agent':	
+			cur.execute('select emp_uname,emp_passwd from employees')				# list of agent usernames and passwords
 			e=dict(cur.fetchall())
 
-			cur.execute('select emp_uname,emp_name from employees')			#list of agent usernames and names
+			cur.execute('select emp_uname,emp_name from employees')					# list of agent usernames and names
 			f=dict(cur.fetchall())
 
-			if (not emp_uname_inp=='' and not emp_uname_inp.isspace()) and (not emp_passwd_inp=='' and not emp_passwd_inp.isspace()):
-				if emp_uname_inp in e.keys():
-					if emp_passwd_inp==e[emp_uname_inp]:
+			if (not emp_uname=='' and not emp_uname.isspace()) and (not emp_passwd=='' and not emp_passwd.isspace()):
+				if emp_uname in e.keys():
+					if emp_passwd==e[emp_uname]:
 						emp_login_win.destroy()
-						agent_portal()
+						booking_portal()
 					else:
-						messagebox.showerror('Error','Invalid password for agent '+f[emp_uname_inp]+'.')
+						messagebox.showerror('Error','Invalid password for agent '+f[emp_uname]+'.')
 				else:
-					messagebox.showerror('Error','Agent '+emp_uname_inp+' does not exist.')
+					messagebox.showerror('Error','Agent '+emp_uname+' does not exist.')
 			else:
 				messagebox.showerror('Error','Do not leave any fields empty.')
 		
-		elif emptype_inp == 'Administrator':
-			cur.execute('select admin_uname,admin_passwd from admin')	#list of admin usernames and passwords
+		elif emp_type == 'Administrator':
+			cur.execute('select admin_uname,admin_passwd from admin')				# list of admin usernames and passwords
 			a=dict(cur.fetchall())
 
-			cur.execute('select admin_uname,admin_name from admin')		#list of admin usernames and names
+			cur.execute('select admin_uname,admin_name from admin')					# list of admin usernames and names
 			b=dict(cur.fetchall())
 
-			if (not emp_uname_inp=='' and not emp_uname_inp.isspace()) and (not emp_passwd_inp=='' and not emp_passwd_inp.isspace()):
-				if emp_uname_inp in a.keys():
-					if emp_passwd_inp==a[emp_uname_inp]:
+			if (not emp_uname=='' and not emp_uname.isspace()) and (not emp_passwd=='' and not emp_passwd.isspace()):
+				if emp_uname in a.keys():
+					if emp_passwd==a[emp_uname]:
 						emp_login_win.destroy()
 						admin_menu()
 					else:
-						messagebox.showerror('Error','Invalid password for administrator '+b[emp_uname_inp]+'.')
+						messagebox.showerror('Error','Invalid password for administrator '+b[emp_uname]+'.')
 				else:
-					messagebox.showerror('Error','Administrator '+emp_uname_inp+' does not exist.')
+					messagebox.showerror('Error','Administrator '+emp_uname+' does not exist.')
 			else:
 				messagebox.showerror('Error','Do not leave any fields empty.')
 		
@@ -4140,9 +3634,9 @@ which deletes the table structure from the database along with its contents.'''
 	
 	menubar=tk.Menu(emp_login_win)
 
-	more=tk.Menu(menubar,tearoff=0)
-	menubar.add_cascade(label='Info',menu=more,font=menufnt)
-	more.add_command(label='About this program...',command=about,font=menufnt,underline=0)
+	info_menu=tk.Menu(menubar,tearoff=0)
+	menubar.add_cascade(label='Info',menu=info_menu,font=menufnt)
+	info_menu.add_command(label='About this program...',command=about,font=menufnt,underline=0)
 	emp_login_win.config(menu=menubar)
 		
 	tk.Grid.columnconfigure(emp_login_win,0,weight=1)
@@ -4177,27 +3671,26 @@ which deletes the table structure from the database along with its contents.'''
 
 	#Login type
 	tk.Label(f2,text='Login as',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
-	n=tk.StringVar()
+	emp_type_inp=tk.StringVar()
 	values=('','Agent','Administrator')
-	emptype=ttk.OptionMenu(f2,n,*values);emptype.grid(column=1,row=5,sticky=tk.W,padx=10,pady=10)
+	emptype=ttk.OptionMenu(f2,emp_type_inp,*values);emptype.grid(column=1,row=5,sticky=tk.W,padx=10,pady=10)
 
 	#uname
 	tk.Label(f2,text='Username',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
-	emp_uname=tk.Entry(f2,font=fnt)
-	emp_uname.grid(column=1,row=6,sticky=tk.W,padx=10,pady=10)
+	emp_uname_inp=tk.Entry(f2,font=fnt)
+	emp_uname_inp.grid(column=1,row=6,sticky=tk.W,padx=10,pady=10)
 
 	#passwd
 	tk.Label(f2,text='Password',font=fnt).grid(column=0,row=7,sticky=tk.E,padx=10,pady=10)
-	emp_passwd=tk.Entry(f2,show='*',font=fnt)
-	emp_passwd.grid(column=1,row=7,sticky=tk.W,padx=10,pady=10)
+	emp_passwd_inp=tk.Entry(f2,show='*',font=fnt)
+	emp_passwd_inp.grid(column=1,row=7,sticky=tk.W,padx=10,pady=10)
 
 	#Login button
-	img1=tk.PhotoImage(file='icons/login.png')
-	logsubmit=tk.Button(f2,text='Login',image=img1,command=login)
-	logsubmit.grid(column=1,row=8,padx=10,pady=10,sticky=tk.W)
+	login_icon=tk.PhotoImage(file='icons/login.png')
+	loggin_btn=tk.Button(f2,text='Login',image=login_icon,command=on_login)
+	loggin_btn.grid(column=1,row=8,padx=10,pady=10,sticky=tk.W)
 
-	emp_login_win.bind('<Return>',lambda event:login())
-
+	emp_login_win.bind('<Return>',lambda event:on_login())
 	emp_login_win.mainloop()
 
 init()
