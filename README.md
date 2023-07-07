@@ -41,7 +41,7 @@ Then, you can run directly with  ```./ibs.py``` (or from the GUI file manager).
 On Windows systems, you can replicate this behaviour with Python Launcher, with minimal additional setup*.<br>
 Just double-click 'ibs.py', and you're good to go!
 
-<b>*NOTE:</b>
+<b>*NOTES FOR PYTHON LAUNCHER IN WINDOWS:</b>
 - It is highly recommended use <a href="https://www.python.org/downloads">regular Python distribution</a> (.exe installer) for the same.
 - Python Launcher needs to be installed during Python setup. 
 - Using the <a href="https://apps.microsoft.com/store/detail/python-311/9NRWMJP3717K">Microsoft Store</a> distribution of Python will not work with the above as it lacks Python Launcher.
