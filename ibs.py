@@ -17,8 +17,8 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string and timestamp
-build='ibs.rc1-342'
-build_timestamp='2023-07-07 10:36:43'	
+build='ibs.rc1-343'
+build_timestamp='2023-07-07 11:51:33'	
 # dev_string=str('[UNDER CONSTRUCTION] '+build+', '+build_timestamp)
 
 # Fonts for GUI
@@ -267,8 +267,8 @@ for ABC Lines
 	pyimg.image=pyimgsrc
 	pyimg.grid(column=0,row=6)
 
-	tk.Label(about,text=('Python',pf.python_version()),font=fnt).grid(column=0,row=7,padx=10)
-	tk.Label(about,text=('Tkinter',tk.TkVersion),font=fnt).grid(column=0,row=8,padx=10)
+	tk.Label(about,text=(f'Python {pf.python_version()}'),font=fnt).grid(column=0,row=7,padx=10)
+	tk.Label(about,text=(f'Tkinter {tk.TkVersion}'),font=fnt).grid(column=0,row=8,padx=10)
 	try:
 		tk.Label(about,text=('MySQL',con.get_server_info()),font=fnt).grid(column=0,row=9,padx=10)
 	except:
