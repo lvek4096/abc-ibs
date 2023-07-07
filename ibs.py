@@ -17,8 +17,8 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string and timestamp
-build='ibs.rc1-343'
-build_timestamp='2023-07-07 11:51:33'	
+build='ibs.V5-344'
+build_timestamp='2023-07-07 22:15:13'	
 # dev_string=str('[UNDER CONSTRUCTION] '+build+', '+build_timestamp)
 
 # Fonts for GUI
