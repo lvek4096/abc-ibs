@@ -32,9 +32,9 @@ source env/scripts/activate		# on Linux
 4. Install dependencies <br>
 ```pip install -r requirements.txt```
 ### Running 
-```python3 ibs.py``` or ```python ibs.py```
-On Linux systems, you can directly run the file by making it executable: ```chmod +x ibs.py```	
-<br>(or make file executable via GUI file manager).
+```python3 ibs.py``` or ```python ibs.py```<br>
+On Linux systems, you can directly run the file by making it executable: ```chmod +x ibs.py```	<br>
+(or make file executable via GUI file manager).
 
 Then, you can run directly with  ```./ibs.py``` (or from the GUI file manager).
 
