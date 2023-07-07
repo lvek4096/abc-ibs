@@ -17,8 +17,8 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string and timestamp
-build='ibs.rc1-340'
-build_timestamp='2023-07-07 00:30:49'	
+build='ibs.rc1-341'
+build_timestamp='2023-07-07 07:58:25'	
 # dev_string=str('[UNDER CONSTRUCTION] '+build+', '+build_timestamp)
 
 # Fonts for GUI
@@ -146,6 +146,7 @@ def init():																			# Initalisation function
 		host=inp_host.get()
 		uname=inp_uname.get()
 		passwd=inp_passwd.get()
+
 		try:																# Tries connecting to db with provided credentials
 			con=ms.connect(host=host,user=uname,password=passwd)
 		except:
@@ -154,22 +155,28 @@ def init():																			# Initalisation function
 			except:															# Terminates the program if no database is found on localhost						
 				messagebox.showerror('Error','RDBMS not found on localhost.\nThe program will terminate.')
 				quit()
-		
-		if not con.database==None:
-			if con.is_connected():
+
+		if con.is_connected():
+			cur=con.cursor()
+			try:															# tries using database abcibs if exists
+				cur.execute('use abcibs')
+			except:
+				pass	
+			
+			if con.database==None:											# does database exist or not?
+				messagebox.showerror('',f'Operation not permitted.\nNo existing database has been found.',parent=ibs_init_win)
+
+			else:
 				messagebox.showwarning('',f'Resetting the database will result in its deletion. Continue?',parent=ibs_init_win)
 				confirm=messagebox.askyesno('',f'This action will delete the database {con.database} Continue?',parent=ibs_init_win)
-				cur=con.cursor()
 
 				if confirm==True:
+					cur=con.cursor()
 					cur.execute(f'drop database {con.database}')
 					con.commit()
 					con.close()
 
 				messagebox.showinfo('',f'Database successfully has been reset.',parent=ibs_init_win)
-		else:
-			messagebox.showerror('',f'Operation not permitted.\nNo existing database has been found.',parent=ibs_init_win)
-
 
 	ibs_init_win=tk.Tk()
 	ibs_init_win.title('ABC-IBS Configuration')
@@ -265,7 +272,7 @@ for ABC Lines
 	try:
 		tk.Label(about,text=('MySQL',con.get_server_info()),font=fnt).grid(column=0,row=9,padx=10)
 	except:
-		tk.Label(about,text=('MySQL server is inactive.'),font=fntit).grid(column=0,row=9,padx=10)
+		tk.Label(about,text=('Not connected to MySQL server'),font=fntit).grid(column=0,row=9,padx=10)
 
 	if pf.system()=='Windows':
 		src=tk.PhotoImage(file='img/win.png')
@@ -279,15 +286,15 @@ for ABC Lines
 	osimg.grid(column=2,row=6,padx=10,pady=10)
 
 	# OS info
-	if pf.system()=='Windows':										# Additional info - Windows ONLY
-		tk.Label(about,text=(pf.system()+' '+pf.release()+'\n(Build '+pf.version()+')'),font=fntb).grid(column=2,row=7,padx=10)
+	if pf.system()=='Windows':										# System info - Windows ONLY
+		tk.Label(about,text=f'{pf.system()} {pf.release()}\n(Build {pf.version()})',font=fntb).grid(column=2,row=7,padx=10)
 	else:
-		tk.Label(about,text=(pf.system(),pf.release()),font=fntb).grid(column=2,row=7,padx=10)
+		tk.Label(about,text=f'{pf.system()} {pf.release()}',font=fntb).grid(column=2,row=7,padx=10)
 	
 	if pf.system()=='Linux':										# Additional distribution info - Linux ONLY
 		try:
 			linux=pf.freedesktop_os_release()
-			tk.Label(about,text=(linux['NAME']+' '+linux['VERSION']),font=fntit).grid(column=2,row=8,padx=10)
+			tk.Label(about,text=f"{linux['NAME']} {linux['VERSION']}",font=fntit).grid(column=2,row=8,padx=10)
 		except:
 			pass
 	else:
@@ -297,20 +304,16 @@ for ABC Lines
 	
 	# Hostname and CPU type (e.g.i386 (32-bit); AMD64/x86_64 (64-bit) etc.)
 	tk.Label(about,text=pf.node(),font=fntbit).grid(column=0,row=11,columnspan=3,padx=10)
-	tk.Label(about,text=(pf.machine()+' system'),font=fnt).grid(column=0,row=12,columnspan=3,padx=10)
+	tk.Label(about,text=f'{pf.machine()} system',font=fnt).grid(column=0,row=12,columnspan=3,padx=10)
 	Separator(about,orient='horizontal').grid(column=0,row=16,sticky=tk.EW,padx=10,pady=10,columnspan=3)
 	
 	# Database additional details
+	dbinfohdg=tk.Label(about,text='MySQL database details:',font=fntbit)
+	dbinfohdg.grid(column=0,row=18,columnspan=3,padx=10)
 	try:
-		dbinfohdg=tk.Label(about,text='MySQL database details:',font=fntbit)
-		dbinfohdg.grid(column=0,row=18,columnspan=3,padx=10)
-		
-		dbinfo=tk.Label(about,text=f'Connected to database \'{con.database}\''+' on '+con.server_host,font=fnt)
+		dbinfo=tk.Label(about,text=f'Connected to database \'{con.database}\' on {con.server_host}',font=fnt)
 		dbinfo.grid(column=0,row=19,columnspan=3,padx=10)
 	except:
-		dbinfohdg=tk.Label(about,text='MySQL database inactive',font=fntbit)
-		dbinfohdg.grid(column=0,row=18,columnspan=3,padx=10)
-		
 		dbinfo=tk.Label(about,text='Database details not available!',font=fnt)
 		dbinfo.grid(column=0,row=19,columnspan=3,padx=10)
 	Separator(about,orient='horizontal').grid(column=0,row=24,sticky=tk.EW,padx=10,pady=10,columnspan=3)
@@ -490,7 +493,7 @@ ${str(total_fare)} paid
 Card type: {card_type} ({card_brand})
 Card-holder name:
 {card_name}
-Card number: XXXX-XXXX-XXXX-{card_no()[-4:]}
+Card number: XXXX-XXXX-XXXX-{card_no[-4:]}
 
 ==================
 PAYMENT SUCCESSFUL
@@ -1102,7 +1105,7 @@ Fare details
 Base rate: ${str(base_rate)} for first 5 km
 ${str(rate)} per additional km
 
-Distance: {str(distance)} km'
+Distance: {str(distance)} km
 
 Total fare: ${str(total_fare)}
 
@@ -1113,7 +1116,7 @@ ${str(total_fare)} paid
 Card type: {card_type} ({card_brand})
 Card-holder name:
 {card_name}
-Card number: XXXX-XXXX-XXXX-{card_no()[-4:]}
+Card number: XXXX-XXXX-XXXX-{card_no[-4:]}
 
 ==================
 PAYMENT SUCCESSFUL
@@ -1381,7 +1384,7 @@ Fare details
 Base rate: ${str(base_rate)} for first 5 km
 ${str(rate)} per additional km
 
-Distance: {str(distance)} km'
+Distance: {str(distance)} km
 
 Total fare: ${str(total_fare)}
 
@@ -2025,7 +2028,7 @@ def emp_main():																		# The main page for employees - agents and admi
 			icon=tk.PhotoImage(file='img/icon.png')
 			manage_pay_win.iconphoto(False,icon)
 
-			def viewpay_all():  #View all transactions
+			def viewpay_all():  													# View all transactions
 				viewall_win=tk.Toplevel()
 				viewall_win.title('All transactions')
 				viewall_win.resizable(False,False)
@@ -2049,7 +2052,7 @@ def emp_main():																		# The main page for employees - agents and admi
 						if i==0:
 							entry.configure(fg='red',font=fntit)	#colors and italicises header
 
-			def viewpay_single():	#View single transaction
+			def viewpay_single():													# View single transaction
 				
 				def get_payinfo():
 					if (not payid.get()=='' and not payid.get().isspace()) and (not payid.get()=='' and not payid.get().isspace()):
@@ -2124,7 +2127,7 @@ def emp_main():																		# The main page for employees - agents and admi
 				submit.grid(row=5,column=2,padx=10,pady=10)
 				viewone_win.bind('<Return>',lambda event:get_payinfo())
 
-			def delpay(): 																		# Delete transaction page
+			def delpay(): 															# Delete transaction page
 				delete_win=tk.Toplevel()
 				delete_win.resizable(False,False)
 				delete_win.title('Cancel transaction')
@@ -2134,7 +2137,7 @@ def emp_main():																		# The main page for employees - agents and admi
 				cur.execute('select pay_id,bkgid from payment_details')
 				pay_bkg_dict=dict(cur.fetchall())
 				
-				def delete_transaction():														# Delete transactions
+				def delete_transaction():													# Delete transactions
 					if not payid_inp.get()=='' and not payid_inp.get().isspace():
 						if payid_inp.get() in payment_id_list:
 							messagebox.showwarning('','This operation will cancel the transaction selected.\nContinue?',parent=delete_win)
@@ -2514,10 +2517,10 @@ def emp_main():																		# The main page for employees - agents and admi
 								val=(id,uname_inp,fname_inp,passwd_inp)
 								cur.execute(sql,val)
 								con.commit()
-								messagebox.showinfo('','Administrator {fname_inp} registered successfully.',parent=reg_win)
+								messagebox.showinfo('',f'Administrator {fname_inp} registered successfully.',parent=reg_win)
 								reg_win.destroy()
 							else:
-								messagebox.showerror('Error','Username \'{uname_inp}\'\nalready exists.',parent=reg_win)			
+								messagebox.showerror('Error',f'Username \'{uname_inp}\'\nalready exists.',parent=reg_win)			
 						else:
 							messagebox.showerror('Error','Please do not leave any fields blank.',parent=reg_win)
 					
@@ -2632,7 +2635,7 @@ def emp_main():																		# The main page for employees - agents and admi
 
 				def viewagent_all():	#View all Agent
 					viewall_win=tk.Toplevel()
-					viewall_win.title('All Agents')
+					viewall_win.title('All agents')
 					viewall_win.resizable(False,False)
 					icon=tk.PhotoImage(file='img/icon.png')
 					viewall_win.iconphoto(False,icon)
@@ -3434,6 +3437,7 @@ def emp_main():																		# The main page for employees - agents and admi
 						messagebox.showerror('Error','Please choose a table.',parent=dbmgr_main_win)
 
 				def exporttb():		#Export selected table to CSV
+
 					if not table.get()=='' and not table.get().isspace():
 						if table.get() in tables_list:
 							cur.execute('select * from '+table.get())
@@ -3483,7 +3487,7 @@ def emp_main():																		# The main page for employees - agents and admi
 							tk.Label(export_win,font=fntit,text=txt).grid(row=3,column=0,padx=10,pady=10)
 
 							if df.empty == False:
-								shape=('['+str(df.shape[0])+' row(s) x '+str(df.shape[1])+' column(s)]')
+								shape=(f'[{str(df.shape[0])} row(s) x {str(df.shape[1])} column(s)]')
 								tk.Label(export_win,font=('Cascadia Mono',12,'bold italic'),text=shape).grid(row=4,column=0,padx=10,pady=10)
 							
 							Separator(export_win,orient='horizontal').grid(column=0,row=6,sticky=tk.EW,padx=10,pady=10)
@@ -3533,7 +3537,7 @@ which deletes the table structure from the database along with its contents.'''
 				user=tk.Menu(menubar,tearoff=0)
 				menubar.add_cascade(label='Help',menu=user,font=menufnt)
 
-				user.add_command(label='\'Deleting from\' vs \'dropping\' a table',command=help,font=menufnt,underline=0)
+				user.add_command(label='\'Deleting from\' vs \'dropping\' a table',command=help,font=menufnt)
 
 				dbmgr_main_win.config(menu=menubar)
 					
@@ -3629,7 +3633,6 @@ which deletes the table structure from the database along with its contents.'''
 
 				def ch_passwd():
 					if not npass.get()=='' and not npass.get().isspace():
-				
 						confirm=messagebox.askyesno('',f'Do you wish to change the administrator password for {admin_list[emp_uname]}?',parent=passwd_win)
 						if confirm == True:
 							sql="update admin set admin_passwd=%s where admin_uname=%s"
