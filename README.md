@@ -7,7 +7,7 @@
 This is the booking system for ABC Lines. 
 ### Features
  - Easy-to-use portal for agents to book and manage bus and taxi journeys
- - Well-stocked and easy administration suite:
+ - A well-stocked and easy administration suite:
 	 - Database management
    	 - Export data to CSV
 	 - Agent and administration management
