@@ -48,7 +48,7 @@ Just double-click 'ibs.py', and you're good to go!
 - Ensure that app execution aliases for python.exe and python3.exe are disabled.
 
 ## Development
-This program is fully written in Python, and uses the MySQL relational database management system, allowing for cross-platform compatibility
+This program is fully written in Python, and uses the MySQL relational database management system, allowing for cross-platform compatibility.<br>
 Primary development has been mainly done on a Linux system, and the program has been successfully tested on Windows 10 and 11 as well.
 ### Additional libraries used
  - [mysql-connector-python](https://dev.mysql.com/doc/connector-python/en/)
