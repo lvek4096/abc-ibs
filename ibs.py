@@ -17,8 +17,8 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string and timestamp
-build='ibs.rc1-341'
-build_timestamp='2023-07-07 07:58:25'	
+build='ibs.rc1-342'
+build_timestamp='2023-07-07 10:36:43'	
 # dev_string=str('[UNDER CONSTRUCTION] '+build+', '+build_timestamp)
 
 # Fonts for GUI
@@ -167,8 +167,8 @@ def init():																			# Initalisation function
 				messagebox.showerror('',f'Operation not permitted.\nNo existing database has been found.',parent=ibs_init_win)
 
 			else:
-				messagebox.showwarning('',f'Resetting the database will result in its deletion. Continue?',parent=ibs_init_win)
-				confirm=messagebox.askyesno('',f'This action will delete the database {con.database} Continue?',parent=ibs_init_win)
+				messagebox.showwarning('',f'Resetting the database will result in its deletion.\nContinue?',parent=ibs_init_win)
+				confirm=messagebox.askyesno('',f'This action will delete the database \'{con.database}\'.\nContinue?',parent=ibs_init_win)
 
 				if confirm==True:
 					cur=con.cursor()
@@ -3459,10 +3459,15 @@ def emp_main():																		# The main page for employees - agents and admi
 								filename_inp=filename.get()
 								if not filename_inp=='' and not filename_inp.isspace():
 									df.reset_index(inplace=True)
+									if not os.path.isdir('export'):
+										os.mkdir('export')
 									os.chdir('export')
 									df.to_csv(filename_inp,index=False)
 									os.chdir('./..')
-									messagebox.showinfo('',f'Table {table.get()} exported to '+filename_inp+'.',parent=export_win)
+									if pf.system()=='Windows':
+										messagebox.showinfo('',f'Table {table.get()} exported to export\{filename_inp}.',parent=export_win)
+									else:
+										messagebox.showinfo('',f'Table {table.get()} exported to export/.csv{filename_inp}.',parent=export_win)
 									export_win.destroy()
 								else:
 									messagebox.showerror('Error','Please enter a filename.',parent=export_win)
