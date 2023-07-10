@@ -17,8 +17,8 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string and timestamp
-build='ibs.V5-344'
-build_timestamp='2023-07-07 22:15:13'	
+build='ibs.V5-345'
+build_timestamp='2023-07-10 20:50:39'	
 # dev_string=str('[UNDER CONSTRUCTION] '+build+', '+build_timestamp)
 
 # Fonts for GUI
@@ -1154,7 +1154,7 @@ Taxi Booking {taxibkg_id}
 Ticket {tkt_id} ({tkt_timestamp})
 
 From: {origin} To: {destination}
-Taxi ype: {taxi_type}
+Taxi type: {taxi_type}
 
 Date: {date_of_journey}
 Time: {time_of_journey}
@@ -1249,7 +1249,6 @@ Paid by: {card_type} ({card_brand})
 									payment_summary=scrolledtext.ScrolledText(f4,font=fnt,width=25,height=5)
 									payment_summary.grid(column=1,row=2,sticky=tk.EW,padx=10,pady=10)
 
-									text='Booking ID: '+taxibkg_id+'\nFrom: '+o+'\nTo: '+d+'\nType: '+n.get()+'\n\nDate: '+date_of_journey+'\nTime: '+time_of_journey+'\n\nBase rate: $'+str(base_rate)+' for first 5 km\n$'+str(rate)+' per additional km\nDistance: '+str(distance)+' km'+'\n\nTotal fare: $'+str(total_fare)
 									text=f'''
 Booking ID: {taxibkg_id}
 =================
@@ -1268,7 +1267,7 @@ Fare details
 Base rate: ${str(base_rate)} for first 5 km
 ${str(rate)} per additional km
 
-Distance: {str(distance)} km'
+Distance: {str(distance)} km
 
 Total fare: ${str(total_fare)}
 '''
@@ -1601,16 +1600,20 @@ def emp_main():																		# The main page for employees - agents and admi
 						if i==0:
 							entry.configure(fg='red',font=fntit)							# colors and italicises header
 
-			def viewbkg_single():
+			def retrieve_bkg():															# Retrieve a single booking
 																			# View single booking
 				def get_busbkginfo():
-					
 					if not bkgid_input.get()=='' and not bkgid_input.get().isspace():
 						if bkgid_input.get() in bus_bkgid_list:
 							sql='select * from bus_bkgs where bkgid=%s'
 							val=(bkgid_input.get(),)
 							cur.execute(sql,val)
 							c=cur.fetchall()
+							
+							sql2='select * from payment_details where bkgid=%s' 
+							cur.execute(sql2,val)
+							d=cur.fetchall()
+
 							bkg_id=c[0][0]
 							bkg_ts=c[0][1]
 							bkg_passno=c[0][2]
@@ -1619,20 +1622,104 @@ def emp_main():																		# The main page for employees - agents and admi
 							bkg_date=c[0][5]
 							bkg_time=c[0][6]
 							bkg_type=c[0][7]
+							bkg_fare=d[0][3]
+							pay_id=d[0][0]
+							pay_type=d[0][4]
 							
-							data=[('Booking ID',bkg_id),('Timestamp',bkg_ts),('Number of passengers',bkg_passno),('Origin',bkg_org),('Destination',bkg_dest),('Date',bkg_date),('Time',bkg_time),('Bus Type',bkg_type)]
+							data=[('Booking ID',bkg_id),('Timestamp',bkg_ts),('Number of passengers',bkg_passno),('Origin',bkg_org),('Destination',bkg_dest),('Date',bkg_date),('Time',bkg_time),('Bus Type',bkg_type),('Fare',f'${bkg_fare}'),('Payment ID',pay_id),('Paid by',pay_type)]
 							
 							
 							rows=len(data)
 							cols=len(data[0])
-							tk.Label(frame3,font=fntit,text='Data').grid(row=0,column=0,sticky=tk.W)
+							tk.Label(frame3,font=fntit,text='Data').grid(row=0,column=0,sticky=tk.EW)
 							for i in range(rows):											#drawing the table in GUI
 								for j in range(cols):
-									entry = tk.Label(frame2,borderwidth=1,relief='solid',padx=10,width=30,height=2,font=fnt)
+									entry = tk.Label(frame2,borderwidth=1,relief='solid',padx=10,width=40,height=2,font=fnt)
 									entry.grid(row=i,column=j,padx=2,pady=2,sticky=tk.EW)
 									entry.configure(text=data[i][j])
 									if j==0:
 										entry.configure(fg='red',font=fntit) 				#colors and italicises header
+							
+
+							if isPrintingEnabled==True:
+
+								distance=abs((locations.index(bkg_dest))-(locations.index(bkg_org)))*4	#distance between locations - 4 km.
+								
+								card_brand=''
+								if 'Card' in pay_type or 'card' in pay_type:
+									card_no=d[0][6]
+									if card_no[0] == '3':
+										card_brand='AMEX'
+									elif card_no[0] == '4':
+										card_brand='VISA'
+									elif card_no[0] == '5':
+										card_brand='MASTER'
+									elif card_no[0] == '6':
+										card_brand='DISCOVER'
+									card_brand=f'({card_brand})'
+								
+								def receipt():
+									def print_receipt():
+										if pf.system()=='Windows':
+											receipt_pf_txt=f'{pf.system()} {pf.version()}'
+										elif pf.system()=='Linux':
+											receipt_pf_txt=f'{pf.system()} {pf.release()}'
+
+										tkt_time=datetime.now()									# timestamp to mark ticket
+										tkt_timestamp=tkt_time.strftime('%Y-%m-%d %H:%M:%S')	# Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
+										
+										tkt_bar_time=tkt_time.strftime('%y%m%d')				# tkt timestamp for barcode
+										tkt_id=f'TKT{str(rd.randint(100000,999999))}'
+
+										bar_no=f'{tkt_id}{tkt_bar_time}'						# barcode number
+										
+										receipt_text=f'''
+Bus Booking {bkg_id}
+
+Ticket {tkt_id} ({tkt_timestamp})
+
+Number of passengers: {str(bkg_passno)}
+From: {bkg_org} To: {bkg_dest}
+Bus type: {bkg_type}
+
+Date: {bkg_date}
+Time: {bkg_time}
+
+Distance: {str(distance)} km
+
+Total fare: ${str(bkg_fare)}
+Paid by: {pay_type} {card_brand}
+'''
+										
+										sql=('insert into tkt_details values(%s,%s,%s)')
+										#print(tktid,busbkg_id,tkt_timestamp)
+										val=(bar_no,bkg_id,tkt_timestamp)
+										cur.execute(sql,val)
+										con.commit()
+
+										pr.image('img/icon-print.png')
+										pr.text(receipt_text)
+										pr.text('\n')
+										pr.barcode(bar_no, 'CODE93')
+										pr.text('\n')
+										pr.text(promo_text)
+										pr.text('\n\n')
+										pr.text('Powered by Amadeus IBS')
+										pr.text('\n')
+										pr.text(f'Build: {build} on {receipt_pf_txt} ')
+										pr.cut()
+									
+									try:
+										pr = Network(pr_ip)
+										for i in range(bkg_passno):
+											print_receipt()
+										pr.close()
+									except:
+										messagebox.showerror('Error','Unable to print receipt.',parent=viewone_win)
+									
+								print_btn=tk.Button(frame1,font=fntit,text='Print receipt',command=receipt)
+								print_btn.grid(row=5,column=3,padx=10,pady=10)
+
 						else:
 							messagebox.showerror('Error',f'Booking \'{bkgid_input.get()}\' does not exist.',parent=viewone_win)
 					else:
@@ -1651,7 +1738,7 @@ def emp_main():																		# The main page for employees - agents and admi
 				frame2.grid(row=2,column=0,padx=10,pady=10,sticky=tk.EW)
 
 				frame3=tk.Frame(viewone_win)
-				frame3.grid(row=1,column=0,padx=10,pady=10,sticky=tk.W)
+				frame3.grid(row=1,column=0,padx=10,pady=10,sticky=tk.EW)
 
 				cur.execute('select bkgid from bus_bkgs')
 				bkgid_list=cur.fetchall()
@@ -1676,7 +1763,7 @@ def emp_main():																		# The main page for employees - agents and admi
 				submit_btn.grid(row=5,column=2,padx=10,pady=10)
 				viewone_win.bind('<Return>',lambda event:get_busbkginfo())
 
-			def delbkg():
+			def delete_bkg():															# Delete bookings menu
 																						# Delete booking menu
 				delete_win=tk.Toplevel()
 				delete_win.resizable(False,False)
@@ -1779,17 +1866,17 @@ def emp_main():																		# The main page for employees - agents and admi
 			tk.Label(f2,text='View all booking details.',font=fnt,fg='blue').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 
 			viewone_icon=tk.PhotoImage(file='icons/search_bkgs.png')
-			viewone_btn=tk.Button(f2,text='viewone',image=viewone_icon,font=fnt,command=viewbkg_single)
+			viewone_btn=tk.Button(f2,text='viewone',image=viewone_icon,font=fnt,command=retrieve_bkg)
 			viewone_btn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
 			viewone_btn.image=viewone_icon
-			tk.Label(f2,text='View a single booking details.',font=fnt).grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
+			tk.Label(f2,text='Retrieve details of a booking.',font=fnt).grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
 
 			tk.Grid.rowconfigure(f2,7,weight=1)
 			delete_icon=tk.PhotoImage(file='icons/delete_bkgs.png')
-			delete_btn=tk.Button(f2,text='del',image=delete_icon,font=fnt,command=delbkg)
+			delete_btn=tk.Button(f2,text='del',image=delete_icon,font=fnt,command=delete_bkg)
 			delete_btn.grid(column=0,row=7,padx=10,pady=10,sticky=tk.E)
 			delete_btn.image=delete_icon
-			tk.Label(f2,text='Delete a booking.',font=fnt,fg='red').grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
+			tk.Label(f2,text='Delete an existing booking.',font=fnt,fg='red').grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
 			tk.Grid.rowconfigure(f2,8,weight=1)
 			tk.Message(f2,text='WARNING: This will delete\nthe booking selected\nfrom the system permanently.',width=500,font=fnt,fg='white',bg='red').grid(column=1,row=8,padx=10,pady=10,sticky=tk.NW)
 
@@ -1826,7 +1913,7 @@ def emp_main():																		# The main page for employees - agents and admi
 						if i==0:
 							entry.configure(fg='red',font=fntit)				#colors and italicises header
 
-			def viewbkg_single():													# View a single booking
+			def retrieve_bkg():														# Retrieve a single booking
 				
 				def get_taxibkginfo():
 					if not bkgid.get()=='' and not bkgid.get().isspace():
@@ -1835,6 +1922,11 @@ def emp_main():																		# The main page for employees - agents and admi
 							val=(bkgid.get(),)
 							cur.execute(sql,val)
 							c=cur.fetchall()
+
+							sql2='select * from payment_details where bkgid=%s' 
+							cur.execute(sql2,val)
+							d=cur.fetchall()
+							
 							bkg_id=c[0][0]
 							bkg_ts=c[0][1]
 							bkg_org=c[0][2]
@@ -1842,19 +1934,101 @@ def emp_main():																		# The main page for employees - agents and admi
 							bkg_date=c[0][4]
 							bkg_time=c[0][5]
 							bkg_type=c[0][6]
+							bkg_fare=d[0][3]
+							pay_id=d[0][0]
+							pay_type=d[0][4]
 							
-							e=[('Booking ID',bkg_id),('Timestamp',bkg_ts),('Origin',bkg_org),('Destination',bkg_dest),('Date',bkg_date),('Time',bkg_time),('Taxi Type',bkg_type)]
+							data=[('Booking ID',bkg_id),('Timestamp',bkg_ts),('Origin',bkg_org),('Destination',bkg_dest),('Date',bkg_date),('Time',bkg_time),('Taxi Type',bkg_type),('Fare',f'${bkg_fare}'),('Payment ID',pay_id),('Paid by',pay_type)]
 							
-							rows=len(e)
-							cols=len(e[0])
-							tk.Label(frame3,font=fntit,text='Data').grid(row=0,column=0,sticky=tk.W)
+							rows=len(data)
+							cols=len(data[0])
+							tk.Label(frame3,font=fntit,text='Data').grid(row=0,column=0,sticky=tk.EW)
 							for i in range(rows):									# drawing the table in GUI
 								for j in range(cols):
-									entry = tk.Label(frame2,borderwidth=1,relief='solid',padx=10,width=30,height=2,font=fnt)
+									entry = tk.Label(frame2,borderwidth=1,relief='solid',padx=10,width=40,height=2,font=fnt)
 									entry.grid(row=i,column=j,padx=2,pady=2,sticky=tk.EW)
-									entry.configure(text=e[i][j])
+									entry.configure(text=data[i][j])
 									if j==0:
 										entry.configure(fg='red',font=fntit) 		# colors and italicises header
+							
+							
+							if isPrintingEnabled==True:
+								
+								distance=abs((locations.index(bkg_dest))-(locations.index(bkg_org)))*4	#distance between locations - 4 km.
+
+								card_brand=''
+								if 'Card' in pay_type or 'card' in pay_type:
+									card_no=d[0][6]
+									if card_no[0] == '3':
+										card_brand='AMEX'
+									elif card_no[0] == '4':
+										card_brand='VISA'
+									elif card_no[0] == '5':
+										card_brand='MASTER'
+									elif card_no[0] == '6':
+										card_brand='DISCOVER'
+									card_brand=f'({card_brand})'
+							
+								def receipt():
+									def print_receipt():
+										if pf.system()=='Windows':
+											receipt_pf_txt=f'{pf.system()} {pf.version()}'
+										elif pf.system()=='Linux':
+											receipt_pf_txt=f'{pf.system()} {pf.release()}'
+
+										tkt_time=datetime.now()									# timestamp to mark ticket
+										tkt_timestamp=tkt_time.strftime('%Y-%m-%d %H:%M:%S')	# Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
+										
+										tkt_bar_time=tkt_time.strftime('%y%m%d')				# tkt timestamp for barcode
+										tkt_id=f'TKT{str(rd.randint(100000,999999))}'
+
+										bar_no=f'{tkt_id}{tkt_bar_time}'						# barcode number
+										
+										receipt_text=f'''
+Taxi Booking {bkg_id}
+
+Ticket {tkt_id} ({tkt_timestamp})
+
+From: {bkg_org} To: {bkg_dest}
+Taxi type: {bkg_type}
+
+Date: {bkg_date}
+Time: {bkg_time}
+
+Distance: {str(distance)} km
+
+Total fare: ${str(bkg_fare)}
+Paid by: {pay_type} {card_brand}
+'''
+										
+										sql=('insert into tkt_details values(%s,%s,%s)')
+										#print(tktid,busbkg_id,tkt_timestamp)
+										val=(bar_no,bkg_id,tkt_timestamp)
+										cur.execute(sql,val)
+										con.commit()
+
+										pr.image('img/icon-print.png')
+										pr.text(receipt_text)
+										pr.text('\n')
+										pr.barcode(bar_no, 'CODE93')
+										pr.text('\n')
+										pr.text(promo_text)
+										pr.text('\n\n')
+										pr.text('Powered by Amadeus IBS')
+										pr.text('\n')
+										pr.text(f'Build: {build} on {receipt_pf_txt} ')
+										pr.cut()
+									
+									try:
+										pr = Network(pr_ip)
+										print_receipt()
+										pr.close()
+									except:
+										messagebox.showerror('Error','Unable to print receipt.',parent=viewone_win)
+								
+								print_btn=tk.Button(frame1,font=fntit,text='Print receipt',command=receipt)
+								print_btn.grid(row=5,column=3,padx=10,pady=10)
+						
 						else:
 							messagebox.showerror('Error',f'Booking \'{bkgid.get()}\' does not exist.',parent=viewone_win)
 					else:
@@ -1873,7 +2047,7 @@ def emp_main():																		# The main page for employees - agents and admi
 				frame2.grid(row=2,column=0,padx=10,pady=10,sticky=tk.EW)
 
 				frame3=tk.Frame(viewone_win)
-				frame3.grid(row=1,column=0,padx=10,pady=10,sticky=tk.W)
+				frame3.grid(row=1,column=0,padx=10,pady=10,sticky=tk.EW)
 
 				cur.execute('select bkgid from taxi_bkgs')
 				bkgid_list=cur.fetchall()
@@ -1898,7 +2072,7 @@ def emp_main():																		# The main page for employees - agents and admi
 				submit.grid(row=5,column=2,padx=10,pady=10)
 				viewone_win.bind('<Return>',lambda event:get_taxibkginfo())
 
-			def delbkg(): 															# Delete bookings menu
+			def delete_bkg(): 														# Delete bookings menu
 				delete_win=tk.Toplevel()
 				delete_win.resizable(False,False)
 				delete_win.title('Delete taxi booking')
@@ -2003,17 +2177,17 @@ def emp_main():																		# The main page for employees - agents and admi
 			tk.Label(f2,text='View all booking details.',font=fnt,fg='blue').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 
 			viewone_icon=tk.PhotoImage(file='icons/search_bkgs.png')
-			viewone_btn=tk.Button(f2,text='viewone',image=viewone_icon,font=fnt,command=viewbkg_single)
+			viewone_btn=tk.Button(f2,text='viewone',image=viewone_icon,font=fnt,command=retrieve_bkg)
 			viewone_btn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
 			viewone_btn.image=viewone_icon
-			tk.Label(f2,text='View a single booking details.',font=fnt).grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
+			tk.Label(f2,text='Retrieve details of a booking.',font=fnt).grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
 
 			tk.Grid.rowconfigure(f2,7,weight=1)
 			delete_icon=tk.PhotoImage(file='icons/delete_bkgs.png')
-			delete_btn=tk.Button(f2,text='del',image=delete_icon,font=fnt,command=delbkg)
+			delete_btn=tk.Button(f2,text='del',image=delete_icon,font=fnt,command=delete_bkg)
 			delete_btn.grid(column=0,row=7,padx=10,pady=10,sticky=tk.E)
 			delete_btn.image=delete_icon
-			tk.Label(f2,text='Delete a booking.',font=fnt,fg='red').grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
+			tk.Label(f2,text='Delete an existing booking.',font=fnt,fg='red').grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
 			tk.Grid.rowconfigure(f2,8,weight=1)
 			tk.Message(f2,text='WARNING: This will delete\nthe booking selected\nfrom the system permanently.',width=500,font=fnt,fg='white',bg='red').grid(column=1,row=8,padx=10,pady=10,sticky=tk.NW)
 
@@ -2052,7 +2226,7 @@ def emp_main():																		# The main page for employees - agents and admi
 						if i==0:
 							entry.configure(fg='red',font=fntit)	#colors and italicises header
 
-			def viewpay_single():													# View single transaction
+			def retrieve_payment():													# View single transaction
 				
 				def get_payinfo():
 					if (not payid.get()=='' and not payid.get().isspace()) and (not payid.get()=='' and not payid.get().isspace()):
@@ -2127,7 +2301,7 @@ def emp_main():																		# The main page for employees - agents and admi
 				submit.grid(row=5,column=2,padx=10,pady=10)
 				viewone_win.bind('<Return>',lambda event:get_payinfo())
 
-			def delpay(): 															# Delete transaction page
+			def delete_payment(): 													# Delete transaction page
 				delete_win=tk.Toplevel()
 				delete_win.resizable(False,False)
 				delete_win.title('Cancel transaction')
@@ -2233,14 +2407,14 @@ def emp_main():																		# The main page for employees - agents and admi
 			tk.Label(f2,text='View all transaction details.',font=fnt,fg='blue').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 
 			viewone_icon=tk.PhotoImage(file='icons/search_bkgs.png')
-			viewone_btn=tk.Button(f2,text='viewone',image=viewone_icon,font=fnt,command=viewpay_single)
+			viewone_btn=tk.Button(f2,text='viewone',image=viewone_icon,font=fnt,command=retrieve_payment)
 			viewone_btn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
 			viewone_btn.image=viewone_icon
 			tk.Label(f2,text='View a single transaction\'s details.',font=fnt).grid(column=3,row=5,padx=10,pady=10,sticky=tk.W)
 
 			tk.Grid.rowconfigure(f2,7,weight=1)
 			delete_icon=tk.PhotoImage(file='icons/delete.png')
-			delete_btn=tk.Button(f2,text='del',image=delete_icon,font=fnt,command=delpay)
+			delete_btn=tk.Button(f2,text='del',image=delete_icon,font=fnt,command=delete_payment)
 			delete_btn.grid(column=0,row=7,padx=10,pady=10,sticky=tk.E)
 			delete_btn.image=delete_icon
 			tk.Label(f2,text='Cancel a transaction.',font=fnt,fg='red').grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
@@ -3871,26 +4045,26 @@ which deletes the table structure from the database along with its contents.'''
 			taxi_btn=tk.Button(f2,text='Book taxi',image=taxi_icon,font=fnt,command=taxi_booking)
 			taxi_btn.grid(column=0,row=5,padx=10,pady=1,sticky=tk.E)
 			taxi_btn.image=taxi_icon
-			tk.Label(f2,text='Book a taxi.',font=fnt,bg='yellow').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
+			tk.Label(f2,text='Make a new taxi booking.',font=fnt,bg='yellow').grid(column=1,row=5,padx=10,pady=10,sticky=tk.W)
 					
 			bus_icon=tk.PhotoImage(file='icons/bus.png')
 			bus_btn=tk.Button(f2,text='Book Bus',image=bus_icon,command=bus_booking)
 			bus_btn.grid(column=2,row=5,padx=10,pady=10,sticky=tk.E)
 			bus_btn.image=bus_icon
-			tk.Label(f2,text='Book a bus.',font=fnt,fg='blue').grid(column=3,row=5,padx=5,pady=10,sticky=tk.W)
+			tk.Label(f2,text='Make a new bus booking.',font=fnt,fg='blue').grid(column=3,row=5,padx=5,pady=10,sticky=tk.W)
 
 			tk.Label(f2,text=('or:'),font=fntit).grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
 
 			tk.Grid.rowconfigure(f2,7,weight=1)
 			
-			mag_tbkg_btn=tk.Button(f2,text='Manage taxi bookings',font=fntit,command=manage_taxibkg)
+			mag_tbkg_btn=tk.Button(f2,text='Manage existing taxi bookings',font=fntit,command=manage_taxibkg)
 			mag_tbkg_btn.grid(column=1,row=7,padx=10,pady=10,sticky=tk.W)
 
 			if emp_type=='Agent':
 				mag_pay_btn=tk.Button(f2,text='Manage payments',font=fntit,command=manage_payments)
 				mag_pay_btn.grid(column=2,row=7,padx=10,pady=10,sticky=tk.W)
 			
-			mag_bbkg_btn=tk.Button(f2,text='Manage bus bookings',font=fntit,command=manage_busbkg)
+			mag_bbkg_btn=tk.Button(f2,text='Manage existing bus bookings',font=fntit,command=manage_busbkg)
 			mag_bbkg_btn.grid(column=3,row=7,padx=10,pady=10,sticky=tk.W)
 
 			tk.Grid.rowconfigure(f2,10,weight=1)
