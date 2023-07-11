@@ -17,8 +17,9 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string and timestamp
-build='ibs.beta-346'
-build_timestamp='2023-07-10 21:03:10'	
+build='ibs.V5-345'
+build_timestamp='2023-07-10 20:50:39'	
+# dev_string=str('[UNDER CONSTRUCTION] '+build+', '+build_timestamp)
 
 # Fonts for GUI
 if pf.system()=='Windows':
@@ -49,11 +50,11 @@ if pf.system()=='Windows':
 locations_df=pd.read_csv('places.csv',header=None)
 locations=locations_df[0].tolist()
 
-promo_text='Enjoy your journey with ABC Lines!'									# Promotional text for tickets
+promo_text='Enjoy your journey with ABC Lines!'			# Promotional text for tickets
 
-def init():																		# Initalisation function
+def init():																			# Initalisation function
 	
-	def init_program():															# Initialises IBS.
+	def init_program():																			# Initialises IBS.
 	
 		def initdb():															# Initialises database.
 			# ensure MySQL connection and cursor variables are global (i.e. accessible across the entire program, and not confined to a single function)
@@ -99,7 +100,7 @@ def init():																		# Initalisation function
 					pass
 			con.commit()
 
-		def prconnect():										# Initialises printer.
+		def prconnect():																		# Initialises printer.
 			# ensure printer status variable is global (i.e. accessible across the entire program, and not confined to a single function)
 			global isPrintingEnabled
 			isPrintingEnabled=False
@@ -124,7 +125,7 @@ def init():																		# Initalisation function
 				messagebox.showinfo('Info','The printing functionality will be disabled.',parent=ibs_init_win)
 				isPrintingEnabled=False
 
-		if pr_con_type.get() in ['N','D']:						# Invokes init functions if printer choice is correct.
+		if pr_con_type.get() in ['N','D']:														# Invokes init functions if printer choice is correct.
 			prconnect()
 			initdb()
 			emp_main()
@@ -157,7 +158,7 @@ def init():																		# Initalisation function
 
 		if con.is_connected():
 			cur=con.cursor()
-			try:															# Tries using database abcibs if exists
+			try:															# tries using database abcibs if exists
 				cur.execute('use abcibs')
 			except:
 				pass	
@@ -321,24 +322,6 @@ for ABC Lines
 	cls=tk.Button(about,font=fnt,text='Close',image=img1,command=about.destroy)
 	cls.grid(column=0,row=25,padx=10,pady=10,columnspan=3)
 	cls.image=img1
-
-class Receipt:
-	def __init__(self) -> None:
-		bkg=''
-		bkg_id=''
-		tkt_id=''
-		tkt_timestamp=''
-		pass_no=''
-		origin=''
-		destination=''
-		bkg_class=''
-		doj=''
-		toj=''
-		distance=''
-		total_fare=''
-		card_type=''
-		card_brand=''
-
 
 def bus_booking():																	# Bus booking
 
