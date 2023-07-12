@@ -17,9 +17,8 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string and timestamp
-build='ibs.V5-345'
-build_timestamp='2023-07-10 20:50:39'	
-# dev_string=str('[UNDER CONSTRUCTION] '+build+', '+build_timestamp)
+build='ibs.beta-346'
+build_timestamp='2023-07-12 16:03:33'	
 
 # Fonts for GUI
 if pf.system()=='Windows':
@@ -50,7 +49,7 @@ if pf.system()=='Windows':
 locations_df=pd.read_csv('places.csv',header=None)
 locations=locations_df[0].tolist()
 
-promo_text='Enjoy your journey with ABC Lines!'			# Promotional text for tickets
+cur_time=datetime.now()
 
 def init():																			# Initalisation function
 	
@@ -323,6 +322,507 @@ for ABC Lines
 	cls.grid(column=0,row=25,padx=10,pady=10,columnspan=3)
 	cls.image=img1
 
+class Printing:
+	def __init__(self):
+		self.parent_win=''
+	
+		self.bkg_type=''
+		self.bkg_id=''
+		self.journey_type=''
+
+		self.pass_no=''
+		self.origin=''
+		self.destination=''
+
+		self.date_of_journey=''
+		self.time_of_journey=''
+
+		self.distance=''
+		self.total_fare=''
+		self.method_of_payment=''
+		self.card_brand=''
+
+	def receipt(self,parent_win,bkg_type,bkg_id,journey_type,pass_no,origin,destination,date_of_journey,time_of_journey,distance,total_fare,method_of_payment,card_brand):
+		self.parent_win=parent_win
+	
+		self.bkg_type=bkg_type
+		self.bkg_id=bkg_id
+		self.journey_type=journey_type
+
+		self.pass_no=pass_no
+		self.origin=origin
+		self.destination=destination
+
+		self.date_of_journey=date_of_journey
+		self.time_of_journey=time_of_journey
+
+		self.distance=distance
+		self.total_fare=total_fare
+		self.method_of_payment=method_of_payment
+		self.card_brand=card_brand
+		self.promo_text='Enjoy your journey with ABC Lines!'			# Promotional text for tickets
+
+		def print_receipt():
+			if pf.system()=='Windows':
+				receipt_pf_txt=f'Platform: {pf.system()} {pf.version()}'
+			elif pf.system()=='Linux':
+				receipt_pf_txt=f'Platform: {pf.system()} {pf.release()}'
+			
+			tkt_time=datetime.now()									# timestamp to mark ticket
+			tkt_timestamp=tkt_time.strftime('%Y-%m-%d %H:%M:%S')	# Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
+			
+			tkt_bar_time=tkt_time.strftime('%y%m%d')				# tkt timestamp for barcode
+			tkt_id=f'TKT{str(rd.randint(100000,999999))}'
+
+			bar_no=f'{tkt_id}{tkt_bar_time}'						# barcode number
+			
+			if self.bkg_type=='Bus':
+				number_pass_text=f'\nNumber of passengers: {str(self.pass_no)}'
+			else:
+				number_pass_text=''
+
+			receipt_text=f'''
+{self.bkg_type} Booking {self.bkg_id}
+
+Ticket {tkt_id} ({tkt_timestamp})
+{number_pass_text}
+From: {self.origin} To: {self.destination}
+{self.bkg_id} type: {self.journey_type}
+
+Date: {self.date_of_journey}
+Time: {self.time_of_journey}
+
+Distance: {str(self.distance)} km
+
+Total fare: ${str(self.total_fare)}
+Paid by: {self.method_of_payment} ({self.card_brand})
+'''
+			
+			sql=('insert into tkt_details values(%s,%s,%s)')
+			val=(bar_no,self.bkg_id,tkt_timestamp)
+			cur.execute(sql,val)
+			con.commit()
+
+			pr.image('img/icon-print.png')
+			pr.text(receipt_text)
+			pr.text('\n')
+			pr.barcode(bar_no,'CODE93',font='A')
+			pr.text('\n')
+			pr.text(self.promo_text)
+			pr.text('\n\n')
+			pr.text('Powered by Amadeus IBS')
+			pr.text('\n')
+			pr.text(f'Build: {build} on {receipt_pf_txt} ')
+			pr.text('\n')
+			pr.cut()
+		
+		try:
+			pr = Network(pr_ip)
+			if bkg_type=='Bus':
+				for i in range(self.pass_no):
+					print_receipt()
+			elif bkg_type=='Taxi':
+				print_receipt()
+			pr.close()
+		except:
+			messagebox.showerror('Error','Unable to print receipt.',parent=self.parent_win)
+
+class Booking:
+	def __init__(self):
+		self.parent_win=''															# Parent windows
+		
+		self.bkg_id=''																# Booking ID
+		self.bkg_type=''															# Booking type (Bus or Taxi?)
+		self.journey_type=''														# Journey type (Standard, Luxury etc.)
+		self.pass_no=''																# Number of passengers
+		self.distance=''															# Distance
+		self.origin=''																# Origin
+		self.destination=''															# Destination
+		self.date_of_journey=''														# Date of Journey									
+		self.time_of_journey=''														# Time of Journey
+
+		self.base_rate=''															# Base fare (for taxi only)
+		self.rate=''																# Fare (bus) or Additional fare (taxi)
+		self.total_fare=''															# Total fare
+		
+		self.method_of_payment=''													# Method of payment (cash or [deb/cr]edit card?)
+		self.payment_id=''															# Payment ID
+		self.card_number=''															# Card number
+		self.cardholder_name=''														# Cardholder's name
+		self.exp_month=''															# Expiry month
+		self.exp_year=''															# Expiry year
+		self.cvv=''																	# CVV
+		
+	
+	def fare_calculation(self,bkg_type,journey_type,pass_no,origin,destination):
+			
+		if bkg_type=='Bus':
+			# calculation of fare on basis of type
+			if journey_type=='Standard':
+				self.rate=5
+			elif journey_type=='Express':
+				self.rate=10
+			elif journey_type=='Premium':
+				self.rate=15
+
+			self.distance=abs((locations.index(destination))-(locations.index(origin)))*4	#distance between locations - 4 km.
+			self.total_fare=(self.rate*self.distance)*pass_no
+		
+		elif bkg_type=='Taxi':
+			# calculation of fare on basis of type
+			if journey_type=='Standard':
+				self.base_rate=15
+				self.rate=3
+			elif journey_type=='XL':
+				self.base_rate=25
+				self.rate=5
+			elif journey_type=='Luxury':
+				self.base_rate=40
+				self.rate=10
+
+			self.distance=abs((locations.index(destination))-(locations.index(origin)))*4	#distance between locations - 4 km.
+			if self.distance > 5:
+				self.total_fare=(self.base_rate+(self.rate*(self.distance-5)))
+			else:
+				self.total_fare=(self.base_rate)
+
+	def payment(self,parent_win,bkg_id,bkg_type,journey_type,pass_no,origin,destination,date_of_journey,time_of_journey,method_of_payment):
+
+		def booking():
+			cur_time=datetime.now()									#	Timestamp to mark payment
+			pay_timestamp=cur_time.strftime('%Y-%m-%d %H:%M:%S')	#	Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
+			
+			# Adds payment details to database
+			card_brand=''
+			if self.method_of_payment in ['Credit card','Debit card']:
+				if self.card_number[0] == '3':
+					card_brand='AMEX'
+				elif self.card_number[0] == '4':
+					card_brand='VISA'
+				elif self.card_number[0] == '5':
+					card_brand='MASTER'
+				elif self.card_number[0] == '6':
+					card_brand='DISCOVER'
+				
+				sql=('insert into payment_details values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)')
+				val=(self.payment_id,pay_timestamp,self.bkg_id,self.total_fare,self.method_of_payment,self.card_number,self.cardholder_name,self.cvv,self.exp_month,self.exp_year)
+			
+			elif self.method_of_payment=='Cash':
+				sql=('insert into payment_details values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)')
+				val=(self.payment_id,pay_timestamp,self.bkg_id,self.total_fare,'Cash',None,None,None,None,None)
+				
+			cur.execute(sql,val)
+			con.commit()
+
+			# Adding booking details to database
+			cur_time=datetime.now()									# 	Timestamp to mark bookings
+			bkg_timestamp=cur_time.strftime('%Y-%m-%d %H:%M:%S')	#	Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
+			
+			# Confirmation popup
+			confirmmsg_win=tk.Toplevel()
+			confirmmsg_win.resizable(False,False)
+			confirmmsg_win.title('Booking successful')
+			icon=tk.PhotoImage(file='img/icon.png')
+			confirmmsg_win.iconphoto(False,icon)
+
+			if self.bkg_type=='Bus':
+				sql='insert into bus_bkgs values (%s,%s,%s,%s,%s,%s,%s,%s)'
+				val=(self.bkg_id,bkg_timestamp,self.pass_no,self.origin,self.destination,self.date_of_journey,self.time_of_journey,self.journey_type)
+				
+			elif self.bkg_type=='Taxi':
+				sql='insert into taxi_bkgs values (%s,%s,%s,%s,%s,%s,%s)'
+				val=(self.bkg_id,bkg_timestamp,self.origin,self.destination,self.date_of_journey,self.time_of_journey,self.journey_type)
+				
+			cur.execute(sql,val)
+			con.commit()
+			
+			def clipboard():
+				confirmmsg_win.clipboard_clear()
+				confirmmsg_win.clipboard_append(summary_text)
+				clipbd_btn.configure(fg='green',text='Copied!')
+			
+			def exit():
+				parent_win.destroy()
+				if self.method_of_payment in ['Credit card','Debit card']:
+					cardpay_window.destroy()
+				confirmmsg_win.destroy()
+
+			tk.Label(confirmmsg_win,text='The booking has been\nsuccessfully made.',font=h1fnt,justify=tk.LEFT).grid(row=0,column=0,sticky=tk.W,padx=10,pady=10)
+
+			summary=scrolledtext.ScrolledText(confirmmsg_win,font=fnt,width=30,height=8)
+			summary.grid(column=0,row=3,sticky=tk.EW,padx=10,pady=10,columnspan=2)
+
+			if self.method_of_payment in ['Credit card', 'Debit card']:
+				payment_text=f'''
+Card payment 
+------------
+${str(self.total_fare)} paid
+
+Card type: {self.method_of_payment} ({card_brand})
+Card-holder name:
+{self.cardholder_name}
+Card number: XXXX-XXXX-XXXX-{self.card_number[-4:]}'''			
+			elif self.method_of_payment=='Cash':
+				payment_text=f'''
+Cash payment 
+------------
+${str(self.total_fare)} paid'''			
+
+			summary_text=f'''
+{self.bkg_type} Booking
+============
+Booking ID: {self.bkg_id} 
+Booking timestamp: 
+{bkg_timestamp}
+
+Journey details
+---------------
+{self.bkg_type} type: {self.journey_type}
+From: {self.origin}
+To: {self.destination}
+
+Date: {self.date_of_journey}
+Time: {self.time_of_journey}
+
+Fare details
+------------
+{fare_text}
+
+Distance: {str(self.distance)} km
+Total fare: ${str(self.total_fare)} 
+
+{payment_text}
+
+==================
+PAYMENT SUCCESSFUL
+==================
+'''
+			
+			summary.insert(tk.INSERT,summary_text)
+			summary.configure(state='disabled')
+
+			clipbd_btn=tk.Button(confirmmsg_win,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
+			clipbd_btn.grid(row=5,column=0,padx=10,pady=10)
+			
+			if isPrintingEnabled==True:
+				to_receipt=Printing()
+				def print_receipt():
+					if self.bkg_type=='Bus':
+						to_receipt.receipt(parent_win=confirmmsg_win,bkg_type=self.bkg_type,bkg_id=self.bkg_id,journey_type=self.journey_type,pass_no=self.pass_no,origin=self.origin,destination=self.destination,date_of_journey=self.date_of_journey,time_of_journey=self.time_of_journey,distance=self.distance,total_fare=self.total_fare,method_of_payment=self.method_of_payment,card_brand=card_brand)
+					elif self.bkg_type=='Taxi':
+						to_receipt.receipt(parent_win=confirmmsg_win,bkg_type=self.bkg_type,bkg_id=self.bkg_id,journey_type=self.journey_type,pass_no=None,origin=self.origin,destination=self.destination,date_of_journey=self.date_of_journey,time_of_journey=self.time_of_journey,distance=self.distance,total_fare=self.total_fare,method_of_payment=self.method_of_payment,card_brand=card_brand)
+
+				print_btn=tk.Button(confirmmsg_win,text='Print...',font=fnt,command=print_receipt,justify=tk.CENTER)
+				print_btn.grid(row=6,column=0,padx=10,pady=10)
+
+			ok_btn=tk.Button(confirmmsg_win,text='OK',font=fnt,command=exit,justify=tk.CENTER)
+			ok_btn.grid(row=8,column=0,padx=10,pady=10)
+			confirmmsg_win.bind('<Return>',lambda event:exit())	
+		
+		self.parent_win=parent_win														# defines parent window
+
+		# defines booking parameters
+		self.bkg_type=bkg_type
+		self.bkg_id=bkg_id
+
+		self.journey_type=journey_type
+		self.pass_no=pass_no
+		self.origin=origin
+		self.destination=destination
+		self.date_of_journey=date_of_journey
+		self.time_of_journey=time_of_journey
+
+		self.method_of_payment=method_of_payment
+		
+		# Conversion and checking of datetime
+		datetime_format='%Y-%m-%d %H:%M'												# YYYY-MM-DD HH:MM; MySQL datetime format
+		x=datetime.now()+timedelta(minutes=45)											# minimum bkg time - 45 min from current time
+		min_bkgtime_str=x.strftime(datetime_format)										# Converts above datetime to string to MySQL date format
+		min_bkgtime=datetime.strptime(min_bkgtime_str,datetime_format)					# Converts string back to datetime object for comparision
+		inpdate_str=self.date_of_journey+' '+self.time_of_journey														# Combines date and time inputs into correct format for comparision purpose
+
+		isInpDateinFormat=True	
+		try:																			# is date and time inputted in format?
+			isInpDateinFormat=bool(datetime.strptime(inpdate_str,datetime_format))  	
+		except ValueError:		
+			isInpDateinFormat=False
+
+		if isInpDateinFormat==True:		
+			inp_dt=datetime.strptime(inpdate_str,datetime_format)						# Converts combined input to datetime for comparision
+
+			if inp_dt >= min_bkgtime:													# Minimum bkg time - 45 min from now
+				isNotPast=True
+			else:
+				isNotPast=False
+
+			if inp_dt <= min_bkgtime+timedelta(days=1096):								# 3-year limit on dates entered
+				isNotDistFuture=True
+			else:
+				isNotDistFuture=False
+
+		
+		if (not self.origin=='' and not self.origin.isspace()) and (not self.destination=='' and not self.destination.isspace()) and (not self.date_of_journey=='' and not self.date_of_journey.isspace()) and (not self.time_of_journey=='' and not self.time_of_journey.isspace()) and (not self.journey_type=='' and not self.journey_type.isspace()):
+			if self.origin in locations and self.destination in locations:		
+				if not self.origin == self.destination:
+					if isInpDateinFormat==True and len(self.date_of_journey)==10 and len(self.time_of_journey)==5: 
+						if isNotPast==True and isNotDistFuture==True:
+							if self.method_of_payment in ['Cash','Credit card','Debit card']:
+								
+								self.payment_id=f'P{str(rd.randint(10000,99999))}'
+
+								if self.bkg_type=='Bus':
+									self.fare_calculation(bkg_type=self.bkg_type,journey_type=self.journey_type,pass_no=self.pass_no,origin=self.origin,destination=self.destination)
+									fare_text=f'''
+Rate: ${str(self.rate)} per km
+
+Number of passengers: {self.pass_no}'''
+								elif self.bkg_type=='Taxi':
+									self.fare_calculation(bkg_type=self.bkg_type,journey_type=self.journey_type,pass_no=None,origin=self.origin,destination=self.destination)
+									fare_text=f'''
+Base rate: ${str(self.base_rate)} for first 5 km
+${str(self.rate)} per additional km'''
+								
+								if self.method_of_payment in ['Credit card','Debit card']:
+
+									def card_payment():
+										self.cardholder_name=cardname_inp.get()
+										self.card_number=cardno_inp.get()
+										self.exp_month=expmonth_inp.get()
+										self.exp_year=expyear_inp.get()
+										self.cvv=cvv_inp.get()
+										
+										cur_mth=int(cur_time.strftime('%m'))
+										cur_yr=int(cur_time.strftime('%Y'))
+
+										if (not self.card_number=='' and not self.card_number.isspace()) and (not self.cardholder_name=='' and not self.cardholder_name.isspace()) and (not self.exp_year=='' and not self.exp_year.isspace()) and (not self.exp_month=='' and not self.exp_month.isspace()) and (not self.cvv=='' and not self.cvv.isspace()):
+											if len(self.card_number) == 16 and self.card_number[0] in '3456':
+												if len(self.exp_year) == 4 and int(self.exp_year) >= cur_yr:
+													if int(self.exp_year) == cur_yr:						# If expiry year is same as current year
+														if (len(self.exp_month) == 2) and (int(self.exp_month)>= 1 and int(self.exp_month) <= 12) and (int(self.exp_month) > cur_mth):
+															if len(self.cvv)==3:
+																booking()
+															else:
+																messagebox.showerror('Error','CVV must be a 3-digit number.',parent=cardpay_window)
+														else:
+															messagebox.showerror('Error','Invalid expiry month.',parent=cardpay_window)
+													elif int(self.exp_year) > cur_yr:					# If expiry year is ahead of current year			
+														if (len(self.exp_month) == 2) and (int(self.exp_month)>= 1 and int(self.exp_month) <= 12):
+															if len(self.cvv)==3:
+																booking()
+															else:
+																messagebox.showerror('Error','CVV must be a 3-digit number.',parent=cardpay_window)
+														else:
+															messagebox.showerror('Error','Invalid expiry month.',parent=cardpay_window)
+													else:
+														pass
+												else:
+													messagebox.showerror('Error','Invalid expiry year.',parent=cardpay_window)
+											else:
+												messagebox.showerror('Error','Invalid card number.',parent=cardpay_window)
+										else:
+											messagebox.showerror('Error','Please enter all required\npayment details.',parent=cardpay_window)
+									
+									cardpay_window=tk.Toplevel()
+									cardpay_window.title('Payment Gateway')
+									cardpay_window.resizable(False,False)
+									icon=tk.PhotoImage(file='img/icon.png')
+									cardpay_window.iconphoto(False,icon)
+
+									f3=tk.Frame(cardpay_window)
+									f3.grid(row=0,column=0)
+
+									img1=tk.PhotoImage(file='icons/make-payment.png')
+									img=tk.Label(f3,image=img1,font=h1fnt)
+									img.grid(column=0,row=0,padx=10,pady=10)
+									img.image=img1
+
+									tk.Label(f3,text='Payment',font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
+
+									f4=tk.Frame(cardpay_window)
+									f4.grid(row=1,column=0)
+
+									payment_summary=scrolledtext.ScrolledText(f4,font=fnt,width=25,height=5)
+									payment_summary.grid(column=1,row=2,sticky=tk.EW,padx=10,pady=10)
+
+									text=f'''Booking ID: {self.bkg_id}
+=================
+
+Journey details
+---------------
+{self.bkg_type} type: {self.journey_type}
+From: {self.origin}
+To: {self.destination}
+
+Date: {self.date_of_journey}
+Time: {self.time_of_journey}
+
+Fare details
+------------
+{fare_text}
+
+Distance: {str(self.distance)} km
+
+Total fare: ${str(self.total_fare)}
+'''
+									
+									payment_summary.insert(tk.INSERT,text)
+									payment_summary.configure(state='disabled')
+
+									tk.Label(f4,text='Payment ID',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
+									payid=tk.Label(f4,text=self.payment_id,font=fnt)
+									payid.grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
+
+									
+									tk.Label(f4,text='Accepted cards',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
+									
+									img2=tk.PhotoImage(file='img/cards.png')
+									card_image=tk.Label(f4,image=img2,font=fnt)
+									card_image.grid(column=1,row=5,sticky=tk.W,padx=10,pady=10)
+									card_image.image=img2
+
+									tk.Label(f4,text='Card number',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
+									cardno_inp=tk.Entry(f4,font=fnt)
+									cardno_inp.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
+
+									tk.Label(f4,text='Cardholder name',font=fnt).grid(column=0,row=7,sticky=tk.E,padx=10,pady=10)
+									cardname_inp=tk.Entry(f4,font=fnt)
+									cardname_inp.grid(column=1,row=7,sticky=tk.EW,padx=10,pady=10)
+
+									tk.Label(f4,text='Expiry Year and Month\n[YYYY-MM]',font=fnt,justify=tk.RIGHT).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
+									expyear_inp=tk.Entry(f4,font=fnt,width=10)
+									expyear_inp.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
+
+									tk.Label(f4,text='-',font=fnt).grid(column=2,row=8,sticky=tk.EW,padx=10,pady=10)
+									expmonth_inp=tk.Entry(f4,font=fnt,width=10)
+									expmonth_inp.grid(column=3,row=8,sticky=tk.W,padx=10,pady=10)
+
+									tk.Label(f4,text='CVV number',font=fnt).grid(column=0,row=9,sticky=tk.E,padx=10,pady=10)
+									cvv_inp=tk.Entry(f4,font=fnt)
+									cvv_inp.grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
+
+									btn=tk.Button(f4,font=fntit,text='Pay',command=card_payment,fg='green');btn.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
+
+									retimg=tk.PhotoImage(file='icons/return.png')
+									btn4=tk.Button(f4,font=fnt,image=retimg,command=cardpay_window.destroy)
+									btn4.grid(column=0,row=15,padx=10,pady=10,sticky=tk.SW)
+									btn4.img=retimg
+
+									cardpay_window.bind('<Return>',lambda event:card_payment())
+								elif self.method_of_payment=='Cash':
+									booking()
+							else:
+								messagebox.showerror('Error','Please select payment method',parent=self.parent_win)	
+						else:
+							messagebox.showerror('Error','Invalid timing entered.',parent=self.parent_win)
+					else:
+						messagebox.showerror('Error','Invalid date or time format entered.',parent=self.parent_win)
+				else:
+					messagebox.showerror('Error','The origin and destination are the same.',parent=self.parent_win)
+			else:
+				messagebox.showerror('Error','Invalid origin or destination.',parent=self.parent_win)
+		else:
+			messagebox.showerror('Error','Please do not leave any fields blank.',parent=self.parent_win)
+
 def bus_booking():																	# Bus booking
 
 	# Initialising the bus booking function
@@ -346,518 +846,9 @@ def bus_booking():																	# Bus booking
 		bus_type=bustype_inp.get()
 		pass_no=passno_inp.get()
 
-		# Conversion and checking of datetime
-		datetime_format='%Y-%m-%d %H:%M'												# YYYY-MM-DD HH:MM; MySQL datetime format
-		x=datetime.now()+timedelta(minutes=45)											# minimum bkg time - 45 min from current time
-		min_bkgtime_str=x.strftime(datetime_format)										# Converts above datetime to string to MySQL date format
-		min_bkgtime=datetime.strptime(min_bkgtime_str,datetime_format)					# Converts string back to datetime object for comparision
-		inpdate_str=date_of_journey+' '+time_of_journey														# Combines date and time inputs into correct format for comparision purpose
+		bus_bkg=Booking()
+		bus_bkg.payment(parent_win=busbkg_win,bkg_type='Bus',bkg_id=busbkg_id,journey_type=bus_type,pass_no=pass_no,origin=origin,destination=destination,date_of_journey=date_of_journey,time_of_journey=time_of_journey,method_of_payment=paytype_inp.get())
 
-		isInpDateinFormat=True	
-		try:																			# is date and time inputted in format?
-			isInpDateinFormat=bool(datetime.strptime(inpdate_str,datetime_format))  	
-		except ValueError:		
-			isInpDateinFormat=False
-
-		if isInpDateinFormat==True:		
-			inp_dt=datetime.strptime(inpdate_str,datetime_format)						# Converts combined input to datetime for comparision
-
-			if inp_dt >= min_bkgtime:													# Minimum bkg time - 45 min from now
-				isNotPast=True
-			else:
-				isNotPast=False
-
-			if inp_dt <= min_bkgtime+timedelta(days=1096):								# 3-year limit on dates entered
-				isNotDistFuture=True
-			else:
-				isNotDistFuture=False
-
-		# Checking of user inputs before proceeding to payment function
-		if (not origin=='' and not origin.isspace()) and (not destination=='' and not destination.isspace()) and (not date_of_journey=='' and not date_of_journey.isspace()) and (not time_of_journey=='' and not time_of_journey.isspace()) and (not bus_type=='' and not bus_type.isspace()):
-			if origin in locations and destination in locations:		
-				if not origin == destination:
-					if isInpDateinFormat==True and len(date_of_journey)==10 and len(time_of_journey)==5: 
-						if isNotPast==True and isNotDistFuture==True:
-							if payment_method.get() in ['R','C']:
-							
-								# calculation of fare on basis of type
-								if bustype_inp.get()=='Standard':
-									rate=5
-								elif bustype_inp.get()=='Express':
-									rate=10
-								elif bustype_inp.get()=='Premium':
-									rate=15
-
-								payment_id=f'P{str(rd.randint(10000,99999))}'
-
-								distance=abs((locations.index(destination))-(locations.index(origin)))*4	#distance between locations - 4 km.
-								total_fare=(rate*distance)*pass_no
-
-								# is it card (R) or cash?
-								if payment_method.get()=='R':
-
-									def card_payment():		# Card payment function
-										# Takes inputs of payment details
-										card_type=cardtype_inp.get()
-										card_no=cardno_inp.get()
-										card_name=cardname_inp.get()
-										exp_year=expyear_inp.get()
-										exp_month=expmonth_inp.get()
-										cvv=cvv_inp.get()
-										
-										# Gets current month and year for card expiry date checking
-										cur_dt=datetime.now()
-										cur_mth=cur_dt.month
-										cur_yr=cur_dt.year
-
-										def bkg_confirmed():
-
-											def clipboard():
-												confirmmsg_win.clipboard_clear()
-												confirmmsg_win.clipboard_append(summary_text)
-												clipbd_btn.configure(fg='green',text='Copied!')
-											
-											def exit():
-												confirmmsg_win.destroy()
-												cardpay_window.destroy()
-												busbkg_win.destroy()
-
-											card_brand=''
-											if card_no[0] == '3':
-												card_brand='AMEX'
-											elif card_no[0] == '4':
-												card_brand='VISA'
-											elif card_no[0] == '5':
-												card_brand='MASTER'
-											elif card_no[0] == '6':
-												card_brand='DISCOVER'
-
-											# Adding booking details to database
-											bkg_time=datetime.now()									# 	Timestamp to mark bookings
-											bkg_timestamp=bkg_time.strftime('%Y-%m-%d %H:%M:%S')	#	Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
-											
-											sql='insert into bus_bkgs values (%s,%s,%s,%s,%s,%s,%s,%s)'
-											val=(busbkg_id,bkg_timestamp,pass_no,origin,destination,date_of_journey,time_of_journey,bus_type)
-											cur.execute(sql,val)
-											con.commit()
-
-											# Adds payment details to database
-											pay_time=datetime.now()									#	Timestamp to mark payment
-											pay_timestamp=pay_time.strftime('%Y-%m-%d %H:%M:%S')	#	Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
-											
-											sql=('insert into payment_details values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)')
-											val=(payment_id,pay_timestamp,busbkg_id,total_fare,card_type,card_no,card_name,cvv,exp_month,exp_year)
-											cur.execute(sql,val)
-											con.commit()
-
-											# Confirmation popup
-											confirmmsg_win=tk.Toplevel()
-											confirmmsg_win.resizable(False,False)
-											confirmmsg_win.title('Booking successful')
-											icon=tk.PhotoImage(file='img/icon.png')
-											confirmmsg_win.iconphoto(False,icon)
-
-											tk.Label(confirmmsg_win,text='The booking has been\nsuccessfully made.',font=h1fnt,justify=tk.LEFT).grid(row=0,column=0,sticky=tk.W,padx=10,pady=10)
-
-											summary=scrolledtext.ScrolledText(confirmmsg_win,font=fnt,width=30,height=8)
-											summary.grid(column=0,row=3,sticky=tk.EW,padx=10,pady=10,columnspan=2)
-
-											summary_text=f'''
-Bus Booking
-===========
-Booking ID: {busbkg_id} 
-Booking timestamp: 
-{bkg_timestamp}
-
-Journey details
----------------
-Bus type: {bus_type}
-From: {origin}
-To: {destination}
-
-Date: {date_of_journey}
-Time: {time_of_journey}
-
-Fare details
-------------
-Rate: ${str(rate)} / km
-Distance: {str(distance)} km
-Number of passengers: {str(pass_no)}
-
-Total fare: ${str(total_fare)} 
-
-Card payment 
-------------
-${str(total_fare)} paid
-
-Card type: {card_type} ({card_brand})
-Card-holder name:
-{card_name}
-Card number: XXXX-XXXX-XXXX-{card_no[-4:]}
-
-==================
-PAYMENT SUCCESSFUL
-==================
-'''
-											
-											summary.insert(tk.INSERT,summary_text)
-											summary.configure(state='disabled')
-
-											clipbd_btn=tk.Button(confirmmsg_win,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
-											clipbd_btn.grid(row=5,column=0,padx=10,pady=10)
-											
-											if isPrintingEnabled==True:
-
-												def receipt():
-
-													def print_receipt():
-														if pf.system()=='Windows':
-															receipt_pf_txt=f'Platform: {pf.system()} {pf.version()}'
-														elif pf.system()=='Linux':
-															receipt_pf_txt=f'Platform: {pf.system()} {pf.release()}'
-														
-														tkt_time=datetime.now()									# timestamp to mark ticket
-														tkt_timestamp=tkt_time.strftime('%Y-%m-%d %H:%M:%S')	# Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
-														
-														tkt_bar_time=tkt_time.strftime('%y%m%d')				# tkt timestamp for barcode
-														tkt_id=f'TKT{str(rd.randint(100000,999999))}'
-
-														bar_no=f'{tkt_id}{tkt_bar_time}'						# barcode number
-
-														receipt_text=f'''
-Bus Booking {busbkg_id}
-
-Ticket {tkt_id} ({tkt_timestamp})
-
-Number of passengers: {str(pass_no)}
-From: {origin} To: {destination}
-Bus type: {bus_type}
-
-Date: {date_of_journey}
-Time: {time_of_journey}
-
-Distance: {str(distance)} km
-
-Total fare: ${str(total_fare)}
-Paid by: {card_type} ({card_brand})
-'''
-														
-														sql=('insert into tkt_details values(%s,%s,%s)')
-														#print(tktid,busbkg_id,tkt_timestamp)
-														val=(bar_no,busbkg_id,tkt_timestamp)
-														cur.execute(sql,val)
-														con.commit()
-
-														pr.image('img/icon-print.png')
-														pr.text(receipt_text)
-														pr.text('\n')
-														pr.barcode(bar_no,'CODE93',font='A')
-														pr.text('\n')
-														pr.text(promo_text)
-														pr.text('\n\n')
-														pr.text('Powered by Amadeus IBS')
-														pr.text('\n')
-														pr.text(f'Build: {build} on {receipt_pf_txt} ')
-														pr.text('\n')
-														pr.cut()
-													
-													try:
-														pr = Network(pr_ip)
-														for i in range(pass_no):
-															print_receipt()
-														pr.close()
-													except:
-														messagebox.showerror('Error','Unable to print receipt.',parent=confirmmsg_win)
-
-												print_btn=tk.Button(confirmmsg_win,text='Print...',font=fnt,command=receipt,justify=tk.CENTER)
-												print_btn.grid(row=6,column=0,padx=10,pady=10)
-
-											ok_btn=tk.Button(confirmmsg_win,text='OK',font=fnt,command=exit,justify=tk.CENTER)
-											ok_btn.grid(row=8,column=0,padx=10,pady=10)
-											confirmmsg_win.bind('<Return>',lambda event:exit())		
-										
-										#Payment details input checking
-										if (not card_type=='' and not card_type.isspace()) and (not card_no=='' and not card_no.isspace()) and (not card_name=='' and not card_name.isspace()) and (not exp_year=='' and not exp_year.isspace()) and (not exp_month=='' and not exp_month.isspace()) and (not cvv=='' and not cvv.isspace()):
-											if len(card_no) == 16 and card_no[0] in '3456':
-												if len(exp_year) == 4 and int(exp_year) >= cur_yr:
-													if int(exp_year) == cur_yr:						# If expiry year is same as current year
-														if (len(exp_month) == 2) and (int(exp_month)>= 1 and int(exp_month) <= 12) and (int(exp_month) > cur_mth):
-															if len(cvv)==3:
-																bkg_confirmed()
-															else:
-																messagebox.showerror('Error','CVV must be a 3-digit number.',parent=cardpay_window)
-														else:
-															messagebox.showerror('Error','Invalid expiry month.',parent=cardpay_window)
-													elif int(exp_year) > cur_yr:					# If expiry year is ahead of current year			
-														if (len(exp_month) == 2) and (int(exp_month)>= 1 and int(exp_month) <= 12):
-															if len(cvv)==3:
-																bkg_confirmed()
-															else:
-																messagebox.showerror('Error','CVV must be a 3-digit number.',parent=cardpay_window)
-														else:
-															messagebox.showerror('Error','Invalid expiry month.',parent=cardpay_window)
-													else:
-														pass
-												else:
-													messagebox.showerror('Error','Invalid expiry year.',parent=cardpay_window)
-											else:
-												messagebox.showerror('Error','Invalid card number.',parent=cardpay_window)
-										else:
-											messagebox.showerror('Error','Please enter all required\npayment details.',parent=cardpay_window)
-
-									cardpay_window=tk.Toplevel()
-									cardpay_window.title('Payment Gateway')
-									cardpay_window.resizable(False,False)
-									icon=tk.PhotoImage(file='img/icon.png')
-									cardpay_window.iconphoto(False,icon)
-
-									f3=tk.Frame(cardpay_window)
-									f3.grid(row=0,column=0)
-
-									img1=tk.PhotoImage(file='icons/make-payment.png')
-									img=tk.Label(f3,image=img1,font=h1fnt)
-									img.grid(column=0,row=0,padx=10,pady=10)
-									img.image=img1
-
-									tk.Label(f3,text='Payment',font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
-
-									f4=tk.Frame(cardpay_window)
-									f4.grid(row=1,column=0)
-
-									payment_summary=scrolledtext.ScrolledText(f4,font=fnt,width=25,height=5)
-									payment_summary.grid(column=1,row=2,sticky=tk.EW,padx=10,pady=10)
-
-									text=f'''
-Booking ID: {busbkg_id}
-=================
-
-Journey details
----------------
-Bus type: {bus_type}
-
-From: {origin}
-To: {destination}
-
-Date: {date_of_journey}
-Time: {time_of_journey}
-
-Fare details
-------------
-Rate: ${str(rate)} per km
-Distance: {str(distance)} km
-Number of passengers: {str(pass_no)}
-
-Total fare: ${str(total_fare)}
-'''
-									payment_summary.insert(tk.INSERT,text)
-									payment_summary.configure(state='disabled')
-
-									tk.Label(f4,text='Payment ID',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
-									payid=tk.Label(f4,text=payment_id,font=fnt)
-									payid.grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
-
-									cardtype_inp=tk.StringVar()
-									tk.Label(f4,text='Pay by',font=fnt).grid(column=0,row=4,sticky=tk.E,padx=10,pady=10)
-									card=('','Debit card','Credit card')
-									pay_type=ttk.OptionMenu(f4,cardtype_inp,*card)
-									pay_type.grid(column=1,row=4,sticky=tk.W,padx=10,pady=10)
-
-									tk.Label(f4,text='Accepted cards',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
-									
-									img2=tk.PhotoImage(file='img/cards.png')
-									cards_images=tk.Label(f4,image=img2,font=fnt)
-									cards_images.grid(column=1,row=5,sticky=tk.W,padx=10,pady=10)
-									cards_images.image=img2
-
-									tk.Label(f4,text='Card number',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
-									cardno_inp=tk.Entry(f4,font=fnt)
-									cardno_inp.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
-
-									tk.Label(f4,text='Cardholder name',font=fnt).grid(column=0,row=7,sticky=tk.E,padx=10,pady=10)
-									cardname_inp=tk.Entry(f4,font=fnt)
-									cardname_inp.grid(column=1,row=7,sticky=tk.EW,padx=10,pady=10)
-
-									tk.Label(f4,text='Expiry Year and Month\n[YYYY-MM]',font=fnt,justify=tk.RIGHT).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
-									expyear_inp=tk.Entry(f4,font=fnt,width=10)
-									expyear_inp.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
-
-									tk.Label(f4,text='-',font=fnt).grid(column=2,row=8,sticky=tk.EW,padx=10,pady=10)
-									expmonth_inp=tk.Entry(f4,font=fnt,width=10)
-									expmonth_inp.grid(column=3,row=8,sticky=tk.W,padx=10,pady=10)
-
-									tk.Label(f4,text='CVV number',font=fnt).grid(column=0,row=9,sticky=tk.E,padx=10,pady=10)
-									cvv_inp=tk.Entry(f4,font=fnt)
-									cvv_inp.grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
-
-									submit_button=tk.Button(f4,font=fntit,text='Pay',command=card_payment,fg='green');submit_button.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
-									
-									return_icon=tk.PhotoImage(file='icons/return.png')
-									return_button=tk.Button(f4,font=fnt,image=return_icon,command=cardpay_window.destroy)
-									return_button.grid(column=0,row=15,padx=10,pady=10,sticky=tk.SW)
-									return_button.img=return_icon
-
-									cardpay_window.bind('<Return>',lambda event:card_payment())		
-
-								elif payment_method.get()=='C':
-									
-									def clipboard():
-										confirmmsg_win.clipboard_clear()
-										confirmmsg_win.clipboard_append(summary_text)
-										clipbd_btn.configure(fg='green',text='Copied!')
-									
-									def exit():
-										confirmmsg_win.destroy()
-										busbkg_win.destroy()
-
-									# Adding booking details to database
-									bkg_time=datetime.now()									#	Timestamp to mark bookings
-									bkg_timestamp=bkg_time.strftime('%Y-%m-%d %H:%M:%S')	#	Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
-								
-									sql='insert into bus_bkgs values (%s,%s,%s,%s,%s,%s,%s,%s)'
-									val=(busbkg_id,bkg_timestamp,pass_no,origin,destination,date_of_journey,time_of_journey,bus_type)
-									cur.execute(sql,val)
-									con.commit()
-
-									# Adds payment details to database
-									pay_time=datetime.now()									# 	Timestamp to mark payment
-									pay_timestamp=pay_time.strftime('%Y-%m-%d %H:%M:%S')	#	Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
-									
-									sql=('insert into payment_details values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)')
-									val=(payment_id,pay_timestamp,busbkg_id,total_fare,'Cash',None,None,None,None,None)
-									cur.execute(sql,val)
-									con.commit()
-
-									# Confirmation popup
-									confirmmsg_win=tk.Toplevel()
-									confirmmsg_win.resizable(False,False)
-									confirmmsg_win.title('Booking successful')
-									icon=tk.PhotoImage(file='img/icon.png')
-									confirmmsg_win.iconphoto(False,icon)
-
-									tk.Label(confirmmsg_win,text='The booking has been\nsuccessfully made.',font=h1fnt,justify=tk.LEFT).grid(row=0,column=0,sticky=tk.W,padx=10,pady=10)
-
-									summary=scrolledtext.ScrolledText(confirmmsg_win,font=fnt,width=30,height=8)
-									summary.grid(column=0,row=3,sticky=tk.EW,padx=10,pady=10,columnspan=2)
-
-									summary_text=f'''
-Bus Booking
-===========
-Booking ID: {busbkg_id}
-Booking Timestamp:
-{bkg_timestamp}
-
-Journey details
----------------
-From: {origin}
-To: {destination}
-Bus type: {bus_type}
-Date: {date_of_journey}
-Time: {time_of_journey}
-
-Fare details
-------------
-Rate: ${str(rate)} per km
-Distance: {str(distance)} km
-Number of passengers: {str(pass_no)}
-
-Total fare: ${str(total_fare)}
-
-Cash payment
-------------
-${str(total_fare)} paid
-
-Payment ID: {payment_id}
-==================
-PAYMENT SUCCESSFUL
-==================
-'''
-									summary.insert(tk.INSERT,summary_text)
-									summary.configure(state='disabled')
-									
-									clipbd_btn=tk.Button(confirmmsg_win,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
-									clipbd_btn.grid(row=5,column=0,padx=10,pady=10)
-									
-									# Printing function
-									if isPrintingEnabled==True:
-										def receipt():
-
-											def print_receipt():
-												if pf.system()=='Windows':
-													receipt_pf_txt=f'{pf.system()} {pf.version()}'
-												elif pf.system()=='Linux':
-													receipt_pf_txt=f'{pf.system()} {pf.release()}'
-
-												tkt_time=datetime.now()									# timestamp to mark ticket
-												tkt_timestamp=tkt_time.strftime('%Y-%m-%d %H:%M:%S')	# Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
-												
-												tkt_bar_time=tkt_time.strftime('%y%m%d')				# tkt timestamp for barcode
-												tkt_id=f'TKT{str(rd.randint(100000,999999))}'
-
-												bar_no=f'{tkt_id}{tkt_bar_time}'						# barcode number
-												
-												receipt_text=f'''
-Bus Booking {busbkg_id}
-
-Ticket {tkt_id} ({tkt_timestamp})
-
-Number of passengers: {str(pass_no)}
-From: {origin} To: {destination}
-Bus type: {bus_type}
-
-Date: {date_of_journey}
-Time: {time_of_journey}
-
-Distance: {str(distance)} km
-
-Total fare: ${str(total_fare)}
-Paid by: Cash
-'''
-												
-												sql=('insert into tkt_details values(%s,%s,%s)')
-												#print(tktid,busbkg_id,tkt_timestamp)
-												val=(bar_no,busbkg_id,tkt_timestamp)
-												cur.execute(sql,val)
-												con.commit()
-
-												pr.image('img/icon-print.png')
-												pr.text(receipt_text)
-												pr.text('\n')
-												pr.barcode(bar_no, 'CODE93')
-												pr.text('\n')
-												pr.text(promo_text)
-												pr.text('\n\n')
-												pr.text('Powered by Amadeus IBS')
-												pr.text('\n')
-												pr.text(f'Build: {build} on {receipt_pf_txt} ')
-												pr.cut()
-											try:
-												pr = Network(pr_ip)
-												for i in range(pass_no):
-													print_receipt()
-												pr.close()
-											except:
-												messagebox.showerror('Error','Unable to print receipt.',parent=confirmmsg_win)
-
-										print_btn=tk.Button(confirmmsg_win,text='Print...',font=fnt,command=receipt,justify=tk.CENTER)
-										print_btn.grid(row=6,column=0,padx=10,pady=10)
-
-									ok_btn=tk.Button(confirmmsg_win,text='OK',font=fnt,command=exit,justify=tk.CENTER)
-									ok_btn.grid(row=10,column=0,padx=10,pady=10)
-									confirmmsg_win.bind('<Return>',lambda event:exit())		
-
-							else:
-								messagebox.showerror('Error','Please select payment method',parent=busbkg_win)	
-						else:
-							messagebox.showerror('Error','Invalid timing entered.',parent=busbkg_win)
-					else:
-						messagebox.showerror('Error','Invalid date or time format entered.',parent=busbkg_win)
-				else:
-					messagebox.showerror('Error','The origin and destination are the same.',parent=busbkg_win)
-			else:
-				messagebox.showerror('Error','Invalid origin or destination.',parent=busbkg_win)
-		else:
-			messagebox.showerror('Error','Please do not leave any fields blank.',parent=busbkg_win)
-	
 	#FRAME 1
 	f1=tk.Frame(busbkg_win)
 	f1.grid(row=0,column=0)
@@ -909,10 +900,11 @@ Paid by: Cash
 	Separator(f2,orient='horizontal').grid(row=14,column=0,columnspan=3,sticky=tk.EW,pady=10)
 
 	# Payment method - Card or cash?
-	payment_method=tk.StringVar(f2)	
-	tk.Label(f2,text='Payment method',font=fnt).grid(column=0,row=15,sticky=tk.E,padx=10,pady=10)
-	ttk.Radiobutton(f2, text = 'Credit/Debit Card',variable = payment_method,value = 'R').grid(column=1,row=15,sticky=tk.W,padx=10)
-	ttk.Radiobutton(f2, text = 'Cash',variable = payment_method,value = 'C').grid(column=1,row=16,sticky=tk.W,padx=10)
+	paytype_inp=tk.StringVar()
+	tk.Label(f2,text='Pay by',font=fnt).grid(column=0,row=4,sticky=tk.E,padx=10,pady=10)
+	paytypes=('','Cash','Debit card','Credit card')
+	pay_type=ttk.OptionMenu(f2,paytype_inp,*paytypes)
+	pay_type.grid(column=1,row=15,sticky=tk.W,padx=10,pady=10)
 
 	# Submit
 	tk.Label(f2,text='Proceed to checkout',font=fnt,justify=tk.RIGHT).grid(column=0,row=20,sticky=tk.E,padx=10,pady=10)
@@ -957,536 +949,9 @@ def taxi_booking():																	# Taxi booking
 		time_of_journey=time.get()
 		taxi_type=n.get()
 
-		datetime_format='%Y-%m-%d %H:%M'								# YYYY-MM-DD HH:MM; MySQL datetime format
-		x=datetime.now()+timedelta(minutes=10)				# timestamp for reference - 10 min from current time
-		min_bkgtime_str=x.strftime(datetime_format)						# Converts datetime to string in MySQL time format 
-		min_bkgtime=datetime.strptime(min_bkgtime_str,datetime_format)	# Converts string back to datetime object for comparision
-		inpdate_str=date_of_journey+' '+time_of_journey
+		taxi_bkg=Booking()
+		taxi_bkg.payment(parent_win=taxibkg_win,bkg_type='Taxi',bkg_id=taxibkg_id,journey_type=taxi_type,pass_no=None,origin=origin,destination=destination,date_of_journey=date_of_journey,time_of_journey=time_of_journey,method_of_payment=paytype_inp.get())
 
-		isInpDateinFormat=True
-		try:
-			isInpDateinFormat=bool(datetime.strptime(inpdate_str,datetime_format))		#Is date and time inputted in correct format?
-		except ValueError:
-			isInpDateinFormat=False
-
-		if isInpDateinFormat==True:
-			inp_dt=datetime.strptime(inpdate_str,datetime_format)		#Converts inputs to datetime format
-
-			if inp_dt >= min_bkgtime:							#Is input in the past?
-				isNotPast=True
-			else:
-				isNotPast=False
-
-			if inp_dt <= min_bkgtime+timedelta(days=2):		#Is input greater than 2 days?
-				isNotDistFuture=True
-			else:
-				isNotDistFuture=False
-
-		# Checking of user inputs before proceeding to payment function
-		if (not origin=='' and not origin.isspace()) and (not destination=='' and not destination.isspace()) and (not date_of_journey=='' and not date_of_journey.isspace()) and (not time_of_journey=='' and not time_of_journey.isspace()) and (not taxi_type=='' and not taxi_type.isspace()):
-			if origin in locations and destination in locations:
-				if not origin == destination:
-					if isInpDateinFormat==True and len(date_of_journey)==10 and len(time_of_journey)==5:
-						if isNotPast==True and isNotDistFuture==True:
-							if payment_method.get() in ['R','C']:
-
-								# calculation of fare on basis of type
-								if n.get()=='Standard':
-									base_rate=15
-								elif n.get()=='XL':
-									base_rate=25
-								elif n.get()=='Luxury':
-									base_rate=40
-								
-								if n.get()=='Standard':
-									rate=3
-								elif n.get()=='XL':
-									rate=5
-								elif n.get()=='Luxury':
-									rate=10
-								
-								payment_id='P'+str(rd.randint(10000,99999))
-
-								o=from_inp.get()
-								d=to_inp.get()
-								distance=abs((locations.index(d))-(locations.index(o)))*4	#distance between locations - 4 km.
-								if distance > 5:
-									total_fare=(base_rate+(rate*(distance-5)))
-								else:
-									total_fare=(base_rate+0)
-
-								# is it card (R) or cash?
-								if payment_method.get()=='R':
-
-									def card_payment():		# Card payment function
-										# Takes inputs of payment details
-										card_type=cardtype_inp.get()
-										card_no=cardno_inp.get()
-										card_name=cardname_inp.get()
-										exp_year=expyear_inp.get()
-										exp_month=expmonth_inp.get()
-										cvv=cvv_inp.get()
-
-										# Gets current month and year for card expiry date checking
-										cur_dt=datetime.now()
-										cur_mth=cur_dt.month
-										cur_yr=cur_dt.year
-
-										def bkg_confirmed():		
-
-											def clipboard():
-												confirmmsg_win.clipboard_clear()
-												confirmmsg_win.clipboard_append(summary_text)
-												clipbd_button.configure(fg='green',text='Copied!')
-																										
-											def exit():
-												confirmmsg_win.destroy()
-												cardpay_window.destroy()
-												taxibkg_win.destroy()
-
-											card_brand=''
-											if card_no[0] == '3':
-												card_brand='AMEX'
-											elif card_no[0] == '4':
-												card_brand='VISA'
-											elif card_no[0] == '5':
-												card_brand='MASTER'
-											elif card_no[0] == '6':
-												card_brand='DISCOVER'
-
-											# Adding booking details to database
-											bkg_time=datetime.now()
-											bkg_timestamp=bkg_time.strftime('%Y-%m-%d %H:%M:%S')	#Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
-											
-											sql='insert into taxi_bkgs values (%s,%s,%s,%s,%s,%s,%s)'
-											val=(taxibkg_id,bkg_timestamp,origin,destination,date_of_journey,time_of_journey,taxi_type)
-											cur.execute(sql,val)
-											con.commit()
-
-											# Adds payment details to database
-											pay_time=datetime.now()
-											pay_timestamp=pay_time.strftime('%Y-%m-%d %H:%M:%S')	#Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
-
-											sql=('insert into payment_details values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)')
-											val=(payment_id,pay_timestamp,taxibkg_id,total_fare,card_type,card_no,card_name,cvv,exp_month,exp_year)
-											cur.execute(sql,val)
-											con.commit()
-
-											# Confirmation popup
-											confirmmsg_win=tk.Toplevel()
-											confirmmsg_win.resizable(False,False)
-											confirmmsg_win.title('Booking successful')
-											icon=tk.PhotoImage(file='img/icon.png')
-											confirmmsg_win.iconphoto(False,icon)
-
-											tk.Label(confirmmsg_win,text='The booking has been\nsuccessfully made.',font=h1fnt,justify=tk.LEFT).grid(row=0,column=0,sticky=tk.W,padx=10,pady=10)
-
-											summary=scrolledtext.ScrolledText(confirmmsg_win,font=fnt,width=30,height=8)
-											summary.grid(column=0,row=3,sticky=tk.EW,padx=10,pady=10,columnspan=2)
-
-											summary_text=f'''
-Taxi Booking
-============
-Booking ID: {taxibkg_id}
-Booking Timestamp: 
-{bkg_timestamp}
-
-Journey details
----------------
-Taxi type: {taxi_type}
-From: {origin}
-To: {destination}
-
-Date: {date_of_journey}
-Time: {time_of_journey}
-
-Fare details
-------------
-Base rate: ${str(base_rate)} for first 5 km
-${str(rate)} per additional km
-
-Distance: {str(distance)} km
-
-Total fare: ${str(total_fare)}
-
-Card payment
-------------
-${str(total_fare)} paid
-
-Card type: {card_type} ({card_brand})
-Card-holder name:
-{card_name}
-Card number: XXXX-XXXX-XXXX-{card_no[-4:]}
-
-==================
-PAYMENT SUCCESSFUL
-==================
-'''
-
-											summary.insert(tk.INSERT,summary_text)
-											summary.configure(state='disabled')
-											
-											clipbd_button=tk.Button(confirmmsg_win,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
-											clipbd_button.grid(row=5,column=0,padx=10,pady=10)
-											
-											if isPrintingEnabled==True:
-												
-												def receipt():
-													
-													def print_receipt():
-
-														if pf.system()=='Windows':
-															receipt_pf_txt=f'Platform: {pf.system()} {pf.version()}'
-														elif pf.system()=='Linux':
-															receipt_pf_txt=f'Platform: {pf.system()} {pf.release()}'
-														
-														tkt_time=datetime.now()									# timestamp to mark ticket
-														tkt_timestamp=tkt_time.strftime('%Y-%m-%d %H:%M:%S')	# Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
-														
-														tkt_bar_time=tkt_time.strftime('%y%m%d')				# tkt timestamp for barcode
-														tkt_id=f'TKT{str(rd.randint(100000,999999))}'
-
-														bar_no=f'{tkt_id}{tkt_bar_time}'						# barcode number
-														
-														receipt_text=f'''
-Taxi Booking {taxibkg_id}
-
-Ticket {tkt_id} ({tkt_timestamp})
-
-From: {origin} To: {destination}
-Taxi type: {taxi_type}
-
-Date: {date_of_journey}
-Time: {time_of_journey}
-
-Distance: {str(distance)} km
-
-Total fare: ${str(total_fare)}
-Paid by: {card_type} ({card_brand})
-'''
-
-														sql=('insert into tkt_details values(%s,%s,%s)')
-														#print(tktid,taxibkg_id,tkt_timestamp)
-														val=(bar_no,taxibkg_id,tkt_timestamp)
-														cur.execute(sql,val)
-														con.commit()
-
-														pr.image('img/icon-2.png')
-														pr.text(receipt_text)
-														pr.text('\n')
-														pr.barcode(bar_no,'CODE93',font='A')
-														pr.text('\n')
-														pr.text(promo_text)
-														pr.text('\n\n')
-														pr.text('Powered by Amadeus IBS')
-														pr.text('\n')
-														pr.text(f'Build: {build} on {receipt_pf_txt} ')
-														pr.text('\n')
-														pr.cut()
-
-													try:
-														pr = Network(pr_ip)
-														print_receipt()
-														pr.close()
-													except:
-														messagebox.showerror('Error','Unable to connect to printer via network.',parent=confirmmsg_win)
-
-												print_btn=tk.Button(confirmmsg_win,text='Print...',font=fnt,command=receipt,justify=tk.CENTER)
-												print_btn.grid(row=6,column=0,padx=10,pady=10)
-
-											ok_btn=tk.Button(confirmmsg_win,text='OK',font=fnt,command=exit,justify=tk.CENTER)
-											ok_btn.grid(row=8,column=0,padx=10,pady=10)
-											confirmmsg_win.bind('<Return>',lambda event:exit())
-
-
-										if (not card_type=='' and not card_type.isspace()) and (not card_no=='' and not card_no.isspace()) and (not card_name=='' and not card_name.isspace()) and (not exp_year=='' and not exp_year.isspace()) and (not exp_month=='' and not exp_month.isspace()) and (not cvv=='' and not cvv.isspace()):
-											if len(card_no) == 16 and card_no[0] in '3456':
-												if len(exp_year) == 4 and int(exp_year) >= cur_yr:
-													if int(exp_year) == cur_yr:
-														if (len(exp_month) == 2) and (int(exp_month)>= 1 and int(exp_month) <= 12) and (int(exp_month) > cur_mth):
-															if len(cvv)==3:
-																bkg_confirmed()
-															else:
-																messagebox.showerror('Error','CVV must be a 3-digit number.',parent=cardpay_window)
-														else:
-															messagebox.showerror('Error','Invalid expiry month.',parent=cardpay_window)
-													elif int(exp_year) > cur_yr:							
-														if (len(exp_month) == 2) and (int(exp_month)>= 1 and int(exp_month) <= 12):
-															if len(cvv)==3:
-																bkg_confirmed()
-															else:
-																messagebox.showerror('Error','CVV must be a 3-digit number.',parent=cardpay_window)
-														else:
-															messagebox.showerror('Error','Invalid expiry month..',parent=cardpay_window)
-													else:
-														pass
-												else:
-													messagebox.showerror('Error','Invalid expiry year.',parent=cardpay_window)
-											else:
-												messagebox.showerror('Error','Invalid card number.',parent=cardpay_window)
-										else:
-											messagebox.showerror('Error','Please enter all required\npayment details.',parent=cardpay_window)
-									
-									cardpay_window=tk.Toplevel()
-									cardpay_window.title('Payment Gateway')
-									cardpay_window.resizable(False,False)
-									icon=tk.PhotoImage(file='img/icon.png')
-									cardpay_window.iconphoto(False,icon)
-
-									f3=tk.Frame(cardpay_window)
-									f3.grid(row=0,column=0)
-
-									img1=tk.PhotoImage(file='icons/make-payment.png')
-									img=tk.Label(f3,image=img1,font=h1fnt)
-									img.grid(column=0,row=0,padx=10,pady=10)
-									img.image=img1
-
-									tk.Label(f3,text='Payment',font=h1fnt,justify=tk.LEFT).grid(column=1,row=0,padx=10,pady=10,sticky=tk.W)
-
-									f4=tk.Frame(cardpay_window)
-									f4.grid(row=1,column=0)
-
-									payment_summary=scrolledtext.ScrolledText(f4,font=fnt,width=25,height=5)
-									payment_summary.grid(column=1,row=2,sticky=tk.EW,padx=10,pady=10)
-
-									text=f'''
-Booking ID: {taxibkg_id}
-=================
-
-Journey details
----------------
-Taxi type: {taxi_type}
-From: {origin}
-To: {destination}
-
-Date: {date_of_journey}
-Time: {time_of_journey}
-
-Fare details
-------------
-Base rate: ${str(base_rate)} for first 5 km
-${str(rate)} per additional km
-
-Distance: {str(distance)} km
-
-Total fare: ${str(total_fare)}
-'''
-									
-									payment_summary.insert(tk.INSERT,text)
-									payment_summary.configure(state='disabled')
-
-									tk.Label(f4,text='Payment ID',font=fnt).grid(column=0,row=3,sticky=tk.E,padx=10,pady=10)
-									payid=tk.Label(f4,text=payment_id,font=fnt)
-									payid.grid(column=1,row=3,sticky=tk.W,padx=10,pady=10)
-
-									cardtype_inp=tk.StringVar()
-									tk.Label(f4,text='Pay by',font=fnt).grid(column=0,row=4,sticky=tk.E,padx=10,pady=10)
-									card=('','Debit card','Credit card')
-									pay_type=ttk.OptionMenu(f4,cardtype_inp,*card)
-									pay_type.grid(column=1,row=4,sticky=tk.W,padx=10,pady=10)
-									
-									tk.Label(f4,text='Accepted cards',font=fnt).grid(column=0,row=5,sticky=tk.E,padx=10,pady=10)
-									
-									img2=tk.PhotoImage(file='img/cards.png')
-									card_image=tk.Label(f4,image=img2,font=fnt)
-									card_image.grid(column=1,row=5,sticky=tk.W,padx=10,pady=10)
-									card_image.image=img2
-
-									tk.Label(f4,text='Card number',font=fnt).grid(column=0,row=6,sticky=tk.E,padx=10,pady=10)
-									cardno_inp=tk.Entry(f4,font=fnt)
-									cardno_inp.grid(column=1,row=6,sticky=tk.EW,padx=10,pady=10)
-
-									tk.Label(f4,text='Cardholder name',font=fnt).grid(column=0,row=7,sticky=tk.E,padx=10,pady=10)
-									cardname_inp=tk.Entry(f4,font=fnt)
-									cardname_inp.grid(column=1,row=7,sticky=tk.EW,padx=10,pady=10)
-
-									tk.Label(f4,text='Expiry Year and Month\n[YYYY-MM]',font=fnt,justify=tk.RIGHT).grid(column=0,row=8,sticky=tk.E,padx=10,pady=10)
-									expyear_inp=tk.Entry(f4,font=fnt,width=10)
-									expyear_inp.grid(column=1,row=8,sticky=tk.EW,padx=10,pady=10)
-
-									tk.Label(f4,text='-',font=fnt).grid(column=2,row=8,sticky=tk.EW,padx=10,pady=10)
-									expmonth_inp=tk.Entry(f4,font=fnt,width=10)
-									expmonth_inp.grid(column=3,row=8,sticky=tk.W,padx=10,pady=10)
-
-									tk.Label(f4,text='CVV number',font=fnt).grid(column=0,row=9,sticky=tk.E,padx=10,pady=10)
-									cvv_inp=tk.Entry(f4,font=fnt)
-									cvv_inp.grid(column=1,row=9,sticky=tk.EW,padx=10,pady=10)
-
-									btn=tk.Button(f4,font=fntit,text='Pay',command=card_payment,fg='green');btn.grid(column=1,row=10,padx=10,pady=10,sticky=tk.W)
-
-									retimg=tk.PhotoImage(file='icons/return.png')
-									btn4=tk.Button(f4,font=fnt,image=retimg,command=cardpay_window.destroy)
-									btn4.grid(column=0,row=15,padx=10,pady=10,sticky=tk.SW)
-									btn4.img=retimg
-
-									cardpay_window.bind('<Return>',lambda event:card_payment())
-								
-								elif payment_method.get()=='C':
-									
-									def clipboard():
-										confirmmsg_win.clipboard_clear()
-										confirmmsg_win.clipboard_append(summary_text)
-										clipbd_btn.configure(fg='green',text='Copied!')
-									
-									def exit():
-										confirmmsg_win.destroy()
-										taxibkg_win.destroy()
-
-									# Adding booking details to database
-									bkg_time=datetime.now()									#	Timestamp to mark bookings
-									bkg_timestamp=bkg_time.strftime('%Y-%m-%d %H:%M:%S')	#	Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
-								
-									sql='insert into taxi_bkgs values (%s,%s,%s,%s,%s,%s,%s)'
-									val=(taxibkg_id,bkg_timestamp,origin,destination,date_of_journey,time_of_journey,taxi_type)
-									cur.execute(sql,val)
-									con.commit()
-
-									# Adds payment details to database
-									pay_time=datetime.now()									# 	Timestamp to mark payment
-									pay_timestamp=pay_time.strftime('%Y-%m-%d %H:%M:%S')	#	Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
-									
-									sql=('insert into payment_details values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)')
-									val=(payment_id,pay_timestamp,taxibkg_id,total_fare,'Cash',None,None,None,None,None)
-									cur.execute(sql,val)
-									con.commit()
-
-									# Confirmation popup
-									confirmmsg_win=tk.Toplevel()
-									confirmmsg_win.resizable(False,False)
-									confirmmsg_win.title('Booking successful')
-									icon=tk.PhotoImage(file='img/icon.png')
-									confirmmsg_win.iconphoto(False,icon)
-
-									tk.Label(confirmmsg_win,text='The booking has been\nsuccessfully made.',font=h1fnt,justify=tk.LEFT).grid(row=0,column=0,sticky=tk.W,padx=10,pady=10)
-
-									summary=scrolledtext.ScrolledText(confirmmsg_win,font=fnt,width=30,height=8)
-									summary.grid(column=0,row=3,sticky=tk.EW,padx=10,pady=10,columnspan=2)
-
-									summary_text=f'''
-Taxi Booking
-============
-Booking ID: {taxibkg_id}
-Booking Timestamp: 
-{bkg_timestamp}
-
-Journey details
----------------
-Taxi type: {taxi_type}
-From: {origin}
-To: {destination}
-
-Date: {date_of_journey}
-Time: {time_of_journey}
-
-Fare details
-------------
-Base rate: ${str(base_rate)} for first 5 km
-${str(rate)} per additional km
-
-Distance: {str(distance)} km
-
-Total fare: ${str(total_fare)}
-
-Cash payment
-------------
-${str(total_fare)} paid
-
-Payment ID: {payment_id}
-==================
-PAYMENT SUCCESSFUL
-==================
-'''
-									
-									summary.insert(tk.INSERT,summary_text)
-									summary.configure(state='disabled')
-									
-									clipbd_btn=tk.Button(confirmmsg_win,text='Copy to clipboard',font=fnt,command=clipboard,justify=tk.CENTER)
-									clipbd_btn.grid(row=5,column=0,padx=10,pady=10)
-									
-									# Printing function
-									if isPrintingEnabled==True:
-										def receipt():
-
-											def print_receipt():
-												if pf.system()=='Windows':
-													receipt_pf_txt=f'{pf.system()} {pf.version()}'
-												elif pf.system()=='Linux':
-													receipt_pf_txt=f'{pf.system()} {pf.release()}'
-
-												tkt_time=datetime.now()									# timestamp to mark ticket
-												tkt_timestamp=tkt_time.strftime('%Y-%m-%d %H:%M:%S')	# Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
-												
-												tkt_bar_time=tkt_time.strftime('%y%m%d')				# tkt timestamp for barcode
-												tkt_id=f'TKT{str(rd.randint(100000,999999))}'
-
-												bar_no=f'{tkt_id}{tkt_bar_time}'
-												receipt_text=f'''
-Taxi Booking {taxibkg_id}
-
-Ticket {tkt_id} ({tkt_timestamp})
-
-From: {origin} To: {destination}
-Taxi type: {taxi_type}
-
-Date: {date_of_journey}
-Time: {time_of_journey}
-
-Distance: {str(distance)} km
-
-Total fare: ${str(total_fare)}
-Paid by: Cash
-'''
-												sql=('insert into tkt_details values(%s,%s,%s)')
-												#print(tktid,taxibkg_id,tkt_timestamp)
-												val=(bar_no,taxibkg_id,tkt_timestamp)
-												cur.execute(sql,val)
-												con.commit()
-
-												pr.image('img/icon-print.png')
-												pr.text(receipt_text)
-												pr.text('\n')
-												pr.barcode(bar_no, 'CODE93')
-												pr.text('\n')
-												pr.text(promo_text)
-												pr.text('\n\n')
-												pr.text('Powered by Amadeus IBS')
-												pr.text('\n')
-												pr.text(f'Build: {build} on {receipt_pf_txt} ')
-												pr.cut()
-												
-												if pf.system()=='Windows':
-													pr.text('Platform: '+pf.system()+' '+pf.version())
-												elif pf.system()=='Linux':
-													pr.text('Platform: '+pf.system()+' '+pf.release())
-
-												pr.cut()
-
-											try:
-												pr = Network(pr_ip)
-												print_receipt()
-												pr.close()
-											except:
-												messagebox.showerror('Error','Unable to print receipt.',parent=confirmmsg_win)
-
-										print_btn=tk.Button(confirmmsg_win,text='Print...',font=fnt,command=receipt,justify=tk.CENTER)
-										print_btn.grid(row=6,column=0,padx=10,pady=10)
-
-									ok_btn=tk.Button(confirmmsg_win,text='OK',font=fnt,command=exit,justify=tk.CENTER)
-									ok_btn.grid(row=10,column=0,padx=10,pady=10)
-									confirmmsg_win.bind('<Return>',lambda event:exit())
-							else:
-								messagebox.showerror('Error','Please select payment method',parent=taxibkg_win)	
-						else:
-							messagebox.showerror('Error','Invalid timing entered.',parent=taxibkg_win)
-					else:
-						messagebox.showerror('Error','Invalid time format entered.',parent=taxibkg_win)
-				else:
-					messagebox.showerror('Error','The origin and destination are the same.',parent=taxibkg_win)
-			else:
-				messagebox.showerror('Error','Invalid origin or destination.',parent=taxibkg_win)
-		else:
-			messagebox.showerror('Error','Please do not leave any fields blank.',parent=taxibkg_win)
-	
 	#FRAME 1
 	f1=tk.Frame(taxibkg_win)
 	f1.grid(row=0,column=0)
@@ -1537,10 +1002,11 @@ Paid by: Cash
 	Separator(f2,orient='horizontal').grid(row=14,column=0,columnspan=3,sticky=tk.EW)
 
 	# Payment method - Card or cash?
-	payment_method=tk.StringVar(f2)	
-	tk.Label(f2,text='Payment method',font=fnt).grid(column=0,row=15,sticky=tk.E,padx=10,pady=10)
-	ttk.Radiobutton(f2, text = 'Credit/Debit Card',variable = payment_method,value = 'R').grid(column=1,row=15,sticky=tk.W,padx=10)
-	ttk.Radiobutton(f2, text = 'Cash',variable = payment_method,value = 'C').grid(column=1,row=16,sticky=tk.W,padx=10)
+	paytype_inp=tk.StringVar()
+	tk.Label(f2,text='Pay by',font=fnt).grid(column=0,row=4,sticky=tk.E,padx=10,pady=10)
+	paytypes=('','Cash','Credit card','Debit card')
+	pay_type=ttk.OptionMenu(f2,paytype_inp,*paytypes)
+	pay_type.grid(column=1,row=15,sticky=tk.W,padx=10,pady=10)
 
 	# Submit
 	tk.Label(f2,text='Proceed to checkout',font=fnt,justify=tk.RIGHT).grid(column=0,row=20,sticky=tk.E,padx=10,pady=10)
@@ -1621,12 +1087,12 @@ def emp_main():																		# The main page for employees - agents and admi
 							bkg_dest=c[0][4]
 							bkg_date=c[0][5]
 							bkg_time=c[0][6]
-							bkg_type=c[0][7]
+							journey_type=c[0][7]
 							bkg_fare=d[0][3]
 							pay_id=d[0][0]
 							pay_type=d[0][4]
 							
-							data=[('Booking ID',bkg_id),('Timestamp',bkg_ts),('Number of passengers',bkg_passno),('Origin',bkg_org),('Destination',bkg_dest),('Date',bkg_date),('Time',bkg_time),('Bus Type',bkg_type),('Fare',f'${bkg_fare}'),('Payment ID',pay_id),('Paid by',pay_type)]
+							data=[('Booking ID',bkg_id),('Timestamp',bkg_ts),('Number of passengers',bkg_passno),('Origin',bkg_org),('Destination',bkg_dest),('Date',bkg_date),('Time',bkg_time),('Bus Type',journey_type),('Fare',f'${bkg_fare}'),('Payment ID',pay_id),('Paid by',pay_type)]
 							
 							
 							rows=len(data)
@@ -1643,11 +1109,14 @@ def emp_main():																		# The main page for employees - agents and admi
 
 							if isPrintingEnabled==True:
 
-								distance=abs((locations.index(bkg_dest))-(locations.index(bkg_org)))*4	#distance between locations - 4 km.
-								
+								if bkg_id[0]=='B':
+									bkg_type='Bus'
+								elif bkg_id[0]=='T':
+									bkg_type='Taxi'
+
 								card_brand=''
-								if 'Card' in pay_type or 'card' in pay_type:
-									card_no=d[0][6]
+								if 'card' in pay_type:
+									card_no=d[0][5]
 									if card_no[0] == '3':
 										card_brand='AMEX'
 									elif card_no[0] == '4':
@@ -1656,72 +1125,20 @@ def emp_main():																		# The main page for employees - agents and admi
 										card_brand='MASTER'
 									elif card_no[0] == '6':
 										card_brand='DISCOVER'
-									card_brand=f'({card_brand})'
-								
-								def receipt():
-									def print_receipt():
-										if pf.system()=='Windows':
-											receipt_pf_txt=f'{pf.system()} {pf.version()}'
-										elif pf.system()=='Linux':
-											receipt_pf_txt=f'{pf.system()} {pf.release()}'
 
-										tkt_time=datetime.now()									# timestamp to mark ticket
-										tkt_timestamp=tkt_time.strftime('%Y-%m-%d %H:%M:%S')	# Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
-										
-										tkt_bar_time=tkt_time.strftime('%y%m%d')				# tkt timestamp for barcode
-										tkt_id=f'TKT{str(rd.randint(100000,999999))}'
+								booking=Booking()
+								booking.fare_calculation(bkg_type=bkg_type,journey_type=journey_type,pass_no=bkg_passno,origin=bkg_org,destination=bkg_dest)
 
-										bar_no=f'{tkt_id}{tkt_bar_time}'						# barcode number
-										
-										receipt_text=f'''
-Bus Booking {bkg_id}
+								to_receipt=Printing()
 
-Ticket {tkt_id} ({tkt_timestamp})
+								def print_receipt():
+									to_receipt.receipt(parent_win=viewone_win,bkg_type=bkg_type,bkg_id=bkg_id,journey_type=journey_type,pass_no=bkg_passno,origin=bkg_org,destination=bkg_dest,date_of_journey=bkg_date,time_of_journey=bkg_time,distance=booking.distance,total_fare=bkg_fare,method_of_payment=pay_type,card_brand=card_brand)
 
-Number of passengers: {str(bkg_passno)}
-From: {bkg_org} To: {bkg_dest}
-Bus type: {bkg_type}
-
-Date: {bkg_date}
-Time: {bkg_time}
-
-Distance: {str(distance)} km
-
-Total fare: ${str(bkg_fare)}
-Paid by: {pay_type} {card_brand}
-'''
-										
-										sql=('insert into tkt_details values(%s,%s,%s)')
-										#print(tktid,busbkg_id,tkt_timestamp)
-										val=(bar_no,bkg_id,tkt_timestamp)
-										cur.execute(sql,val)
-										con.commit()
-
-										pr.image('img/icon-print.png')
-										pr.text(receipt_text)
-										pr.text('\n')
-										pr.barcode(bar_no, 'CODE93')
-										pr.text('\n')
-										pr.text(promo_text)
-										pr.text('\n\n')
-										pr.text('Powered by Amadeus IBS')
-										pr.text('\n')
-										pr.text(f'Build: {build} on {receipt_pf_txt} ')
-										pr.cut()
-									
-									try:
-										pr = Network(pr_ip)
-										for i in range(bkg_passno):
-											print_receipt()
-										pr.close()
-									except:
-										messagebox.showerror('Error','Unable to print receipt.',parent=viewone_win)
-									
-								print_btn=tk.Button(frame1,font=fntit,text='Print receipt',command=receipt)
+								print_btn=tk.Button(frame1,font=fntit,text='Print receipt',command=print_receipt)
 								print_btn.grid(row=5,column=3,padx=10,pady=10)
 
 						else:
-							messagebox.showerror('Error',f'Booking \'{bkgid_input.get()}\' does not exist.',parent=viewone_win)
+							messagebox.showerror('Error',f'Booking \'{bkgid}\' does not exist.',parent=viewone_win)
 					else:
 						messagebox.showerror('Error','Please enter the booking.',parent=viewone_win)
 				
@@ -1933,12 +1350,12 @@ Paid by: {pay_type} {card_brand}
 							bkg_dest=c[0][3]
 							bkg_date=c[0][4]
 							bkg_time=c[0][5]
-							bkg_type=c[0][6]
+							journey_type=c[0][6]
 							bkg_fare=d[0][3]
 							pay_id=d[0][0]
 							pay_type=d[0][4]
 							
-							data=[('Booking ID',bkg_id),('Timestamp',bkg_ts),('Origin',bkg_org),('Destination',bkg_dest),('Date',bkg_date),('Time',bkg_time),('Taxi Type',bkg_type),('Fare',f'${bkg_fare}'),('Payment ID',pay_id),('Paid by',pay_type)]
+							data=[('Booking ID',bkg_id),('Timestamp',bkg_ts),('Origin',bkg_org),('Destination',bkg_dest),('Date',bkg_date),('Time',bkg_time),('Taxi Type',journey_type),('Fare',f'${bkg_fare}'),('Payment ID',pay_id),('Paid by',pay_type)]
 							
 							rows=len(data)
 							cols=len(data[0])
@@ -1954,7 +1371,10 @@ Paid by: {pay_type} {card_brand}
 							
 							if isPrintingEnabled==True:
 								
-								distance=abs((locations.index(bkg_dest))-(locations.index(bkg_org)))*4	#distance between locations - 4 km.
+								if bkg_id[0]=='B':
+									bkg_type='Bus'
+								elif bkg_id[0]=='T':
+									bkg_type='Taxi'
 
 								card_brand=''
 								if 'Card' in pay_type or 'card' in pay_type:
@@ -1968,69 +1388,19 @@ Paid by: {pay_type} {card_brand}
 									elif card_no[0] == '6':
 										card_brand='DISCOVER'
 									card_brand=f'({card_brand})'
-							
-								def receipt():
-									def print_receipt():
-										if pf.system()=='Windows':
-											receipt_pf_txt=f'{pf.system()} {pf.version()}'
-										elif pf.system()=='Linux':
-											receipt_pf_txt=f'{pf.system()} {pf.release()}'
 
-										tkt_time=datetime.now()									# timestamp to mark ticket
-										tkt_timestamp=tkt_time.strftime('%Y-%m-%d %H:%M:%S')	# Converts ts to string in MySQL datetime format for insertion into db - YYYY-MM-DD HH:MM
-										
-										tkt_bar_time=tkt_time.strftime('%y%m%d')				# tkt timestamp for barcode
-										tkt_id=f'TKT{str(rd.randint(100000,999999))}'
+								booking=Booking()
+								booking.fare_calculation(bkg_type=bkg_type,journey_type=journey_type,pass_no=None,origin=bkg_org,destination=bkg_dest)
 
-										bar_no=f'{tkt_id}{tkt_bar_time}'						# barcode number
-										
-										receipt_text=f'''
-Taxi Booking {bkg_id}
-
-Ticket {tkt_id} ({tkt_timestamp})
-
-From: {bkg_org} To: {bkg_dest}
-Taxi type: {bkg_type}
-
-Date: {bkg_date}
-Time: {bkg_time}
-
-Distance: {str(distance)} km
-
-Total fare: ${str(bkg_fare)}
-Paid by: {pay_type} {card_brand}
-'''
-										
-										sql=('insert into tkt_details values(%s,%s,%s)')
-										#print(tktid,busbkg_id,tkt_timestamp)
-										val=(bar_no,bkg_id,tkt_timestamp)
-										cur.execute(sql,val)
-										con.commit()
-
-										pr.image('img/icon-print.png')
-										pr.text(receipt_text)
-										pr.text('\n')
-										pr.barcode(bar_no, 'CODE93')
-										pr.text('\n')
-										pr.text(promo_text)
-										pr.text('\n\n')
-										pr.text('Powered by Amadeus IBS')
-										pr.text('\n')
-										pr.text(f'Build: {build} on {receipt_pf_txt} ')
-										pr.cut()
-									
-									try:
-										pr = Network(pr_ip)
-										print_receipt()
-										pr.close()
-									except:
-										messagebox.showerror('Error','Unable to print receipt.',parent=viewone_win)
+								print_receipt=Printing()
+								def pr_receipt():
+									print_receipt.receipt(parent_win=viewone_win,bkg_type=bkg_type,bkg_id=bkg_id,journey_type=journey_type,pass_no=None,origin=bkg_org,destination=bkg_dest,date_of_journey=bkg_date,time_of_journey=bkg_time,distance=booking.distance,total_fare=bkg_fare,method_of_payment=pay_type,card_brand=card_brand)
 								
-								print_btn=tk.Button(frame1,font=fntit,text='Print receipt',command=receipt)
+								print_btn=tk.Button(frame1,font=fntit,text='Print receipt',command=pr_receipt)
 								print_btn.grid(row=5,column=3,padx=10,pady=10)
 						
 						else:
-							messagebox.showerror('Error',f'Booking \'{bkgid.get()}\' does not exist.',parent=viewone_win)
+							messagebox.showerror('Error',f'Booking \'{bkgid}\' does not exist.',parent=viewone_win)
 					else:
 						messagebox.showerror('Error','Please enter the booking.',parent=viewone_win)
 				
