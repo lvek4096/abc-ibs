@@ -1036,10 +1036,10 @@ def emp_main():																		# The main function
 		# Main functions
 		def manage_busbkg():														# Manage bus bookings
 
-			manage_bbkg_win=tk.Toplevel()
-			manage_bbkg_win.title('Manage bus bookings')
+			manage_busbkg_win=tk.Toplevel()
+			manage_busbkg_win.title('Manage bus bookings')
 			icon=tk.PhotoImage(file='img/icon.png')
-			manage_bbkg_win.iconphoto(False,icon)
+			manage_busbkg_win.iconphoto(False,icon)
 
 			def viewbkg_all():															# View all bookings
 				viewall_win=tk.Toplevel()
@@ -1243,11 +1243,11 @@ def emp_main():																		# The main function
 				delete_btn.grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
 				delete_win.bind('<Return>',lambda event:delete_busbkg())
 
-			tk.Grid.columnconfigure(manage_bbkg_win,0,weight=1)
+			tk.Grid.columnconfigure(manage_busbkg_win,0,weight=1)
 
 			#FRAME 1
-			tk.Grid.rowconfigure(manage_bbkg_win,0,weight=1)
-			f1=tk.Frame(manage_bbkg_win)
+			tk.Grid.rowconfigure(manage_busbkg_win,0,weight=1)
+			f1=tk.Frame(manage_busbkg_win)
 			f1.grid(row=0,column=0,sticky=tk.NSEW)
 
 			#frame 1 grid
@@ -1263,8 +1263,8 @@ def emp_main():																		# The main function
 			tk.Label(f1,text=('Connected to database: '+con.database),font=h2fnt,justify=tk.LEFT,fg='green').grid(column=1,row=1,sticky=tk.W,padx=10,pady=10)
 			ttk.Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 			#FRAME 2
-			tk.Grid.rowconfigure(manage_bbkg_win,1,weight=1)
-			f2=tk.Frame(manage_bbkg_win)
+			tk.Grid.rowconfigure(manage_busbkg_win,1,weight=1)
+			f2=tk.Frame(manage_busbkg_win)
 			f2.grid(row=1,column=0,padx=10,pady=10,sticky=tk.NSEW)
 
 			#frame 2 grid
@@ -1301,10 +1301,10 @@ def emp_main():																		# The main function
 			tk.Grid.rowconfigure(f2,16,weight=1)
 
 		def manage_taxibkg():														# Manage taxi bookings
-			manage_tbkg_win=tk.Toplevel()
-			manage_tbkg_win.title('Manage taxi bookings')
+			manage_taxibkg_win=tk.Toplevel()
+			manage_taxibkg_win.title('Manage taxi bookings')
 			icon=tk.PhotoImage(file='img/icon.png')
-			manage_tbkg_win.iconphoto(False,icon)
+			manage_taxibkg_win.iconphoto(False,icon)
 
 			def viewbkg_all():  													# View all bookings
 				viewall_win=tk.Toplevel()
@@ -1506,11 +1506,11 @@ def emp_main():																		# The main function
 				delete_btn.grid(column=1,row=6,padx=10,pady=10,sticky=tk.W)
 				delete_win.bind('<Return>',lambda event:delete_taxi_bkg())
 
-			tk.Grid.columnconfigure(manage_tbkg_win,0,weight=1)
+			tk.Grid.columnconfigure(manage_taxibkg_win,0,weight=1)
 
 			#FRAME 1
-			tk.Grid.rowconfigure(manage_tbkg_win,0,weight=1)
-			f1=tk.Frame(manage_tbkg_win)
+			tk.Grid.rowconfigure(manage_taxibkg_win,0,weight=1)
+			f1=tk.Frame(manage_taxibkg_win)
 			f1.grid(row=0,column=0,sticky=tk.NSEW)
 
 			#frame 1 grid
@@ -1527,8 +1527,8 @@ def emp_main():																		# The main function
 			tk.Label(f1,text=('Connected to database: '+con.database),font=h2fnt,justify=tk.LEFT,fg='green').grid(column=1,row=1,sticky=tk.W,padx=10,pady=10)
 			ttk.Separator(f1,orient='horizontal').grid(column=0,row=2,sticky=tk.EW,padx=10,pady=10,columnspan=2)
 			#FRAME 2
-			tk.Grid.rowconfigure(manage_tbkg_win,1,weight=1)
-			f2=tk.Frame(manage_tbkg_win)
+			tk.Grid.rowconfigure(manage_taxibkg_win,1,weight=1)
+			f2=tk.Frame(manage_taxibkg_win)
 			f2.grid(row=1,column=0,padx=10,pady=10,sticky=tk.NSEW)
 
 			#frame 2 grid
@@ -1563,7 +1563,7 @@ def emp_main():																		# The main function
 
 			tk.Grid.rowconfigure(f2,16,weight=1)
 			
-			manage_tbkg_win.mainloop()
+			manage_taxibkg_win.mainloop()
 
 		def manage_payments():														# Manage payment details
 
