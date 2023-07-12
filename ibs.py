@@ -17,8 +17,8 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string and timestamp
-build='ibs.beta-346'
-build_timestamp='2023-07-12 16:03:33'	
+build='ibs.beta-347'
+build_timestamp='2023-07-12 23:07:35'	
 
 # Fonts for GUI
 if pf.system()=='Windows':
@@ -636,10 +636,10 @@ PAYMENT SUCCESSFUL
 		
 		# Conversion and checking of datetime
 		datetime_format='%Y-%m-%d %H:%M'												# YYYY-MM-DD HH:MM; MySQL datetime format
-		x=datetime.now()+timedelta(minutes=45)											# minimum bkg time - 45 min from current time
-		min_bkgtime_str=x.strftime(datetime_format)										# Converts above datetime to string to MySQL date format
+		cur_time=datetime.now()															# minimum bkg time - current time
+		min_bkgtime_str=cur_time.strftime(datetime_format)								# Converts above datetime to string to MySQL date format
 		min_bkgtime=datetime.strptime(min_bkgtime_str,datetime_format)					# Converts string back to datetime object for comparision
-		inpdate_str=self.date_of_journey+' '+self.time_of_journey														# Combines date and time inputs into correct format for comparision purpose
+		inpdate_str=f'{self.date_of_journey} {self.time_of_journey}'					# Combines date and time inputs into correct format for comparision purpose
 
 		isInpDateinFormat=True	
 		try:																			# is date and time inputted in format?
@@ -650,7 +650,7 @@ PAYMENT SUCCESSFUL
 		if isInpDateinFormat==True:		
 			inp_dt=datetime.strptime(inpdate_str,datetime_format)						# Converts combined input to datetime for comparision
 
-			if inp_dt >= min_bkgtime:													# Minimum bkg time - 45 min from now
+			if inp_dt >= min_bkgtime:													# Minimum bkg time - now
 				isNotPast=True
 			else:
 				isNotPast=False
