@@ -17,7 +17,7 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string and timestamp
-build='ibs.beta-348'
+build='ibs.beta-349'
 build_timestamp='2023-07-14 12:56:19'	
 
 # Fonts for GUI
@@ -1117,7 +1117,7 @@ def emp_main():																		# The main function
 									bkg_type='Taxi'
 
 								card_brand=''
-								if 'card' in pay_type:
+								if 'Debit' in pay_type or 'Credit' in pay_type:
 									card_no=d[0][5]
 									if card_no[0] == '3':
 										card_brand='AMEX'
@@ -1381,7 +1381,7 @@ def emp_main():																		# The main function
 									bkg_type='Taxi'
 
 								card_brand=''
-								if 'card' in pay_type:
+								if 'Debit' in pay_type or 'Credit' in pay_type:
 									card_no=d[0][5]
 									if card_no[0] == '3':
 										card_brand='AMEX'
