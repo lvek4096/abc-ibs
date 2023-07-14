@@ -17,8 +17,8 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string and timestamp
-build='ibs.beta-347'
-build_timestamp='2023-07-12 23:07:35'	
+build='ibs.beta-348'
+build_timestamp='2023-07-14 12:56:19'	
 
 # Fonts for GUI
 if pf.system()=='Windows':
@@ -1066,8 +1066,7 @@ def emp_main():																		# The main function
 						if i==0:
 							entry.configure(fg='red',font=fntit)							# colors and italicises header
 
-			def retrieve_bkg():															# Retrieve a single booking
-																			# View single booking
+			def retrieve_bkg():																# Retrieve a single booking
 				def get_busbkginfo():
 					if not bkgid_input.get()=='' and not bkgid_input.get().isspace():
 						if bkgid_input.get() in bus_bkgid_list:
@@ -1080,25 +1079,28 @@ def emp_main():																		# The main function
 							cur.execute(sql2,val)
 							d=cur.fetchall()
 
+							# extracts data from dictionary
 							bkg_id=c[0][0]
 							bkg_ts=c[0][1]
+							
 							bkg_passno=c[0][2]
 							bkg_org=c[0][3]
 							bkg_dest=c[0][4]
 							bkg_date=c[0][5]
-							bkg_time=c[0][6]
+							bkg_time=(datetime.strptime(str(c[0][6]),'%H:%M:%S')).strftime('%H:%M')			# converts time from HH:MM:SS to HH:MM
 							journey_type=c[0][7]
+
 							bkg_fare=d[0][3]
 							pay_id=d[0][0]
 							pay_type=d[0][4]
 							
 							data=[('Booking ID',bkg_id),('Timestamp',bkg_ts),('Number of passengers',bkg_passno),('Origin',bkg_org),('Destination',bkg_dest),('Date',bkg_date),('Time',bkg_time),('Bus Type',journey_type),('Fare',f'${bkg_fare}'),('Payment ID',pay_id),('Paid by',pay_type)]
 							
-							
+							# draws the table in GUI
 							rows=len(data)
 							cols=len(data[0])
 							tk.Label(frame3,font=fntit,text='Data').grid(row=0,column=0,sticky=tk.EW)
-							for i in range(rows):											#drawing the table in GUI
+							for i in range(rows):											
 								for j in range(cols):
 									entry = tk.Label(frame2,borderwidth=1,relief='solid',padx=10,width=40,height=2,font=fnt)
 									entry.grid(row=i,column=j,padx=2,pady=2,sticky=tk.EW)
@@ -1181,7 +1183,6 @@ def emp_main():																		# The main function
 				viewone_win.bind('<Return>',lambda event:get_busbkginfo())
 
 			def delete_bkg():															# Delete bookings menu
-																						# Delete booking menu
 				delete_win=tk.Toplevel()
 				delete_win.resizable(False,False)
 				delete_win.title('Delete bus booking')
@@ -1344,23 +1345,26 @@ def emp_main():																		# The main function
 							cur.execute(sql2,val)
 							d=cur.fetchall()
 							
+							# extracts data from dictionary
 							bkg_id=c[0][0]
 							bkg_ts=c[0][1]
+							
 							bkg_org=c[0][2]
 							bkg_dest=c[0][3]
 							bkg_date=c[0][4]
-							bkg_time=c[0][5]
+							bkg_time=(datetime.strptime(str(c[0][5]),'%H:%M:%S')).strftime('%H:%M')			# converts time from HH:MM:SS to HH:MM
 							journey_type=c[0][6]
+							
 							bkg_fare=d[0][3]
 							pay_id=d[0][0]
 							pay_type=d[0][4]
 							
 							data=[('Booking ID',bkg_id),('Timestamp',bkg_ts),('Origin',bkg_org),('Destination',bkg_dest),('Date',bkg_date),('Time',bkg_time),('Taxi Type',journey_type),('Fare',f'${bkg_fare}'),('Payment ID',pay_id),('Paid by',pay_type)]
-							
+							# draws the table in GUI
 							rows=len(data)
 							cols=len(data[0])
 							tk.Label(frame3,font=fntit,text='Data').grid(row=0,column=0,sticky=tk.EW)
-							for i in range(rows):									# drawing the table in GUI
+							for i in range(rows):									
 								for j in range(cols):
 									entry = tk.Label(frame2,borderwidth=1,relief='solid',padx=10,width=40,height=2,font=fnt)
 									entry.grid(row=i,column=j,padx=2,pady=2,sticky=tk.EW)
@@ -1377,8 +1381,8 @@ def emp_main():																		# The main function
 									bkg_type='Taxi'
 
 								card_brand=''
-								if 'Card' in pay_type or 'card' in pay_type:
-									card_no=d[0][6]
+								if 'card' in pay_type:
+									card_no=d[0][5]
 									if card_no[0] == '3':
 										card_brand='AMEX'
 									elif card_no[0] == '4':
@@ -1387,7 +1391,6 @@ def emp_main():																		# The main function
 										card_brand='MASTER'
 									elif card_no[0] == '6':
 										card_brand='DISCOVER'
-									card_brand=f'({card_brand})'
 
 								booking=Booking()
 								booking.fare_calculation(bkg_type=bkg_type,journey_type=journey_type,pass_no=None,origin=bkg_org,destination=bkg_dest)
