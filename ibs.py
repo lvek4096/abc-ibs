@@ -17,8 +17,8 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string and timestamp
-build='ibs.beta-349'
-build_timestamp='2023-07-14 12:56:19'	
+build='ibs.V5-350'
+build_timestamp='2023-07-16 08:59:34'	
 
 # Fonts for GUI
 if pf.system()=='Windows':
@@ -296,8 +296,6 @@ for ABC Lines
 			tk.Label(about,text=f"{linux['NAME']} {linux['VERSION']}",font=fntit).grid(column=2,row=8,padx=10)
 		except:
 			pass
-	else:
-		pass
 
 	Separator(about,orient='horizontal').grid(column=0,row=10,sticky=tk.EW,padx=10,pady=10,columnspan=3)
 	
