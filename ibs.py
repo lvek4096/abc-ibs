@@ -17,8 +17,8 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string and timestamp
-build='ibs.V5-351'
-build_timestamp='2023-07-16 22:50:21'	
+build='ibs.V5-350'
+build_timestamp='2023-07-16 08:59:34'	
 
 # Fonts for GUI
 if pf.system()=='Windows':
@@ -899,7 +899,7 @@ def bus_booking():																	# Bus booking
 
 	# Payment method - Card or cash?
 	paytype_inp=tk.StringVar()
-	tk.Label(f2,text='Pay by',font=fnt).grid(column=0,row=15,sticky=tk.E,padx=10,pady=10)
+	tk.Label(f2,text='Pay by',font=fnt).grid(column=0,row=4,sticky=tk.E,padx=10,pady=10)
 	paytypes=('','Cash','Debit card','Credit card')
 	pay_type=ttk.OptionMenu(f2,paytype_inp,*paytypes)
 	pay_type.grid(column=1,row=15,sticky=tk.W,padx=10,pady=10)
@@ -1001,7 +1001,7 @@ def taxi_booking():																	# Taxi booking
 
 	# Payment method - Card or cash?
 	paytype_inp=tk.StringVar()
-	tk.Label(f2,text='Pay by',font=fnt).grid(column=0,row=15,sticky=tk.E,padx=10,pady=10)
+	tk.Label(f2,text='Pay by',font=fnt).grid(column=0,row=4,sticky=tk.E,padx=10,pady=10)
 	paytypes=('','Cash','Credit card','Debit card')
 	pay_type=ttk.OptionMenu(f2,paytype_inp,*paytypes)
 	pay_type.grid(column=1,row=15,sticky=tk.W,padx=10,pady=10)
