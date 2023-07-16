@@ -17,8 +17,8 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string and timestamp
-build='ibs.V5-351'
-build_timestamp='2023-07-16 23:22:51'	
+build='ibs.V5-352'
+build_timestamp='2023-07-16 23:28:37'	
 
 # Fonts for GUI
 if pf.system()=='Windows':
