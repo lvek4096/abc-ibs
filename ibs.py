@@ -17,8 +17,8 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string and timestamp
-build='ibs.V5-353'
-build_timestamp='2023-07-20 13:09:42'	
+build='ibs.V5-355'
+build_timestamp='2023-07-20 21:39:31'	
 
 # Fonts for GUI
 if pf.system()=='Windows':
@@ -1136,7 +1136,7 @@ def emp_main():																		# The main function
 								print_btn.grid(row=5,column=3,padx=10,pady=10)
 
 						else:
-							messagebox.showerror('Error',f'Booking \'{bkgid}\' does not exist.',parent=viewone_win)
+							messagebox.showerror('Error',f'Booking \'{bkgid.get()}\' does not exist.',parent=viewone_win)
 					else:
 						messagebox.showerror('Error','Please enter the booking.',parent=viewone_win)
 				
@@ -1399,7 +1399,7 @@ def emp_main():																		# The main function
 								print_btn.grid(row=5,column=3,padx=10,pady=10)
 						
 						else:
-							messagebox.showerror('Error',f'Booking \'{bkgid}\' does not exist.',parent=viewone_win)
+							messagebox.showerror('Error',f'Booking \'{bkgid.get()}\' does not exist.',parent=viewone_win)
 					else:
 						messagebox.showerror('Error','Please enter the booking.',parent=viewone_win)
 				
