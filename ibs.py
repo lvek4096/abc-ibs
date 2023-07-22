@@ -17,8 +17,8 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string and timestamp
-build='ibs.V5-355'
-build_timestamp='2023-07-20 21:39:31'	
+build='ibs.V5-356'
+build_timestamp='2023-07-22 11:19:25'	
 
 # Fonts for GUI
 if pf.system()=='Windows':
@@ -385,7 +385,7 @@ class Printing:																		# Printing-related functions
 Ticket {tkt_id} ({tkt_timestamp})
 {number_pass_text}
 From: {self.origin} To: {self.destination}
-{self.bkg_id} type: {self.journey_type}
+{self.bkg_id} Type: {self.journey_type}
 
 Date: {self.date_of_journey}
 Time: {self.time_of_journey}
