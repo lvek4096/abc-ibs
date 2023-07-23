@@ -12,10 +12,8 @@ This is the booking system for ABC Lines.
    	 - Export data to CSV
 	 - Agent and administration management
 	 - Booking and transaction management
-	- Ticket integration
 - Support for ESC/POS printers over network (with [escpos](https://github.com/python-escpos/python-escpos) library)
-- Ticket printing
-	- Multiple ticket printing for bus journeys with multiple passengers
+- Ticket integration and printing
  
 
 ## How-to
@@ -33,19 +31,6 @@ source env/scripts/activate		# on Linux
 ```pip install -r requirements.txt```
 ### Running 
 ```python3 ibs.py``` or ```python ibs.py```<br>
-On Linux systems, you can directly run the file by making it executable: ```chmod +x ibs.py```	<br>
-(or make file executable via GUI file manager).
-
-Then, you can run directly with  ```./ibs.py``` (or from the GUI file manager).
-
-On Windows systems, you can replicate this behaviour with Python Launcher, with minimal additional setup*.<br>
-Just double-click 'ibs.py', and you're good to go!
-
-<b>*NOTES FOR PYTHON LAUNCHER IN WINDOWS:</b>
-- It is highly recommended use <a href="https://www.python.org/downloads">regular Python distribution</a> (.exe installer) for the same.
-- Python Launcher needs to be installed during Python setup. 
-- Using the <a href="https://apps.microsoft.com/store/detail/python-311/9NRWMJP3717K">Microsoft Store</a> distribution of Python will not work with the above as it lacks Python Launcher.
-- Ensure that app execution aliases for python.exe and python3.exe are disabled.
 
 ## Development
 This program is fully written in Python, and uses the MySQL relational database management system, allowing for cross-platform compatibility.<br>
