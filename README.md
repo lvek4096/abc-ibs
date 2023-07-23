@@ -25,7 +25,7 @@ cd abc-ibs
 python3 -m venv env			# or python -m venv env
 
 env\scripts\activate			# on Windows
-source env/scripts/activate		# on Linux
+source env/bin/activate		# on Linux
 ```
 4. Install dependencies <br>
 ```pip install -r requirements.txt```
