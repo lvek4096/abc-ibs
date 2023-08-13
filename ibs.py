@@ -17,8 +17,8 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string and timestamp
-build='ibs.V5-357'
-build_timestamp='2023-08-13 17:32:21'	
+build='ibs.V5-358'
+build_timestamp='2023-08-13 20:24:04'	
 
 # Fonts for GUI
 if pf.system()=='Windows':
@@ -247,8 +247,8 @@ for ABC Lines
 	about.iconphoto(False,icon)
 
 	# Headings
-	tk.Label(about,text='Integrated Booking System (IBS)',font=h1fnt).grid(column=0,row=0,columnspan=3)
-	tk.Label(about,text=(''+build+'\n('+build_timestamp+')'),font=fnt).grid(column=0,row=1,columnspan=3)
+	tk.Label(about,text='Integrated Booking System (IBS)',font=h1fnt).grid(column=0,row=0,columnspan=3,padx=10,pady=10)
+	tk.Label(about,text=(''+build+'\n('+build_timestamp+')'),font=fnt).grid(column=0,row=1,columnspan=3,padx=10)
 	
 	logo_img=tk.PhotoImage(file='img/amadeus.png')
 	logo=tk.Label(about,image=logo_img)
