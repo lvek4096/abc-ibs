@@ -17,8 +17,8 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string and timestamp
-build='ibs.V5-356'
-build_timestamp='2023-07-22 11:19:25'	
+build='ibs.V5-357'
+build_timestamp='2023-08-13 17:32:21'	
 
 # Fonts for GUI
 if pf.system()=='Windows':
@@ -295,7 +295,10 @@ for ABC Lines
 			linux=pf.freedesktop_os_release()
 			tk.Label(about,text=f"{linux['NAME']} {linux['VERSION']}",font=fntit).grid(column=2,row=8,padx=10)
 		except:
-			pass
+			try:
+				tk.Label(about,text=f"{linux['NAME']}",font=fntit).grid(column=2,row=8,padx=10) # for rolling release distros which lack version numbers (e.g. Arch, Tumbleweed)
+			except:
+				pass
 
 	Separator(about,orient='horizontal').grid(column=0,row=10,sticky=tk.EW,padx=10,pady=10,columnspan=3)
 	
