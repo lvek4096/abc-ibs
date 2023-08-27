@@ -17,8 +17,8 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string and timestamp
-build='ibs.V5-358'
-build_timestamp='2023-08-13 20:24:04'	
+build='ibs.V5-359'
+build_timestamp='2023-08-27 23:11:20'	
 
 # Fonts for GUI
 if pf.system()=='Windows':
@@ -37,6 +37,14 @@ elif pf.system()=='Linux':
 	h1fnt=('Ubuntu',24)
 	h2fnt=('Ubuntu',12)
 	menufnt=('Ubuntu Mono',11)
+elif pf.system()=='Darwin':
+	fnt=('SF Pro',12)
+	fntb=('SF Mono',12,'bold')
+	fntit=('SF Mono',12,'italic')
+	fntbit=('SF Mono',12,'bold italic')
+	h1fnt=('SF Pro',24)
+	h2fnt=('SF Pro',12)
+	menufnt=('SF Pro',13)
 
 # Enables DPI scaling awareness on supported Windows versions
 if pf.system()=='Windows':
@@ -287,6 +295,8 @@ for ABC Lines
 	# OS info
 	if pf.system()=='Windows':										# System info - Windows ONLY
 		tk.Label(about,text=f'{pf.system()} {pf.release()}\n(Build {pf.version()})',font=fntb).grid(column=2,row=7,padx=10)
+	elif pf.system()=='Darwin':
+		tk.Label(about,text=f'macOS {pf.mac_ver()[0]} (Darwin {pf.release()})',font=fntb).grid(column=2,row=7,padx=10)
 	else:
 		tk.Label(about,text=f'{pf.system()} {pf.release()}',font=fntb).grid(column=2,row=7,padx=10)
 	
@@ -299,12 +309,16 @@ for ABC Lines
 				tk.Label(about,text=f"{linux['NAME']}",font=fntit).grid(column=2,row=8,padx=10) # for rolling release distros which lack version numbers (e.g. Arch, Tumbleweed)
 			except:
 				pass
+	
 
 	Separator(about,orient='horizontal').grid(column=0,row=10,sticky=tk.EW,padx=10,pady=10,columnspan=3)
 	
 	# Hostname and CPU type (e.g.i386 (32-bit); AMD64/x86_64 (64-bit) etc.)
 	tk.Label(about,text=pf.node(),font=fntbit).grid(column=0,row=11,columnspan=3,padx=10)
-	tk.Label(about,text=f'{pf.machine()} system',font=fnt).grid(column=0,row=12,columnspan=3,padx=10)
+	if pf.system()=='Darwin' and pf.mac_ver()[2]=='arm64':
+		tk.Label(about,text=f'Apple silicon ({pf.machine()} system)',font=fnt).grid(column=0,row=12,columnspan=3,padx=10)
+	else:
+		tk.Label(about,text=f'{pf.machine()} system',font=fnt).grid(column=0,row=12,columnspan=3,padx=10)
 	Separator(about,orient='horizontal').grid(column=0,row=16,sticky=tk.EW,padx=10,pady=10,columnspan=3)
 	
 	# Database additional details
@@ -1497,7 +1511,7 @@ def emp_main():																		# The main function
 					taxi_bkgid_list.append(str(i[0]))
 
 				tk.Label(delete_win,text='Select the booking to be deleted.',font=fntit).grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
-				tk.Label(delete_win,text='NOTE: The corresponding transaction will\nalso be cancelled.',font=('Cascadia Mono',12,'bold italic'),justify=tk.LEFT).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
+				tk.Label(delete_win,text='NOTE: The corresponding transaction will\nalso be cancelled.',font=fntbit,justify=tk.LEFT).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
 
 				bkgid=tk.StringVar()
 				bkgid_inp=ttk.Combobox(delete_win,textvariable=bkgid,font=fnt,width=19)
@@ -1727,7 +1741,7 @@ def emp_main():																		# The main function
 					payment_id_list.append(str(i[0]))
 
 				tk.Label(delete_win,text='Select the transaction to be cancelled.',font=fntit,justify=tk.LEFT).grid(column=1,row=3,padx=10,pady=10,sticky=tk.W)
-				tk.Label(delete_win,text='NOTE: The corresponding booking will\nalso be deleted.',font=('Cascadia Mono',12,'bold italic'),justify=tk.LEFT).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
+				tk.Label(delete_win,text='NOTE: The corresponding booking will\nalso be deleted.',font=fntbit,justify=tk.LEFT).grid(column=1,row=4,padx=10,pady=10,sticky=tk.W)
 
 				pay_id=tk.StringVar()
 				payid_inp=ttk.Combobox(delete_win,textvariable=pay_id,font=fnt,width=19)
@@ -2653,7 +2667,7 @@ def emp_main():																		# The main function
 
 							Separator(export_win,orient='horizontal').grid(column=0,row=1,sticky=tk.EW,padx=10,pady=10)
 							
-							tk.Label(export_win,font=('Cascadia Mono',12,'bold italic'),text='Data').grid(row=2,column=0,padx=10,pady=10,sticky=tk.NW)
+							tk.Label(export_win,font=fntbit,text='Data').grid(row=2,column=0,padx=10,pady=10,sticky=tk.NW)
 							
 							if df.empty == False:
 								txt=str(df)
@@ -2664,7 +2678,7 @@ def emp_main():																		# The main function
 
 							if df.empty == False:
 								shape=(f'[{str(df.shape[0])} row(s) x {str(df.shape[1])} column(s)]')
-								tk.Label(export_win,font=('Cascadia Mono',12,'bold italic'),text=shape).grid(row=4,column=0,padx=10,pady=10)
+								tk.Label(export_win,font=fntbit,text=shape).grid(row=4,column=0,padx=10,pady=10)
 							
 							Separator(export_win,orient='horizontal').grid(column=0,row=6,sticky=tk.EW,padx=10,pady=10)
 
