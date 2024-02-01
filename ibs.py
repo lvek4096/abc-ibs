@@ -17,8 +17,8 @@ from datetime import datetime,timedelta
 from escpos.printer import Network
 
 # Build string and timestamp
-build='ibs.V5-359'
-build_timestamp='2023-08-27 23:11:20'	
+build='ibs.V5-360'
+build_timestamp='2024-02-01 17:23:23'	
 
 # Fonts for GUI
 if pf.system()=='Windows':
@@ -396,7 +396,8 @@ class Printing:																		# Printing-related functions
 			else:
 				number_pass_text=''
 
-			receipt_text=f'''
+			if self.method_of_payment in ['Credit card','Debit card']:
+				receipt_text=f'''
 {self.bkg_type} Booking {self.bkg_id}
 
 Ticket {tkt_id} ({tkt_timestamp})
@@ -412,6 +413,23 @@ Distance: {str(self.distance)} km
 Total fare: ${str(self.total_fare)}
 Paid by: {self.method_of_payment} ({self.card_brand})
 '''
+			else:
+				receipt_text=f'''
+{self.bkg_type} Booking {self.bkg_id}
+
+Ticket {tkt_id} ({tkt_timestamp})
+{number_pass_text}
+From: {self.origin} To: {self.destination}
+{self.bkg_id} Type: {self.journey_type}
+
+Date: {self.date_of_journey}
+Time: {self.time_of_journey}
+
+Distance: {str(self.distance)} km
+
+Total fare: ${str(self.total_fare)}
+Paid by: {self.method_of_payment}
+'''				
 			
 			sql=('insert into tkt_details values(%s,%s,%s)')
 			val=(bar_no,self.bkg_id,tkt_timestamp)
@@ -467,8 +485,7 @@ class Booking:																		# Booking and payment-related functions
 		self.exp_month=''															# Expiry month
 		self.exp_year=''															# Expiry year
 		self.cvv=''																	# CVV
-		
-	
+			
 	def fare_calculation(self,bkg_type,journey_type,pass_no,origin,destination):
 			
 		if bkg_type=='Bus':
