@@ -2,6 +2,7 @@
 <p align='center'> <img src='https://github.com/lvek4096/abc-ibs/assets/133903654/ecb1918c-20d0-4a13-a692-694cd3ac7cbf' alt='ABC Lines Icon'> </p>
 
 # abc-ibs
+## DISCLAIMER: This repository has been archived and will not accept any new contributions.
  ABC Lines Integrated Booking System (IBS)
 ## About
 This is the booking system for ABC Lines. 
